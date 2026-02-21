@@ -1,0 +1,59 @@
+# WordPress
+.htaccess
+wp-config.php
+wp-content/uploads/
+wp-content/blogs.dir/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+sitemap.xml
+*.log
+
+# Dependencies
+/vendor/
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Composer
+composer.lock
+
+# Build files
+/build/
+/dist/
+*.map
+
+# Testing
+/tests/tmp/
+/tests/results/
+.phpunit.result.cache
+
+# Internal documentation (kept locally, not pushed to public repo)
+/docs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+
+# Playwright / E2E Testing
+/e2e/
+playwright.config.ts
+/test-results/
+/playwright-report/
+/blob-report/
+/.playwright/
+/e2e/.auth/
+PLAYWRIGHT-SETUP.md
+package-additions.json
+gitignore-additions.txt
+/scripts/

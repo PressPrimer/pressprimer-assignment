@@ -1,0 +1,80 @@
+name: Deploy to WordPress.org
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to deploy (e.g., v1.0.0)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (build only, do not deploy)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Check for package.json
+        id: check_npm
+        run: |
+          if [ -f "package.json" ]; then
+            echo "has_npm=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_npm=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install npm dependencies
+        if: steps.check_npm.outputs.has_npm == 'true'
+        run: npm install
+
+      - name: Build production assets
+        if: steps.check_npm.outputs.has_npm == 'true'
+        run: npm run build
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Install Composer dependencies (production only)
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Get version without v prefix
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          echo "number=${VERSION#v}" >> $GITHUB_OUTPUT
+
+      - name: WordPress Plugin Deploy
+        if: ${{ !(inputs.dry_run || false) }}
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: pressprimer-assignment
+          VERSION: ${{ steps.version.outputs.number }}
+          ASSETS_DIR: .wordpress-org
+
+      - name: Dry run summary
+        if: ${{ inputs.dry_run || false }}
+        run: |
+          echo "Dry run complete. Would have deployed version ${{ steps.version.outputs.number }}."
+          echo "Build artifacts are ready but were not pushed to WordPress.org SVN."
