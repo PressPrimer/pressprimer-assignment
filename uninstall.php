@@ -69,8 +69,27 @@ function pressprimer_assignment_uninstall() {
 	// Remove all post meta
 	pressprimer_assignment_remove_post_meta();
 
-	// Remove capabilities and roles
-	pressprimer_assignment_remove_capabilities();
+	// Remove capabilities from all roles.
+	// Load the capabilities class to use its remove method.
+	$capabilities_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'includes/utilities/class-ppa-capabilities.php';
+	if ( file_exists( $capabilities_file ) ) {
+		require_once $capabilities_file;
+		if ( class_exists( 'PressPrimer_Assignment_Capabilities' ) ) {
+			if ( is_multisite() ) {
+				$site_ids = get_sites( [ 'fields' => 'ids' ] );
+				foreach ( $site_ids as $site_id ) {
+					switch_to_blog( $site_id );
+					PressPrimer_Assignment_Capabilities::remove_capabilities();
+					restore_current_blog();
+				}
+			} else {
+				PressPrimer_Assignment_Capabilities::remove_capabilities();
+			}
+		}
+	} else {
+		// Fallback to standalone function if class file not available.
+		pressprimer_assignment_remove_capabilities();
+	}
 
 	// Clear any remaining transients
 	pressprimer_assignment_clear_transients();
@@ -225,24 +244,28 @@ function pressprimer_assignment_remove_capabilities() {
 /**
  * Remove capabilities from roles for a single site
  *
+ * Fallback function used when the Capabilities class is not available.
+ *
  * @since 1.0.0
  */
 function pressprimer_assignment_remove_site_capabilities() {
-	// Remove capabilities from administrator
-	$admin = get_role( 'administrator' );
-	if ( $admin ) {
-		$admin->remove_cap( 'pressprimer_assignment_manage_all' );
-		$admin->remove_cap( 'pressprimer_assignment_manage_own' );
-		$admin->remove_cap( 'pressprimer_assignment_view_submissions_all' );
-		$admin->remove_cap( 'pressprimer_assignment_view_submissions_own' );
-		$admin->remove_cap( 'pressprimer_assignment_submit' );
-		$admin->remove_cap( 'pressprimer_assignment_manage_settings' );
+	$capabilities = [
+		'ppa_manage_all',
+		'ppa_manage_settings',
+		'ppa_view_reports',
+	];
+
+	// Get all WordPress roles.
+	global $wp_roles;
+
+	if ( ! isset( $wp_roles ) ) {
+		$wp_roles = new WP_Roles(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	}
 
-	// Remove capabilities from subscriber
-	$subscriber = get_role( 'subscriber' );
-	if ( $subscriber ) {
-		$subscriber->remove_cap( 'pressprimer_assignment_submit' );
+	foreach ( $wp_roles->role_objects as $role ) {
+		foreach ( $capabilities as $cap ) {
+			$role->remove_cap( $cap );
+		}
 	}
 }
 
