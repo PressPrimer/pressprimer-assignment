@@ -23,6 +23,7 @@ node_modules/
 
 # Composer
 composer.lock
+composer.phar
 
 # Build files
 /build/
