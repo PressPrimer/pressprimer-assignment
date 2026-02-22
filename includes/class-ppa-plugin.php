@@ -113,10 +113,10 @@ class PressPrimer_Assignment_Plugin {
 	 * @since 1.0.0
 	 */
 	private function ensure_capabilities() {
-		// Check if admin role has our capabilities
+		// Check if admin role has our capabilities.
 		$admin = get_role( 'administrator' );
-		if ( $admin && ! $admin->has_cap( 'pressprimer_assignment_manage_own' ) ) {
-			// Capabilities missing, set them up
+		if ( $admin && ! $admin->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			// Capabilities missing, set them up.
 			if ( class_exists( 'PressPrimer_Assignment_Capabilities' ) ) {
 				PressPrimer_Assignment_Capabilities::setup_capabilities();
 			}
@@ -202,9 +202,10 @@ class PressPrimer_Assignment_Plugin {
 	 * @since 1.0.0
 	 */
 	private function init_rest_api() {
-		if ( class_exists( 'PressPrimer_Assignment_REST_Controller' ) ) {
-			$controller = new PressPrimer_Assignment_REST_Controller();
-			$controller->init();
+		// Assignments REST API.
+		if ( class_exists( 'PressPrimer_Assignment_REST_Assignments' ) ) {
+			$assignments_api = new PressPrimer_Assignment_REST_Assignments();
+			$assignments_api->init();
 		}
 	}
 
