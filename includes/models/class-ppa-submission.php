@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Submission model class
  *
  * Handles CRUD operations for submissions, including status workflow,
- * grading, late handling, and file management.
+ * grading, and file management.
  *
  * @since 1.0.0
  */
@@ -105,6 +105,14 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 	public $status = 'draft';
 
 	/**
+	 * Student notes (context provided with upload)
+	 *
+	 * @since 1.0.0
+	 * @var string|null
+	 */
+	public $student_notes = null;
+
+	/**
 	 * Submitted timestamp
 	 *
 	 * @since 1.0.0
@@ -137,7 +145,7 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 	public $grader_id = null;
 
 	/**
-	 * Raw score before late penalty
+	 * Score
 	 *
 	 * @since 1.0.0
 	 * @var float|null
@@ -151,30 +159,6 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 	 * @var string|null
 	 */
 	public $feedback = null;
-
-	/**
-	 * Whether submission was late
-	 *
-	 * @since 1.0.0
-	 * @var int
-	 */
-	public $is_late = 0;
-
-	/**
-	 * Late penalty percentage applied
-	 *
-	 * @since 1.0.0
-	 * @var float|null
-	 */
-	public $late_penalty_applied = null;
-
-	/**
-	 * Final score after late penalty
-	 *
-	 * @since 1.0.0
-	 * @var float|null
-	 */
-	public $final_score = null;
 
 	/**
 	 * Whether submission passed
@@ -265,15 +249,13 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 			'user_id',
 			'submission_number',
 			'status',
+			'student_notes',
 			'submitted_at',
 			'graded_at',
 			'returned_at',
 			'grader_id',
 			'score',
 			'feedback',
-			'is_late',
-			'late_penalty_applied',
-			'final_score',
 			'passed',
 			'file_count',
 			'total_file_size',
@@ -477,45 +459,6 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 		}
 
 		return $this->_assignment;
-	}
-
-	/**
-	 * Check if submission is late
-	 *
-	 * Determines if the submission was made after the assignment due date.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return bool True if late, false otherwise.
-	 */
-	public function is_late() {
-		// If already flagged as late, return true.
-		if ( $this->is_late ) {
-			return true;
-		}
-
-		// If not yet submitted, check against current time.
-		$assignment = $this->get_assignment();
-		if ( ! $assignment ) {
-			return false;
-		}
-
-		if ( empty( $assignment->due_date ) ) {
-			return false;
-		}
-
-		// Determine the time to check.
-		$check_time = ! empty( $this->submitted_at ) ? $this->submitted_at : current_time( 'mysql' );
-
-		try {
-			$timezone  = new DateTimeZone( $assignment->due_date_timezone ? $assignment->due_date_timezone : 'UTC' );
-			$due       = new DateTime( $assignment->due_date, $timezone );
-			$submitted = new DateTime( $check_time, $timezone );
-
-			return $submitted > $due;
-		} catch ( Exception $e ) {
-			return false;
-		}
 	}
 
 	/**

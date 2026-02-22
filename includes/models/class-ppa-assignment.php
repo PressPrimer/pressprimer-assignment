@@ -2,7 +2,7 @@
 /**
  * Assignment model
  *
- * Represents an assignment with due dates, file settings, and grading configuration.
+ * Represents an assignment with file settings and grading configuration.
  *
  * @package PressPrimer_Assignment
  * @subpackage Models
@@ -17,8 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Assignment model class
  *
- * Handles CRUD operations for assignments, including validation,
- * due date management, and file type configuration.
+ * Handles CRUD operations for assignments, including validation
+ * and file type configuration.
  *
  * @since 1.0.0
  */
@@ -79,38 +79,6 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 * @var float
 	 */
 	public $passing_score = 60.00;
-
-	/**
-	 * Due date
-	 *
-	 * @since 1.0.0
-	 * @var string|null
-	 */
-	public $due_date = null;
-
-	/**
-	 * Due date timezone
-	 *
-	 * @since 1.0.0
-	 * @var string
-	 */
-	public $due_date_timezone = 'UTC';
-
-	/**
-	 * Late submission policy
-	 *
-	 * @since 1.0.0
-	 * @var string accept|reject|penalty
-	 */
-	public $late_policy = 'accept';
-
-	/**
-	 * Late penalty percentage
-	 *
-	 * @since 1.0.0
-	 * @var float|null
-	 */
-	public $late_penalty_percent = null;
 
 	/**
 	 * Whether resubmission is allowed
@@ -235,10 +203,6 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'grading_guidelines',
 			'max_points',
 			'passing_score',
-			'due_date',
-			'due_date_timezone',
-			'late_policy',
-			'late_penalty_percent',
 			'allow_resubmission',
 			'max_resubmissions',
 			'allowed_file_types',
@@ -357,14 +321,6 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			);
 		}
 
-		// Validate late_policy.
-		if ( ! empty( $data['late_policy'] ) && ! in_array( $data['late_policy'], [ 'accept', 'reject', 'penalty' ], true ) ) {
-			return new WP_Error(
-				'ppa_invalid_late_policy',
-				__( 'Invalid late policy. Must be accept, reject, or penalty.', 'pressprimer-assignment' )
-			);
-		}
-
 		// Validate max_points.
 		if ( isset( $data['max_points'] ) ) {
 			$points = floatval( $data['max_points'] );
@@ -383,17 +339,6 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 				return new WP_Error(
 					'ppa_invalid_passing_score',
 					__( 'Passing score must be between 0 and 100,000.', 'pressprimer-assignment' )
-				);
-			}
-		}
-
-		// Validate late_penalty_percent.
-		if ( isset( $data['late_penalty_percent'] ) && null !== $data['late_penalty_percent'] ) {
-			$penalty = floatval( $data['late_penalty_percent'] );
-			if ( $penalty < 0.00 || $penalty > 100.00 ) {
-				return new WP_Error(
-					'ppa_invalid_late_penalty',
-					__( 'Late penalty percent must be between 0 and 100.', 'pressprimer-assignment' )
 				);
 			}
 		}
@@ -461,31 +406,6 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 		$args['where']['status'] = 'published';
 
 		return static::find( $args );
-	}
-
-	/**
-	 * Check if assignment is past due
-	 *
-	 * Compares current time against due date, accounting for timezone.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return bool True if past due, false otherwise. Returns false if no due date set.
-	 */
-	public function is_past_due() {
-		if ( empty( $this->due_date ) ) {
-			return false;
-		}
-
-		try {
-			$timezone = new DateTimeZone( $this->due_date_timezone ? $this->due_date_timezone : 'UTC' );
-			$due      = new DateTime( $this->due_date, $timezone );
-			$now      = new DateTime( 'now', $timezone );
-
-			return $now > $due;
-		} catch ( Exception $e ) {
-			return false;
-		}
 	}
 
 	/**
@@ -635,18 +555,10 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return bool True if assignment is published and not past due (or accepts late).
+	 * @return bool True if assignment is published.
 	 */
 	public function accepts_submissions() {
-		if ( 'published' !== $this->status ) {
-			return false;
-		}
-
-		if ( $this->is_past_due() && 'reject' === $this->late_policy ) {
-			return false;
-		}
-
-		return true;
+		return 'published' === $this->status;
 	}
 
 	/**

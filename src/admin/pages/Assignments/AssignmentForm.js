@@ -2,7 +2,7 @@
  * Assignment Form Component
  *
  * Tabbed form for creating and editing assignments.
- * Tabs: Basic Info, Scoring, Due Date, File Settings.
+ * Tabs: Basic Info, Scoring, Submissions, File Settings.
  *
  * @package
  * @since 1.0.0
@@ -15,20 +15,17 @@ import {
 	Input,
 	Select,
 	InputNumber,
-	DatePicker,
 	Switch,
 	Button,
 	Tabs,
 	Card,
 	Space,
-	Tooltip,
 	message,
 } from 'antd';
 import {
 	SaveOutlined,
 	SendOutlined,
 	ArrowLeftOutlined,
-	InfoCircleOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { assignmentsApi } from '../../api';
@@ -68,8 +65,6 @@ export default function AssignmentForm( {
 	const [ form ] = Form.useForm();
 	const [ saving, setSaving ] = useState( false );
 
-	// Watch late_policy to conditionally show penalty field.
-	const latePolicy = Form.useWatch( 'late_policy', form );
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
 
 	/**
@@ -84,11 +79,6 @@ export default function AssignmentForm( {
 			...values,
 			status,
 		};
-
-		// Convert DatePicker value to string.
-		if ( data.due_date && data.due_date.format ) {
-			data.due_date = data.due_date.format( 'YYYY-MM-DD HH:mm:ss' );
-		}
 
 		// Convert allowed_file_types array to JSON.
 		if ( Array.isArray( data.allowed_file_types ) ) {
@@ -175,8 +165,6 @@ export default function AssignmentForm( {
 			grading_guidelines: '',
 			max_points: 100,
 			passing_score: 60,
-			late_policy: 'accept',
-			late_penalty_percent: null,
 			allow_resubmission: false,
 			max_resubmissions: 1,
 			allowed_file_types: [
@@ -192,7 +180,6 @@ export default function AssignmentForm( {
 			],
 			max_file_size: 10485760,
 			max_files: 5,
-			due_date_timezone: 'UTC',
 		};
 	};
 
@@ -327,149 +314,10 @@ export default function AssignmentForm( {
 			),
 		},
 		{
-			key: 'due_date',
-			label: __( 'Due Date', 'pressprimer-assignment' ),
+			key: 'submissions',
+			label: __( 'Submissions', 'pressprimer-assignment' ),
 			children: (
 				<Card>
-					<Form.Item
-						name="due_date"
-						label={ __( 'Due Date', 'pressprimer-assignment' ) }
-						tooltip={ __(
-							'Leave empty for no deadline.',
-							'pressprimer-assignment'
-						) }
-					>
-						<DatePicker
-							showTime
-							format="YYYY-MM-DD HH:mm"
-							style={ { width: 300 } }
-							placeholder={ __(
-								'Select due date',
-								'pressprimer-assignment'
-							) }
-						/>
-					</Form.Item>
-
-					<Form.Item
-						name="due_date_timezone"
-						label={ __( 'Timezone', 'pressprimer-assignment' ) }
-					>
-						<Select style={ { width: 300 } }>
-							<Option value="UTC">UTC</Option>
-							<Option value="America/New_York">
-								{ __(
-									'Eastern Time',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="America/Chicago">
-								{ __(
-									'Central Time',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="America/Denver">
-								{ __(
-									'Mountain Time',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="America/Los_Angeles">
-								{ __(
-									'Pacific Time',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="Europe/London">
-								{ __(
-									'London (GMT)',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="Europe/Paris">
-								{ __(
-									'Central European',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="Asia/Tokyo">
-								{ __(
-									'Japan Standard',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="Australia/Sydney">
-								{ __(
-									'Australian Eastern',
-									'pressprimer-assignment'
-								) }
-							</Option>
-						</Select>
-					</Form.Item>
-
-					<Form.Item
-						name="late_policy"
-						label={
-							<Space>
-								{ __(
-									'Late Submission Policy',
-									'pressprimer-assignment'
-								) }
-								<Tooltip
-									title={ __(
-										'What happens when a submission is made after the due date.',
-										'pressprimer-assignment'
-									) }
-								>
-									<InfoCircleOutlined />
-								</Tooltip>
-							</Space>
-						}
-					>
-						<Select style={ { width: 300 } }>
-							<Option value="accept">
-								{ __(
-									'Accept (no penalty)',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="reject">
-								{ __(
-									'Reject late submissions',
-									'pressprimer-assignment'
-								) }
-							</Option>
-							<Option value="penalty">
-								{ __(
-									'Accept with penalty',
-									'pressprimer-assignment'
-								) }
-							</Option>
-						</Select>
-					</Form.Item>
-
-					{ latePolicy === 'penalty' && (
-						<Form.Item
-							name="late_penalty_percent"
-							label={ __(
-								'Late Penalty (%)',
-								'pressprimer-assignment'
-							) }
-							tooltip={ __(
-								'Percentage deducted from the score for late submissions.',
-								'pressprimer-assignment'
-							) }
-						>
-							<InputNumber
-								min={ 0 }
-								max={ 100 }
-								step={ 5 }
-								style={ { width: 150 } }
-								addonAfter="%"
-							/>
-						</Form.Item>
-					) }
-
 					<Form.Item
 						name="allow_resubmission"
 						label={ __(

@@ -189,23 +189,6 @@ export default function Assignments() {
 	};
 
 	/**
-	 * Format a date string for display.
-	 *
-	 * @param {string} dateStr Date string.
-	 * @return {string} Formatted date or dash.
-	 */
-	const formatDate = ( dateStr ) => {
-		if ( ! dateStr ) {
-			return '\u2014';
-		}
-		try {
-			return new Date( dateStr ).toLocaleDateString();
-		} catch {
-			return '\u2014';
-		}
-	};
-
-	/**
 	 * Table column definitions.
 	 */
 	const columns = [
@@ -235,13 +218,6 @@ export default function Assignments() {
 					{ STATUS_LABELS[ status ] || status }
 				</Tag>
 			),
-		},
-		{
-			title: __( 'Due Date', 'pressprimer-assignment' ),
-			dataIndex: 'due_date',
-			key: 'due_date',
-			width: 140,
-			render: ( date ) => formatDate( date ),
 		},
 		{
 			title: __( 'Submissions', 'pressprimer-assignment' ),

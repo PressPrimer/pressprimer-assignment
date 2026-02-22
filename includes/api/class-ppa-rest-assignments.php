@@ -147,7 +147,7 @@ class PressPrimer_Assignment_REST_Assignments {
 				'description' => __( 'Field to order by.', 'pressprimer-assignment' ),
 				'type'        => 'string',
 				'default'     => 'created_at',
-				'enum'        => [ 'id', 'title', 'status', 'due_date', 'created_at', 'updated_at' ],
+				'enum'        => [ 'id', 'title', 'status', 'created_at', 'updated_at' ],
 			],
 			'order'    => [
 				'description' => __( 'Sort direction.', 'pressprimer-assignment' ),
@@ -176,7 +176,7 @@ class PressPrimer_Assignment_REST_Assignments {
 		$order    = sanitize_text_field( $request->get_param( 'order' ) ?? 'DESC' );
 
 		// Validate order_by against allowed fields.
-		$allowed_order_by = [ 'id', 'title', 'status', 'due_date', 'created_at', 'updated_at' ];
+		$allowed_order_by = [ 'id', 'title', 'status', 'created_at', 'updated_at' ];
 		if ( ! in_array( $order_by, $allowed_order_by, true ) ) {
 			$order_by = 'created_at';
 		}
@@ -245,7 +245,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		// Validate order_by field.
 		$order_by_field   = $args['order_by'];
-		$allowed_order_by = [ 'id', 'title', 'status', 'due_date', 'created_at', 'updated_at' ];
+		$allowed_order_by = [ 'id', 'title', 'status', 'created_at', 'updated_at' ];
 		if ( ! in_array( $order_by_field, $allowed_order_by, true ) ) {
 			$order_by_field = 'created_at';
 		}
@@ -563,41 +563,11 @@ class PressPrimer_Assignment_REST_Assignments {
 			$data['allow_resubmission'] = $request->get_param( 'allow_resubmission' ) ? 1 : 0;
 		}
 
-		// Date fields.
-		if ( null !== $request->get_param( 'due_date' ) ) {
-			$due_date = $request->get_param( 'due_date' );
-			if ( empty( $due_date ) ) {
-				$data['due_date'] = null;
-			} else {
-				$data['due_date'] = sanitize_text_field( $due_date );
-			}
-		}
-
-		if ( null !== $request->get_param( 'due_date_timezone' ) ) {
-			$data['due_date_timezone'] = sanitize_text_field( $request->get_param( 'due_date_timezone' ) );
-		}
-
 		// Enum fields - validate against allowed values.
 		if ( null !== $request->get_param( 'status' ) ) {
 			$status = sanitize_text_field( $request->get_param( 'status' ) );
 			if ( in_array( $status, [ 'draft', 'published', 'archived' ], true ) ) {
 				$data['status'] = $status;
-			}
-		}
-
-		if ( null !== $request->get_param( 'late_policy' ) ) {
-			$late_policy = sanitize_text_field( $request->get_param( 'late_policy' ) );
-			if ( in_array( $late_policy, [ 'accept', 'reject', 'penalty' ], true ) ) {
-				$data['late_policy'] = $late_policy;
-			}
-		}
-
-		if ( null !== $request->get_param( 'late_penalty_percent' ) ) {
-			$penalty = $request->get_param( 'late_penalty_percent' );
-			if ( null === $penalty || '' === $penalty ) {
-				$data['late_penalty_percent'] = null;
-			} else {
-				$data['late_penalty_percent'] = floatval( $penalty );
 			}
 		}
 
@@ -634,29 +604,25 @@ class PressPrimer_Assignment_REST_Assignments {
 	 */
 	private function prepare_item_for_response( $assignment ) {
 		$data = [
-			'id'                   => (int) $assignment->id,
-			'uuid'                 => $assignment->uuid,
-			'title'                => $assignment->title,
-			'description'          => $assignment->description,
-			'instructions'         => $assignment->instructions,
-			'grading_guidelines'   => $assignment->grading_guidelines,
-			'max_points'           => (float) $assignment->max_points,
-			'passing_score'        => (float) $assignment->passing_score,
-			'due_date'             => $assignment->due_date,
-			'due_date_timezone'    => $assignment->due_date_timezone,
-			'late_policy'          => $assignment->late_policy,
-			'late_penalty_percent' => null !== $assignment->late_penalty_percent ? (float) $assignment->late_penalty_percent : null,
-			'allow_resubmission'   => (int) $assignment->allow_resubmission,
-			'max_resubmissions'    => (int) $assignment->max_resubmissions,
-			'allowed_file_types'   => $assignment->allowed_file_types,
-			'max_file_size'        => (int) $assignment->max_file_size,
-			'max_files'            => (int) $assignment->max_files,
-			'status'               => $assignment->status,
-			'author_id'            => (int) $assignment->author_id,
-			'submission_count'     => (int) $assignment->submission_count,
-			'graded_count'         => (int) $assignment->graded_count,
-			'created_at'           => $assignment->created_at,
-			'updated_at'           => $assignment->updated_at,
+			'id'                 => (int) $assignment->id,
+			'uuid'               => $assignment->uuid,
+			'title'              => $assignment->title,
+			'description'        => $assignment->description,
+			'instructions'       => $assignment->instructions,
+			'grading_guidelines' => $assignment->grading_guidelines,
+			'max_points'         => (float) $assignment->max_points,
+			'passing_score'      => (float) $assignment->passing_score,
+			'allow_resubmission' => (int) $assignment->allow_resubmission,
+			'max_resubmissions'  => (int) $assignment->max_resubmissions,
+			'allowed_file_types' => $assignment->allowed_file_types,
+			'max_file_size'      => (int) $assignment->max_file_size,
+			'max_files'          => (int) $assignment->max_files,
+			'status'             => $assignment->status,
+			'author_id'          => (int) $assignment->author_id,
+			'submission_count'   => (int) $assignment->submission_count,
+			'graded_count'       => (int) $assignment->graded_count,
+			'created_at'         => $assignment->created_at,
+			'updated_at'         => $assignment->updated_at,
 		];
 
 		/**

@@ -2,8 +2,8 @@
 /**
  * Grading service
  *
- * Handles grading calculations, late penalty application,
- * pass/fail determination, and submission returning.
+ * Handles grading calculations, pass/fail determination,
+ * and submission returning.
  *
  * @package PressPrimer_Assignment
  * @subpackage Services
@@ -19,8 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Grading service class
  *
  * Provides grading workflow methods including score validation,
- * late penalty calculation, pass/fail determination with filters,
- * and submission status management.
+ * pass/fail determination with filters, and submission status
+ * management.
  *
  * @since 1.0.0
  */
@@ -29,14 +29,13 @@ class PressPrimer_Assignment_Grading_Service {
 	/**
 	 * Grade a submission
 	 *
-	 * Validates the score, calculates late penalty if applicable,
-	 * determines pass/fail, updates the submission record, and
-	 * fires appropriate action hooks.
+	 * Validates the score, determines pass/fail, updates the
+	 * submission record, and fires appropriate action hooks.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param int    $submission_id Submission ID.
-	 * @param float  $score         Raw score to assign.
+	 * @param float  $score         Score to assign.
 	 * @param string $feedback      Grader feedback text.
 	 * @return array|WP_Error Result array on success, WP_Error on failure.
 	 */
@@ -86,30 +85,9 @@ class PressPrimer_Assignment_Grading_Service {
 		 */
 		do_action( 'pressprimer_assignment_before_grade', $submission_id );
 
-		// Calculate late penalty if applicable.
-		$penalty = $this->calculate_late_penalty( $submission_id, $score );
-
-		// Calculate final score.
-		$final_score = max( 0, $score - $penalty );
-
-		/**
-		 * Filter the final score after all calculations.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param float $final_score   The final score.
-		 * @param int   $submission_id The submission ID.
-		 * @param float $raw_score     The raw score.
-		 * @param float $penalty       Any penalty applied.
-		 */
-		$final_score = apply_filters( 'pressprimer_assignment_final_score', $final_score, $submission_id, $score, $penalty );
-
-		// Ensure final score stays within valid range.
-		$final_score = max( 0, min( $final_score, $assignment->max_points ) );
-
 		// Determine pass/fail.
 		$passing_score = floatval( $assignment->passing_score );
-		$passed        = $final_score >= $passing_score;
+		$passed        = $score >= $passing_score;
 
 		/**
 		 * Filter whether a submission is considered passed.
@@ -118,20 +96,18 @@ class PressPrimer_Assignment_Grading_Service {
 		 *
 		 * @param bool  $passed        Whether submission passed.
 		 * @param int   $submission_id The submission ID.
-		 * @param float $final_score   The final score.
+		 * @param float $score         The score.
 		 * @param float $passing_score The passing threshold.
 		 */
-		$passed = apply_filters( 'pressprimer_assignment_passed', $passed, $submission_id, $final_score, $passing_score );
+		$passed = apply_filters( 'pressprimer_assignment_passed', $passed, $submission_id, $score, $passing_score );
 
 		// Update submission record.
-		$submission->status               = PressPrimer_Assignment_Submission::STATUS_GRADED;
-		$submission->score                = $score;
-		$submission->feedback             = $feedback;
-		$submission->final_score          = $final_score;
-		$submission->passed               = $passed ? 1 : 0;
-		$submission->grader_id            = get_current_user_id();
-		$submission->graded_at            = current_time( 'mysql' );
-		$submission->late_penalty_applied = $penalty > 0 ? $penalty : null;
+		$submission->status    = PressPrimer_Assignment_Submission::STATUS_GRADED;
+		$submission->score     = $score;
+		$submission->feedback  = $feedback;
+		$submission->passed    = $passed ? 1 : 0;
+		$submission->grader_id = get_current_user_id();
+		$submission->graded_at = current_time( 'mysql' );
 
 		$save_result = $submission->save();
 
@@ -148,7 +124,7 @@ class PressPrimer_Assignment_Grading_Service {
 		 * @since 1.0.0
 		 *
 		 * @param int    $submission_id The submission ID.
-		 * @param float  $score         The raw score.
+		 * @param float  $score         The score.
 		 * @param string $feedback      The feedback text.
 		 */
 		do_action( 'pressprimer_assignment_after_grade', $submission_id, $score, $feedback );
@@ -159,10 +135,9 @@ class PressPrimer_Assignment_Grading_Service {
 		 * @since 1.0.0
 		 *
 		 * @param int   $submission_id The submission ID.
-		 * @param float $score         The raw score awarded.
-		 * @param float $final_score   The final score after any penalties.
+		 * @param float $score         The score awarded.
 		 */
-		do_action( 'pressprimer_assignment_submission_graded', $submission_id, $score, $final_score );
+		do_action( 'pressprimer_assignment_submission_graded', $submission_id, $score );
 
 		// Fire passed or failed action.
 		if ( $passed ) {
@@ -172,9 +147,9 @@ class PressPrimer_Assignment_Grading_Service {
 			 * @since 1.0.0
 			 *
 			 * @param int   $submission_id The submission ID.
-			 * @param float $final_score   The final score.
+			 * @param float $score         The score.
 			 */
-			do_action( 'pressprimer_assignment_submission_passed', $submission_id, $final_score );
+			do_action( 'pressprimer_assignment_submission_passed', $submission_id, $score );
 		} else {
 			/**
 			 * Fires when a student fails an assignment.
@@ -182,79 +157,18 @@ class PressPrimer_Assignment_Grading_Service {
 			 * @since 1.0.0
 			 *
 			 * @param int   $submission_id The submission ID.
-			 * @param float $final_score   The final score.
+			 * @param float $score         The score.
 			 */
-			do_action( 'pressprimer_assignment_submission_failed', $submission_id, $final_score );
+			do_action( 'pressprimer_assignment_submission_failed', $submission_id, $score );
 		}
 
 		return [
 			'submission_id' => $submission_id,
 			'score'         => $score,
-			'penalty'       => $penalty,
-			'final_score'   => $final_score,
 			'passed'        => $passed,
 			'grader_id'     => $submission->grader_id,
 			'graded_at'     => $submission->graded_at,
 		];
-	}
-
-	/**
-	 * Calculate late penalty for a submission
-	 *
-	 * Checks if the submission is late, retrieves the assignment's
-	 * late policy, and calculates the penalty amount.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int   $submission_id Submission ID.
-	 * @param float $raw_score     Raw score before penalty.
-	 * @return float Penalty amount (0 if no penalty applies).
-	 */
-	public function calculate_late_penalty( $submission_id, $raw_score ) {
-		$submission_id = absint( $submission_id );
-		$raw_score     = floatval( $raw_score );
-
-		$submission = PressPrimer_Assignment_Submission::get( $submission_id );
-		if ( ! $submission ) {
-			return 0;
-		}
-
-		// Check if submission is late.
-		if ( ! $submission->is_late() ) {
-			return 0;
-		}
-
-		$assignment = $submission->get_assignment();
-		if ( ! $assignment ) {
-			return 0;
-		}
-
-		// Check assignment late policy.
-		if ( 'penalty' !== $assignment->late_policy ) {
-			return 0;
-		}
-
-		// Get penalty percentage.
-		$penalty_percent = floatval( $assignment->late_penalty_percent );
-		if ( $penalty_percent <= 0 ) {
-			return 0;
-		}
-
-		// Calculate penalty amount.
-		$penalty = ( $raw_score * $penalty_percent ) / 100;
-
-		/**
-		 * Filter the late penalty calculation.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param float $penalty       The calculated penalty amount.
-		 * @param int   $submission_id The submission ID.
-		 * @param float $raw_score     The raw score before penalty.
-		 */
-		$penalty = apply_filters( 'pressprimer_assignment_calculate_late_penalty', $penalty, $submission_id, $raw_score );
-
-		return max( 0, floatval( $penalty ) );
 	}
 
 	/**
