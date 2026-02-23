@@ -576,6 +576,90 @@ Before creating a release ZIP:
 
 ---
 
+## PressPrimer Quiz Alignment (CRITICAL)
+
+PressPrimer Assignment must maintain visual and structural consistency with PressPrimer Quiz. Both plugins are part of the same suite and users expect a unified experience.
+
+### CSS Variable Parity
+
+**Every CSS custom property in Quiz must have an equivalent in Assignment.** The variable structure must mirror Quiz exactly, using the `--ppa-` prefix instead of `--ppq-`.
+
+When adding new CSS variables to Assignment:
+1. Check if Quiz has the equivalent variable
+2. Use the same value (or the Assignment-appropriate equivalent)
+3. Use the same naming convention (e.g., `primary-hover` not `primary-dark` for hover states)
+
+**Reference files:**
+- Quiz base CSS: `pressprimer-quiz/assets/css/quiz.css` (`:root` section)
+- Quiz default theme: `pressprimer-quiz/assets/css/themes/default.css` (theme variables section)
+- Assignment base CSS: `assets/css/submission.css` (`:root` section)
+- Assignment default theme: `assets/css/themes/default.css` (theme variables section)
+
+### Theme Variable Categories (Must Match Quiz)
+
+Each theme CSS file must define these variable categories:
+
+| Category | Variables | Example |
+|----------|-----------|---------|
+| Primary Colors | `primary`, `primary-hover`, `primary-dark`, `primary-light`, `primary-rgb` | `--ppa-primary: #0073aa` |
+| Secondary Colors | `secondary`, `secondary-hover` | `--ppa-secondary: #50575e` |
+| Status Colors | `success`, `success-light`, `success-hover`, `error`, `error-light`, `error-hover`, `warning`, `warning-light`, `info`, `info-light` | `--ppa-success: #00a32a` |
+| Background Colors | `background`, `background-gray`, `background-hover`, `background-active` | `--ppa-background: #ffffff` |
+| Text Colors | `text`, `text-secondary`, `text-light`, `text-inverse` | `--ppa-text: #1d2327` |
+| Border Colors | `border`, `border-light`, `border-focus` | `--ppa-border: #c3c4c7` |
+| Spacing | `space-xs` through `space-2xl` | `--ppa-space-md: 1rem` |
+| Border Radius | `radius-sm` through `radius-full` | `--ppa-radius-md: 6px` |
+| Shadows | `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`, `shadow-focus` | |
+| Typography | `font-sans`, `font-mono`, `font-size-xs` through `font-size-3xl`, `line-height`, `line-height-tight` | |
+| Layout | `max-width` | `--ppa-max-width: 800px` |
+| Transitions | `transition-fast`, `transition`, `transition-slow` | |
+
+### RTL (Right-to-Left) Support
+
+**All frontend CSS must include RTL overrides.** Use `[dir="rtl"]` selectors matching the Quiz pattern:
+
+- Flip `border-left` to `border-right` on notices/alerts
+- Reverse `flex-direction` on horizontal layouts (file info, status headers, submission items)
+- Swap `margin-left`/`margin-right` on positioned elements
+- Set `direction: rtl` and `text-align: right` on containers
+
+### Print Styles
+
+**All frontend CSS must include `@media print` rules.** Follow the Quiz pattern:
+
+- Hide interactive elements (forms, buttons, upload zones)
+- Remove box shadows
+- Remove max-width constraints
+- Replace backgrounds with `none` and borders with `1px solid #000`
+- Use `page-break-inside: avoid` on content blocks
+
+### Theme File Structure
+
+Each theme (default, modern, minimal) must:
+1. Define the complete variable set listed above
+2. Scope variables to `.ppa-theme-{name}` selector
+3. Include scoped selectors for `.ppa-assignment.ppa-theme-{name}` and `.ppa-my-submissions.ppa-theme-{name}`
+
+### Translation / Internationalization
+
+- All user-facing strings must use `__()` or `_e()` with the `pressprimer-assignment` text domain
+- Use `esc_html__()` for strings in HTML context
+- Use `number_format_i18n()` for numeric display
+- Provide translator comments for strings with placeholders: `/* translators: %s: assignment title */`
+- Support RTL in both PHP output and CSS (see RTL section above)
+
+### When Creating New Frontend Components
+
+Before writing CSS for any new frontend component:
+1. Check if Quiz has an equivalent component
+2. Match Quiz's class naming pattern (`ppa-` prefix instead of `ppq-`)
+3. Match Quiz's HTML structure where applicable
+4. Ensure the component works with all three themes
+5. Include RTL overrides if the component has directional layout
+6. Include print overrides if the component has interactive elements
+
+---
+
 ## Important Reminders
 
 1. **Always run PHPCS before committing** - Pre-commit hook does this automatically

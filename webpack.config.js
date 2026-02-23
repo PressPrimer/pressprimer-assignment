@@ -4,7 +4,6 @@ const path = require( 'path' );
 module.exports = {
 	...defaultConfig,
 	entry: {
-		admin: path.resolve( process.cwd(), 'src', 'admin', 'index.js' ),
 		'assignment-editor': path.resolve(
 			process.cwd(),
 			'src',

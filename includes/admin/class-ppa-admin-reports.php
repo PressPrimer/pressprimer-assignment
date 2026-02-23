@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Admin reports class
  *
  * Manages the reports admin page with React-powered interface.
+ * The React bundle is enqueued by class-ppa-admin.php based on the current page.
  *
  * @since 1.0.0
  */
@@ -29,7 +30,8 @@ class PressPrimer_Assignment_Admin_Reports {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		// Hooks will be added in future prompts.
+		// React assets are enqueued by class-ppa-admin.php.
+		// Future hooks (AJAX, exports) will be registered here.
 	}
 
 	/**
@@ -48,8 +50,6 @@ class PressPrimer_Assignment_Admin_Reports {
 			);
 		}
 
-		echo '<div class="wrap">';
-		echo '<div id="ppa-admin-root" class="ppa-admin-react-root"></div>';
-		echo '</div>';
+		echo '<div id="ppa-reports-root" class="ppa-admin-react-root"></div>';
 	}
 }

@@ -155,13 +155,19 @@ class PressPrimer_Assignment_Plugin {
 	 * @since 1.0.0
 	 */
 	private function init_frontend() {
-		// Initialize shortcodes
+		// Initialize frontend (file download handler).
+		if ( class_exists( 'PressPrimer_Assignment_Frontend' ) ) {
+			$frontend = new PressPrimer_Assignment_Frontend();
+			$frontend->init();
+		}
+
+		// Initialize shortcodes.
 		if ( class_exists( 'PressPrimer_Assignment_Shortcodes' ) ) {
 			$shortcodes = new PressPrimer_Assignment_Shortcodes();
 			$shortcodes->init();
 		}
 
-		// Initialize submission handler
+		// Initialize submission handler.
 		if ( class_exists( 'PressPrimer_Assignment_Submission_Handler' ) ) {
 			$handler = new PressPrimer_Assignment_Submission_Handler();
 			$handler->init();

@@ -18,6 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Admin class
  *
  * Manages admin menus, pages, and assets for the plugin.
+ * Follows the same hybrid architecture as PressPrimer Quiz:
+ * PHP WP_List_Table for list views, React for editors and dashboards.
  *
  * @since 1.0.0
  */
@@ -40,6 +42,8 @@ class PressPrimer_Assignment_Admin {
 
 	/**
 	 * Initialize sub-admin page classes
+	 *
+	 * Each sub-admin class handles its own hooks (admin_init, screen options, etc.).
 	 *
 	 * @since 1.0.0
 	 */
@@ -73,29 +77,53 @@ class PressPrimer_Assignment_Admin {
 	/**
 	 * Register admin menus
 	 *
-	 * Creates the main PPA Assignments menu and all submenus.
+	 * Creates the main Assignments menu and all submenus.
 	 *
 	 * @since 1.0.0
 	 */
 	public function register_menus() {
-		// Main menu page.
+		/**
+		 * Filters the plugin name displayed in the admin menu.
+		 *
+		 * Used by Enterprise addon for white-label branding.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $name Default plugin name.
+		 */
+		$plugin_name = apply_filters(
+			'pressprimer_assignment_plugin_name',
+			__( 'PPA Assignments', 'pressprimer-assignment' )
+		);
+
+		// Main menu page (Dashboard).
 		add_menu_page(
-			__( 'PPA Assignments', 'pressprimer-assignment' ),
-			__( 'PPA Assignments', 'pressprimer-assignment' ),
+			$plugin_name,
+			$plugin_name,
 			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
 			'pressprimer-assignment',
-			[ $this, 'render_assignments' ],
-			'dashicons-media-document',
+			[ $this, 'render_dashboard' ],
+			$this->get_menu_icon(),
 			31
 		);
 
-		// Assignments submenu (replaces main menu link).
+		// Dashboard submenu (replaces main menu link).
+		add_submenu_page(
+			'pressprimer-assignment',
+			__( 'Dashboard', 'pressprimer-assignment' ),
+			__( 'Dashboard', 'pressprimer-assignment' ),
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			'pressprimer-assignment',
+			[ $this, 'render_dashboard' ]
+		);
+
+		// Assignments submenu.
 		add_submenu_page(
 			'pressprimer-assignment',
 			__( 'Assignments', 'pressprimer-assignment' ),
 			__( 'Assignments', 'pressprimer-assignment' ),
 			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
-			'pressprimer-assignment',
+			'pressprimer-assignment-assignments',
 			[ $this, 'render_assignments' ]
 		);
 
@@ -152,7 +180,8 @@ class PressPrimer_Assignment_Admin {
 	/**
 	 * Enqueue admin assets
 	 *
-	 * Loads CSS and JavaScript files for PressPrimer Assignment admin pages.
+	 * Loads CSS and JavaScript on PressPrimer Assignment admin pages.
+	 * React bundles are loaded conditionally per page.
 	 *
 	 * @since 1.0.0
 	 *
@@ -206,45 +235,25 @@ class PressPrimer_Assignment_Admin {
 				],
 			]
 		);
-
-		// Enqueue React admin app.
-		$this->enqueue_react_app();
 	}
 
 	/**
-	 * Enqueue React admin app assets
+	 * Render dashboard page
 	 *
-	 * Loads the compiled React application for admin pages.
+	 * Displays the main dashboard with overview and statistics.
 	 *
 	 * @since 1.0.0
 	 */
-	private function enqueue_react_app() {
-		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/admin.asset.php';
-
-		if ( ! file_exists( $asset_file ) ) {
-			return;
-		}
-
-		$asset = require $asset_file;
-
-		wp_enqueue_script(
-			'ppa-admin-react',
-			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/admin.js',
-			$asset['dependencies'],
-			$asset['version'],
-			true
-		);
-
-		// Enqueue React app styles if they exist.
-		$style_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/style-admin.css';
-		if ( file_exists( $style_file ) ) {
-			wp_enqueue_style(
-				'ppa-admin-react',
-				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/style-admin.css',
-				[],
-				$asset['version']
+	public function render_dashboard() {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			wp_die(
+				esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ),
+				esc_html__( 'Permission Denied', 'pressprimer-assignment' ),
+				[ 'response' => 403 ]
 			);
 		}
+
+		echo '<div id="ppa-dashboard-root" class="ppa-admin-react-root"></div>';
 	}
 
 	/**
@@ -289,10 +298,15 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_reports() {
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Reports' ) ) {
-			$admin = new PressPrimer_Assignment_Admin_Reports();
-			$admin->render();
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS ) ) {
+			wp_die(
+				esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ),
+				esc_html__( 'Permission Denied', 'pressprimer-assignment' ),
+				[ 'response' => 403 ]
+			);
 		}
+
+		echo '<div id="ppa-reports-root" class="ppa-admin-react-root"></div>';
 	}
 
 	/**
@@ -305,5 +319,42 @@ class PressPrimer_Assignment_Admin {
 			$admin = new PressPrimer_Assignment_Admin_Settings();
 			$admin->render();
 		}
+	}
+
+	/**
+	 * Get the menu icon as a base64-encoded SVG
+	 *
+	 * Returns a document icon for the admin menu.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Base64-encoded SVG data URI or custom icon URL.
+	 */
+	private function get_menu_icon() {
+		/**
+		 * Filters the admin menu icon.
+		 *
+		 * Used by Enterprise addon for white-label branding.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $icon_url Empty string (use default) or custom icon URL.
+		 */
+		$custom_icon = apply_filters( 'pressprimer_assignment_plugin_icon', '' );
+
+		if ( ! empty( $custom_icon ) ) {
+			return $custom_icon;
+		}
+
+		// Document/assignment icon SVG.
+		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">'
+			. '<path fill="#9CA1A7" d="M14 2H6C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z'
+			. 'M6 20V4h7v5h5v11H6z'
+			. 'M8 15h8v2H8v-2z'
+			. 'M8 11h8v2H8v-2z"/>'
+			. '</svg>';
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Required for data URI in add_menu_page().
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg );
 	}
 }

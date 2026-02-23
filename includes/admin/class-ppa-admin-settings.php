@@ -17,11 +17,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Admin settings class
  *
- * Manages the settings admin page with React-powered interface.
+ * Manages the settings admin page. Settings functionality
+ * will be implemented once scope has been defined.
  *
  * @since 1.0.0
  */
 class PressPrimer_Assignment_Admin_Settings {
+
+	/**
+	 * Option name for all settings
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	const OPTION_NAME = 'pressprimer_assignment_settings';
+
+	/**
+	 * Settings page slug
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	const PAGE_SLUG = 'pressprimer-assignment-settings';
 
 	/**
 	 * Initialize settings admin
@@ -29,13 +46,11 @@ class PressPrimer_Assignment_Admin_Settings {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		// Hooks will be added in future prompts.
+		// Settings registration will be added once scope is defined.
 	}
 
 	/**
 	 * Render settings page
-	 *
-	 * Outputs the container div for the React application to mount into.
 	 *
 	 * @since 1.0.0
 	 */
@@ -48,8 +63,11 @@ class PressPrimer_Assignment_Admin_Settings {
 			);
 		}
 
-		echo '<div class="wrap">';
-		echo '<div id="ppa-admin-root" class="ppa-admin-react-root"></div>';
-		echo '</div>';
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Settings', 'pressprimer-assignment' ); ?></h1>
+			<p><?php esc_html_e( 'Settings page coming soon.', 'pressprimer-assignment' ); ?></p>
+		</div>
+		<?php
 	}
 }
