@@ -23,6 +23,7 @@ import {
 	QuestionCircleOutlined,
 	TrophyOutlined,
 	FileTextOutlined,
+	EditOutlined,
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -361,6 +362,62 @@ const SettingsPanel = ( { form } ) => {
 				}
 				style={ { marginBottom: 24 } }
 			>
+				<Form.Item
+					label={
+						<Space>
+							<EditOutlined />
+							<span>
+								{ __(
+									'Submission Type',
+									'pressprimer-assignment'
+								) }
+							</span>
+							<Tooltip
+								title={ __(
+									'Choose how students submit their work: file upload, text editor, or either',
+									'pressprimer-assignment'
+								) }
+							>
+								<QuestionCircleOutlined
+									style={ {
+										fontSize: 12,
+										color: '#8c8c8c',
+									} }
+								/>
+							</Tooltip>
+						</Space>
+					}
+					name="submission_type"
+				>
+					<Select
+						style={ { width: 300 } }
+						size="small"
+						options={ [
+							{
+								value: 'file',
+								label: __(
+									'File Upload Only',
+									'pressprimer-assignment'
+								),
+							},
+							{
+								value: 'text',
+								label: __(
+									'Text Editor Only',
+									'pressprimer-assignment'
+								),
+							},
+							{
+								value: 'either',
+								label: __(
+									'Either (Student Chooses)',
+									'pressprimer-assignment'
+								),
+							},
+						] }
+					/>
+				</Form.Item>
+
 				<Form.Item
 					label={
 						<Space>

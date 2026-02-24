@@ -13,27 +13,39 @@
    ========================================================================== */
 
 :root {
-	/* Color Palette */
-	--ppa-primary: #4f46e5;
-	--ppa-primary-dark: #4338ca;
-	--ppa-primary-light: #6366f1;
-	--ppa-success: #10b981;
-	--ppa-success-light: #d1fae5;
-	--ppa-warning: #f59e0b;
-	--ppa-warning-light: #fef3c7;
-	--ppa-error: #ef4444;
-	--ppa-error-light: #fee2e2;
-	--ppa-info: #3b82f6;
-	--ppa-info-light: #dbeafe;
+	/* Primary Colors (aligned with PressPrimer Quiz defaults) */
+	--ppa-primary: #0073aa;
+	--ppa-primary-hover: #005a87;
+	--ppa-primary-dark: #005a87;
+	--ppa-primary-light: #e5f3fa;
+	--ppa-primary-rgb: 0, 115, 170;
 
-	/* Neutral Colors */
-	--ppa-text: #1f2937;
-	--ppa-text-secondary: #6b7280;
-	--ppa-text-light: #9ca3af;
-	--ppa-border: #e5e7eb;
-	--ppa-border-light: #f3f4f6;
+	/* Secondary Colors */
+	--ppa-secondary: #50575e;
+	--ppa-secondary-hover: #3c4248;
+
+	/* Status Colors */
+	--ppa-success: #00a32a;
+	--ppa-success-light: #d8f4e0;
+	--ppa-warning: #dba617;
+	--ppa-warning-light: #fef8e7;
+	--ppa-error: #d63638;
+	--ppa-error-light: #fce4e4;
+	--ppa-info: #72aee6;
+	--ppa-info-light: #e7f4fd;
+
+	/* Text Colors */
+	--ppa-text: #1d2327;
+	--ppa-text-secondary: #50575e;
+	--ppa-text-light: #787c82;
+	--ppa-text-inverse: #ffffff;
+
+	/* Border Colors */
+	--ppa-border: #c3c4c7;
+	--ppa-border-light: #dcdcde;
+	--ppa-border-focus: #0073aa;
 	--ppa-background: #ffffff;
-	--ppa-background-gray: #f9fafb;
+	--ppa-background-gray: #f6f7f7;
 
 	/* Typography */
 	--ppa-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -202,6 +214,111 @@
 }
 
 /* ==========================================================================
+   Submission Type Selector
+   ========================================================================== */
+
+.ppa-submission-type-selector {
+	margin-top: var(--ppa-space-xl);
+}
+
+.ppa-type-selector-description {
+	font-size: 0.875rem;
+	color: var(--ppa-text-secondary);
+	margin-bottom: var(--ppa-space-lg);
+}
+
+.ppa-type-selector-options {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--ppa-space-lg);
+}
+
+.ppa-type-option {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--ppa-space-sm);
+	padding: var(--ppa-space-xl);
+	background: var(--ppa-background);
+	border: 2px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-lg);
+	cursor: pointer;
+	transition: var(--ppa-transition);
+	text-align: center;
+	font-family: var(--ppa-font-sans);
+}
+
+.ppa-type-option:hover {
+	border-color: var(--ppa-primary);
+	background: var(--ppa-background-gray);
+	box-shadow: var(--ppa-shadow-md);
+}
+
+.ppa-type-option:focus {
+	outline: none;
+	border-color: var(--ppa-primary);
+	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+}
+
+.ppa-type-option-icon {
+	font-size: 2rem;
+	color: var(--ppa-primary);
+	line-height: 1;
+}
+
+.ppa-type-option-icon .dashicons {
+	font-size: 2rem;
+	width: 2rem;
+	height: 2rem;
+}
+
+.ppa-type-option-title {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--ppa-text);
+}
+
+.ppa-type-option-description {
+	font-size: 0.75rem;
+	color: var(--ppa-text-light);
+	line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+	.ppa-type-selector-options {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Submission type panels (hidden until type is selected) */
+.ppa-submission-type-panel {
+	margin-top: var(--ppa-space-lg);
+}
+
+.ppa-type-back-link {
+	display: inline-block;
+	font-size: 0.875rem;
+	color: var(--ppa-primary);
+	text-decoration: none;
+	font-weight: 500;
+	margin-bottom: var(--ppa-space-lg);
+	transition: var(--ppa-transition-fast);
+}
+
+.ppa-type-back-link::before {
+	content: "\2190 ";
+}
+
+.ppa-type-back-link:hover {
+	color: var(--ppa-primary-dark);
+	text-decoration: underline;
+}
+
+[dir="rtl"] .ppa-type-back-link::before {
+	content: "\2192 ";
+}
+
+/* ==========================================================================
    Submission Form
    ========================================================================== */
 
@@ -234,7 +351,7 @@
 .ppa-upload-zone {
 	border: 2px dashed var(--ppa-border);
 	border-radius: var(--ppa-radius-lg);
-	padding: var(--ppa-space-2xl);
+	padding: 40px 20px;
 	text-align: center;
 	cursor: pointer;
 	transition: var(--ppa-transition);
@@ -259,15 +376,26 @@
 }
 
 .ppa-upload-icon {
-	font-size: 2.5rem;
 	margin-bottom: var(--ppa-space-md);
 	color: var(--ppa-text-light);
+}
+
+.ppa-upload-icon .dashicons {
+	font-size: 48px;
+	width: 48px;
+	height: 48px;
+	color: var(--ppa-text-light);
+}
+
+.ppa-upload-zone:hover .ppa-upload-icon .dashicons,
+.ppa-upload-zone.ppa-upload-active .ppa-upload-icon .dashicons {
+	color: var(--ppa-primary);
 }
 
 .ppa-upload-text {
 	font-size: 1rem;
 	color: var(--ppa-text-secondary);
-	margin-bottom: var(--ppa-space-sm);
+	margin: 15px 0 0;
 }
 
 .ppa-upload-hint {
@@ -301,6 +429,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	flex-wrap: nowrap;
 	padding: var(--ppa-space-md);
 	border: 1px solid var(--ppa-border-light);
 	border-radius: var(--ppa-radius-md);
@@ -317,6 +446,7 @@
 	display: flex;
 	align-items: center;
 	gap: var(--ppa-space-md);
+	flex: 1;
 	min-width: 0;
 }
 
@@ -347,6 +477,8 @@
 	font-size: 0.75rem;
 	color: var(--ppa-text-light);
 	margin-left: var(--ppa-space-sm);
+	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 .ppa-file-actions {
@@ -364,7 +496,8 @@
 	padding: var(--ppa-space-xs);
 	border-radius: var(--ppa-radius-sm);
 	transition: var(--ppa-transition-fast);
-	font-size: 0.875rem;
+	font-size: 1.75rem;
+	line-height: 1;
 	line-height: 1;
 }
 
@@ -423,10 +556,10 @@
    ========================================================================== */
 
 .ppa-button {
-	font-family: var(--ppa-font-sans);
+	font-family: inherit;
 	font-weight: 600;
 	font-size: 1rem;
-	border-radius: var(--ppa-radius-md);
+	border-radius: var(--ppa-radius-lg);
 	transition: var(--ppa-transition);
 	cursor: pointer;
 	display: inline-flex;
@@ -437,12 +570,16 @@
 	border: none;
 	min-height: 44px;
 	padding: var(--ppa-space-md) var(--ppa-space-xl);
-	line-height: 1;
+	line-height: 1.5;
+	white-space: nowrap;
 }
 
 .ppa-button:focus {
 	outline: none;
-	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+}
+
+.ppa-button:focus-visible {
+	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.25);
 }
 
 .ppa-button-primary {
@@ -452,8 +589,8 @@
 
 .ppa-button-primary:hover:not(:disabled) {
 	background: var(--ppa-primary-dark);
-	transform: translateY(-1px);
-	box-shadow: var(--ppa-shadow-md);
+	transform: translateY(-2px);
+	box-shadow: var(--ppa-shadow-lg);
 }
 
 .ppa-button-primary:active:not(:disabled) {
@@ -468,8 +605,11 @@
 }
 
 .ppa-button-secondary:hover:not(:disabled) {
+	background: var(--ppa-background-gray);
 	border-color: var(--ppa-primary);
 	color: var(--ppa-primary);
+	transform: translateY(-2px);
+	box-shadow: var(--ppa-shadow-md);
 }
 
 .ppa-button:disabled {
@@ -486,6 +626,12 @@
 	border-top-color: currentColor;
 	border-radius: var(--ppa-radius-full);
 	animation: ppa-spin 0.6s linear infinite;
+}
+
+.ppa-button-small {
+	padding: var(--ppa-space-xs) var(--ppa-space-md);
+	font-size: 0.75rem;
+	min-height: auto;
 }
 
 @keyframes ppa-spin {
@@ -613,7 +759,8 @@
    Feedback
    ========================================================================== */
 
-.ppa-feedback {
+.ppa-feedback,
+.ppa-submitted-files {
 	padding: var(--ppa-space-lg);
 	background: var(--ppa-background-gray);
 	border: 1px solid var(--ppa-border-light);
@@ -741,7 +888,85 @@
 }
 
 /* ==========================================================================
-   Login Link
+   Login Required
+   ========================================================================== */
+
+.ppa-login-required {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--ppa-space-lg);
+	padding: var(--ppa-space-2xl);
+	background: var(--ppa-background-gray);
+	border: 2px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-xl);
+	text-align: center;
+	width: 100%;
+	max-width: 500px;
+	margin: var(--ppa-space-xl) auto;
+}
+
+.ppa-login-required-icon {
+	font-size: 3rem;
+	line-height: 1;
+	opacity: 0.8;
+}
+
+.ppa-login-required-message {
+	font-size: 1.125rem;
+	color: var(--ppa-text);
+	line-height: 1.7;
+}
+
+.ppa-login-required-message p {
+	margin: 0 0 var(--ppa-space-md);
+}
+
+.ppa-login-required-message p:last-child {
+	margin-bottom: 0;
+}
+
+.ppa-button-large {
+	font-size: 1.125rem;
+	padding: var(--ppa-space-lg) var(--ppa-space-2xl);
+	min-width: 200px;
+}
+
+.ppa-button-icon {
+	display: inline-block;
+	margin-right: var(--ppa-space-sm);
+	font-size: 1.25rem;
+	line-height: 1;
+}
+
+.ppa-login-button {
+	box-shadow: var(--ppa-shadow-lg);
+}
+
+.ppa-login-button:hover:not(:disabled) {
+	box-shadow: var(--ppa-shadow-xl);
+}
+
+.ppa-register-prompt {
+	font-size: 0.875rem;
+	color: var(--ppa-text-secondary);
+	margin: 0;
+}
+
+.ppa-register-prompt a {
+	color: var(--ppa-primary);
+	text-decoration: none;
+	font-weight: 600;
+	transition: var(--ppa-transition-fast);
+}
+
+.ppa-register-prompt a:hover {
+	color: var(--ppa-primary-dark);
+	text-decoration: underline;
+}
+
+/* ==========================================================================
+   Login Link (legacy)
    ========================================================================== */
 
 .ppa-login-link {
@@ -752,6 +977,137 @@
 
 .ppa-login-link:hover {
 	text-decoration: underline;
+}
+
+/* ==========================================================================
+   Confirmation Modal
+   Modeled after the Quiz Admin Modal (ppq-modal) structure:
+   header with gray background, centered body with icon, footer with buttons.
+   ========================================================================== */
+
+.ppa-confirm-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10001;
+	padding: var(--ppa-space-md);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.ppa-confirm-overlay--visible {
+	opacity: 1;
+}
+
+.ppa-confirm-dialog {
+	background: var(--ppa-background, #ffffff);
+	border-radius: var(--ppa-radius-lg, 8px);
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+	max-width: 420px;
+	width: 90%;
+	max-height: 90vh;
+	overflow: hidden;
+	transform: scale(0.9);
+	transition: transform 0.2s ease;
+}
+
+.ppa-confirm-overlay--visible .ppa-confirm-dialog {
+	transform: scale(1);
+}
+
+.ppa-confirm-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--ppa-border-light, #dcdcde);
+	background: var(--ppa-background-gray, #f6f7f7);
+}
+
+.ppa-confirm-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--ppa-text);
+}
+
+.ppa-confirm-close {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--ppa-text-light, #646970);
+	padding: 4px;
+	line-height: 1;
+	border-radius: var(--ppa-radius-sm, 4px);
+	transition: var(--ppa-transition-fast);
+	font-size: 1.25rem;
+}
+
+.ppa-confirm-close:hover {
+	background: var(--ppa-border-light, #dcdcde);
+	color: var(--ppa-text);
+}
+
+.ppa-confirm-body {
+	padding: 24px 20px;
+	text-align: center;
+}
+
+.ppa-confirm-icon {
+	margin-bottom: 16px;
+	font-size: 48px;
+	line-height: 1;
+	color: var(--ppa-primary);
+}
+
+.ppa-confirm-message {
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: var(--ppa-text-secondary, #3c434a);
+	margin: 0;
+}
+
+.ppa-confirm-footer {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	padding: 16px 20px;
+	background: var(--ppa-background-gray, #f6f7f7);
+	border-top: 1px solid var(--ppa-border-light, #dcdcde);
+}
+
+.ppa-confirm-footer .ppa-button {
+	min-width: 90px;
+	justify-content: center;
+}
+
+.ppa-confirm-footer .ppa-button-secondary {
+	background: #fff;
+}
+
+@media (max-width: 480px) {
+	.ppa-confirm-dialog {
+		width: calc(100% - 32px);
+	}
+
+	.ppa-confirm-footer {
+		flex-direction: column;
+	}
+
+	.ppa-confirm-footer .ppa-button {
+		width: 100%;
+	}
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.ppa-hidden {
+	display: none;
 }
 
 /* ==========================================================================
@@ -789,7 +1145,7 @@
 	}
 
 	.ppa-upload-zone {
-		padding: var(--ppa-space-xl);
+		padding: 30px 15px;
 	}
 
 	.ppa-file-item {
@@ -840,9 +1196,12 @@
 
 @media print {
 	.ppa-submission-form,
+	.ppa-submission-type-selector,
 	.ppa-upload-zone,
 	.ppa-file-remove,
-	.ppa-button {
+	.ppa-button,
+	.ppa-login-required,
+	.ppa-confirm-overlay {
 		display: none;
 	}
 
@@ -953,4 +1312,15 @@
 /* Upload zone description text alignment */
 [dir="rtl"] .ppa-assignment-description-text {
 	text-align: right;
+}
+
+/* Confirm dialog RTL */
+[dir="rtl"] .ppa-confirm-footer {
+	flex-direction: row-reverse;
+}
+
+/* Login required button icon */
+[dir="rtl"] .ppa-button-icon {
+	margin-right: 0;
+	margin-left: var(--ppa-space-sm);
 }

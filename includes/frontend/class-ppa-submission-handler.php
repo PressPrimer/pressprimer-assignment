@@ -104,7 +104,10 @@ class PressPrimer_Assignment_Submission_Handler {
 		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
 		$assignment    = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
-		if ( ! $assignment || ! $assignment->accepts_submissions() ) {
+		// Allow admins to upload to draft assignments for preview/testing.
+		$is_admin_preview = $assignment && ! $assignment->accepts_submissions() && current_user_can( 'manage_options' );
+
+		if ( ! $assignment || ( ! $assignment->accepts_submissions() && ! $is_admin_preview ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_assignment',
@@ -114,19 +117,12 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
-		// Check if user can submit.
-		$user_id    = get_current_user_id();
-		$can_submit = $this->can_user_submit( $user_id, $assignment );
+		$user_id = get_current_user_id();
 
-		if ( is_wp_error( $can_submit ) ) {
-			wp_send_json_error(
-				[
-					'code'    => $can_submit->get_error_code(),
-					'message' => $can_submit->get_error_message(),
-				],
-				403
-			);
-		}
+		// File uploads go into draft submissions, so we do NOT gate on
+		// can_user_submit() here. The resubmission check is enforced at
+		// final submit time in handle_submit(). This allows users to
+		// upload files while a previous submission is being reviewed.
 
 		// Check file was uploaded.
 		if ( empty( $_FILES['file'] ) ) {
@@ -197,14 +193,27 @@ class PressPrimer_Assignment_Submission_Handler {
 		// Get file record for the response.
 		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
 
-		wp_send_json_success(
-			[
-				'id'   => $file->id,
-				'name' => $file->original_filename,
-				'size' => $file->file_size,
-				'type' => $file->mime_type,
-			]
-		);
+		$response_data = [
+			'id'   => $file->id,
+			'name' => $file->original_filename,
+			'size' => $file->file_size,
+			'type' => $file->mime_type,
+		];
+
+		// Check PDF text extraction if this is a PDF file.
+		if ( 'pdf' === strtolower( $file->file_extension ) && class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
+			$full_path = $file->get_full_path();
+			$pdf_check = PressPrimer_Assignment_PDF_Service::check_text_extractable( $full_path );
+
+			// Store result on the file record.
+			$file->text_extractable = $pdf_check['extractable'] ? 1 : 0;
+			$file->save();
+
+			// Include in response for the frontend preview.
+			$response_data['text_extractable'] = $pdf_check['extractable'];
+		}
+
+		wp_send_json_success( $response_data );
 	}
 
 	// =========================================================================
@@ -366,7 +375,10 @@ class PressPrimer_Assignment_Submission_Handler {
 		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
 		$assignment    = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
-		if ( ! $assignment || ! $assignment->accepts_submissions() ) {
+		// Allow admins to submit for draft assignments (preview/testing).
+		$is_admin_preview = $assignment && ! $assignment->accepts_submissions() && current_user_can( 'manage_options' );
+
+		if ( ! $assignment || ( ! $assignment->accepts_submissions() && ! $is_admin_preview ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_assignment',
@@ -378,17 +390,19 @@ class PressPrimer_Assignment_Submission_Handler {
 
 		$user_id = get_current_user_id();
 
-		// Check if user can submit.
-		$can_submit = $this->can_user_submit( $user_id, $assignment );
+		// Check if user can submit (skip for admin preview of draft assignments).
+		if ( ! $is_admin_preview ) {
+			$can_submit = $this->can_user_submit( $user_id, $assignment );
 
-		if ( is_wp_error( $can_submit ) ) {
-			wp_send_json_error(
-				[
-					'code'    => $can_submit->get_error_code(),
-					'message' => $can_submit->get_error_message(),
-				],
-				403
-			);
+			if ( is_wp_error( $can_submit ) ) {
+				wp_send_json_error(
+					[
+						'code'    => $can_submit->get_error_code(),
+						'message' => $can_submit->get_error_message(),
+					],
+					403
+				);
+			}
 		}
 
 		// Get draft submission.

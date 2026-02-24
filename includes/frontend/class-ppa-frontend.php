@@ -77,10 +77,12 @@ class PressPrimer_Assignment_Frontend {
 	private function enqueue_styles() {
 		$version = PRESSPRIMER_ASSIGNMENT_VERSION;
 
+		wp_enqueue_style( 'dashicons' );
+
 		wp_enqueue_style(
 			'ppa-submission',
 			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/submission.css',
-			[],
+			[ 'dashicons' ],
 			$version
 		);
 
@@ -138,19 +140,28 @@ class PressPrimer_Assignment_Frontend {
 			'nonce'     => wp_create_nonce( 'ppa_frontend_nonce' ),
 			'restNonce' => wp_create_nonce( 'wp_rest' ),
 			'i18n'      => [
-				'uploading'        => __( 'Uploading...', 'pressprimer-assignment' ),
-				'uploadComplete'   => __( 'Upload complete.', 'pressprimer-assignment' ),
-				'uploadFailed'     => __( 'Upload failed. Please try again.', 'pressprimer-assignment' ),
-				'submitting'       => __( 'Submitting...', 'pressprimer-assignment' ),
-				'submitted'        => __( 'Submission complete.', 'pressprimer-assignment' ),
-				'confirmSubmit'    => __( 'Are you sure you want to submit? This action cannot be undone.', 'pressprimer-assignment' ),
-				'removeFile'       => __( 'Remove file', 'pressprimer-assignment' ),
-				'dragDropHere'     => __( 'Drag and drop files here or click to browse', 'pressprimer-assignment' ),
-				'maxFilesReached'  => __( 'Maximum number of files reached.', 'pressprimer-assignment' ),
-				'fileTooLarge'     => __( 'File is too large.', 'pressprimer-assignment' ),
-				'invalidFileType'  => __( 'File type not allowed.', 'pressprimer-assignment' ),
-				'networkError'     => __( 'A network error occurred. Please try again.', 'pressprimer-assignment' ),
-				'submitAssignment' => __( 'Submit Assignment', 'pressprimer-assignment' ),
+				'uploading'           => __( 'Uploading...', 'pressprimer-assignment' ),
+				'uploadComplete'      => __( 'Upload complete.', 'pressprimer-assignment' ),
+				'uploadFailed'        => __( 'Upload failed. Please try again.', 'pressprimer-assignment' ),
+				'submitting'          => __( 'Submitting...', 'pressprimer-assignment' ),
+				'submitted'           => __( 'Submission complete.', 'pressprimer-assignment' ),
+				'confirmSubmit'       => __( 'Are you sure you want to submit? This action cannot be undone.', 'pressprimer-assignment' ),
+				'removeFile'          => __( 'Remove file', 'pressprimer-assignment' ),
+				'dragDropHere'        => __( 'Drag and drop files here or click to browse', 'pressprimer-assignment' ),
+				'maxFilesReached'     => __( 'Maximum number of files reached.', 'pressprimer-assignment' ),
+				'fileTooLarge'        => __( 'File is too large.', 'pressprimer-assignment' ),
+				'invalidFileType'     => __( 'File type not allowed.', 'pressprimer-assignment' ),
+				'networkError'        => __( 'A network error occurred. Please try again.', 'pressprimer-assignment' ),
+				'submitAssignment'    => __( 'Submit Assignment', 'pressprimer-assignment' ),
+				'changeType'          => __( 'Change submission type', 'pressprimer-assignment' ),
+				'confirmTitle'        => __( 'Ready to submit?', 'pressprimer-assignment' ),
+				'confirmMessage'      => __( 'Once submitted, your assignment will be sent for review.', 'pressprimer-assignment' ),
+				'confirmMessageResub' => __( 'Once submitted, your assignment will be sent for review. You can submit again if needed.', 'pressprimer-assignment' ),
+				/* translators: %d: number of submissions remaining */
+				'resubmissionLeft'    => __( '%d submission remaining', 'pressprimer-assignment' ),
+				/* translators: %d: number of submissions remaining */
+				'resubmissionsLeft'   => __( '%d submissions remaining', 'pressprimer-assignment' ),
+				'cancel'              => __( 'Cancel', 'pressprimer-assignment' ),
 			],
 		];
 

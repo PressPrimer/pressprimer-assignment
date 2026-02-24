@@ -113,6 +113,22 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 	public $student_notes = null;
 
 	/**
+	 * Text content for text-based submissions
+	 *
+	 * @since 1.0.0
+	 * @var string|null
+	 */
+	public $text_content = null;
+
+	/**
+	 * Word count for text-based submissions
+	 *
+	 * @since 1.0.0
+	 * @var int|null
+	 */
+	public $word_count = null;
+
+	/**
 	 * Submitted timestamp
 	 *
 	 * @since 1.0.0
@@ -250,6 +266,8 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 			'submission_number',
 			'status',
 			'student_notes',
+			'text_content',
+			'word_count',
 			'submitted_at',
 			'graded_at',
 			'returned_at',
@@ -459,6 +477,17 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 		}
 
 		return $this->_assignment;
+	}
+
+	/**
+	 * Check if this is a text-based submission
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if submission has text content.
+	 */
+	public function is_text_submission() {
+		return ! empty( $this->text_content );
 	}
 
 	/**

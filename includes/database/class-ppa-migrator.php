@@ -105,7 +105,59 @@ class PressPrimer_Assignment_Migrator {
 	 * @param string $to_version   Version migrating to.
 	 */
 	private static function run_data_migrations( $from_version, $to_version ) {
-		// Future version-specific data migrations go here.
+		if ( version_compare( $from_version, '1.1.0', '<' ) ) {
+			self::migrate_to_1_1_0();
+		}
+	}
+
+	/**
+	 * Migration to 1.1.0
+	 *
+	 * Adds text submission fields for the revised v1.0 scope:
+	 * - submission_type on assignments
+	 * - text_content, word_count on submissions
+	 * - text_extractable on submission_files
+	 *
+	 * @since 1.0.0
+	 */
+	private static function migrate_to_1_1_0() {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+		$submissions_table = $wpdb->prefix . 'ppa_submissions';
+		$files_table       = $wpdb->prefix . 'ppa_submission_files';
+
+		// Add submission_type to assignments.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $assignments_table, 'submission_type' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN submission_type ENUM('file', 'text', 'either') NOT NULL DEFAULT 'file' AFTER status" );
+		}
+
+		// Add text submission fields to submissions.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $submissions_table, 'text_content' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$submissions_table} ADD COLUMN text_content LONGTEXT DEFAULT NULL AFTER student_notes" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$submissions_table} ADD COLUMN word_count INT UNSIGNED DEFAULT NULL AFTER text_content" );
+		}
+
+		// Add text_extractable to files.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $files_table, 'text_extractable' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN text_extractable TINYINT(1) DEFAULT NULL AFTER file_hash" );
+		}
 	}
 
 	/**

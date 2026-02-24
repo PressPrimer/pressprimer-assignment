@@ -14,6 +14,10 @@ import {
 	Space,
 	Typography,
 	Tooltip,
+	Checkbox,
+	Row,
+	Col,
+	Button,
 } from 'antd';
 import {
 	QuestionCircleOutlined,
@@ -21,7 +25,7 @@ import {
 	CloudUploadOutlined,
 } from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 /**
  * Default allowed file types with labels.
@@ -37,7 +41,6 @@ const FILE_TYPE_OPTIONS = [
 	{ value: 'jpeg', label: 'JPEG (.jpeg)' },
 	{ value: 'png', label: 'PNG (.png)' },
 	{ value: 'gif', label: 'GIF (.gif)' },
-	{ value: 'zip', label: 'ZIP (.zip)' },
 ];
 
 /**
@@ -122,27 +125,42 @@ const FileSettingsPanel = ( { form } ) => {
 					}
 					name="allowed_file_types"
 				>
-					<Select
-						mode="multiple"
-						placeholder={ __(
-							'Leave empty for defaults (pdf, docx, doc, txt, rtf, jpg, jpeg, png, gif)',
-							'pressprimer-assignment'
-						) }
-						options={ FILE_TYPE_OPTIONS }
-						style={ { width: 300 } }
-						size="small"
-						allowClear
-					/>
+					<Checkbox.Group style={ { width: '100%' } }>
+						<Row gutter={ [ 8, 4 ] }>
+							{ FILE_TYPE_OPTIONS.map( ( opt ) => (
+								<Col span={ 8 } key={ opt.value }>
+									<Checkbox value={ opt.value }>
+										{ opt.label }
+									</Checkbox>
+								</Col>
+							) ) }
+						</Row>
+					</Checkbox.Group>
 				</Form.Item>
-				<Text
-					type="secondary"
-					style={ { fontSize: 12, display: 'block' } }
-				>
-					{ __(
-						'Leave empty to use the default set of file types. Selected types are stored per-assignment.',
-						'pressprimer-assignment'
-					) }
-				</Text>
+				<Space style={ { marginBottom: 8 } } size="small">
+					<Button
+						size="small"
+						onClick={ () => {
+							const allValues = FILE_TYPE_OPTIONS.map(
+								( opt ) => opt.value
+							);
+							form.setFieldValue(
+								'allowed_file_types',
+								allValues
+							);
+						} }
+					>
+						{ __( 'Select All', 'pressprimer-assignment' ) }
+					</Button>
+					<Button
+						size="small"
+						onClick={ () => {
+							form.setFieldValue( 'allowed_file_types', [] );
+						} }
+					>
+						{ __( 'Deselect All', 'pressprimer-assignment' ) }
+					</Button>
+				</Space>
 			</Card>
 
 			{ /* Upload Limits */ }

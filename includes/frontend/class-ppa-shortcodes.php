@@ -179,7 +179,7 @@ class PressPrimer_Assignment_Shortcodes {
 
 		// Require login.
 		if ( ! is_user_logged_in() ) {
-			return $this->render_login_required();
+			return $this->render_login_required( 'submissions' );
 		}
 
 		// Prevent caching of user-specific content.
@@ -237,38 +237,88 @@ class PressPrimer_Assignment_Shortcodes {
 	/**
 	 * Render login required message
 	 *
-	 * Returns a notice prompting the user to log in.
+	 * Returns a centered login prompt matching the PressPrimer Quiz pattern.
+	 * Includes a prominent login button, optional registration link,
+	 * and filterable URLs for membership plugin compatibility.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return string HTML login notice.
+	 * @param string $context 'submissions' or 'assignment'. Controls the message text.
+	 * @return string HTML login prompt.
 	 */
-	private function render_login_required() {
+	private function render_login_required( $context = 'submissions' ) {
 		$allowed_html = [
-			'div' => [
-				'class' => true,
-				'role'  => true,
+			'div'  => [
+				'class'       => true,
+				'role'        => true,
+				'aria-hidden' => true,
 			],
-			'p'   => [
+			'p'    => [
 				'class' => true,
 			],
-			'a'   => [
+			'a'    => [
 				'href'  => true,
 				'class' => true,
+			],
+			'span' => [
+				'class'       => true,
+				'aria-hidden' => true,
 			],
 		];
 
 		$login_url = wp_login_url( get_permalink() );
 
-		$html  = '<div class="ppa-notice ppa-notice-info" role="status">';
-		$html .= '<p class="ppa-notice-message">';
-		$html .= sprintf(
-			/* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
-			esc_html__( 'Please %1$slog in%2$s to view your submissions.', 'pressprimer-assignment' ),
-			'<a href="' . esc_url( $login_url ) . '" class="ppa-login-link">',
-			'</a>'
-		);
-		$html .= '</p>';
+		/**
+		 * Filters the login URL shown when login is required.
+		 *
+		 * Use this to redirect to a custom login page such as
+		 * WooCommerce, MemberPress, or another membership plugin.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $login_url The login URL.
+		 */
+		$login_url = apply_filters( 'pressprimer_assignment_login_url', $login_url );
+
+		if ( 'assignment' === $context ) {
+			$message = __( 'You need to be logged in to submit this assignment. Please log in to continue.', 'pressprimer-assignment' );
+			$button  = __( 'Log In to Submit', 'pressprimer-assignment' );
+		} else {
+			$message = __( 'You need to be logged in to view your submissions. Please log in to continue.', 'pressprimer-assignment' );
+			$button  = __( 'Log In to View Submissions', 'pressprimer-assignment' );
+		}
+
+		$html  = '<div class="ppa-login-required">';
+		$html .= '<div class="ppa-login-required-icon" aria-hidden="true">&#x1f512;</div>';
+		$html .= '<div class="ppa-login-required-message">';
+		$html .= '<p>' . esc_html( $message ) . '</p>';
+		$html .= '</div>';
+		$html .= '<a href="' . esc_url( $login_url ) . '" class="ppa-button ppa-button-primary ppa-button-large ppa-login-button">';
+		$html .= '<span class="ppa-button-icon" aria-hidden="true">&#x1f510;</span>';
+		$html .= esc_html( $button );
+		$html .= '</a>';
+
+		if ( get_option( 'users_can_register' ) ) {
+			$register_url = wp_registration_url();
+
+			/**
+			 * Filters the registration URL shown when login is required.
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param string $register_url The registration URL.
+			 */
+			$register_url = apply_filters( 'pressprimer_assignment_register_url', $register_url );
+
+			$html .= '<p class="ppa-register-prompt">';
+			$html .= sprintf(
+				/* translators: %s: registration link */
+				esc_html__( "Don't have an account? %s", 'pressprimer-assignment' ),
+				'<a href="' . esc_url( $register_url ) . '">' . esc_html__( 'Register here', 'pressprimer-assignment' ) . '</a>'
+			);
+			$html .= '</p>';
+		}
+
 		$html .= '</div>';
 
 		return wp_kses( $html, $allowed_html );

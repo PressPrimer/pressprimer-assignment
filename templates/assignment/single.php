@@ -59,17 +59,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<?php if ( ! $is_logged_in ) : ?>
 
-			<div class="ppa-notice ppa-notice-info" role="status">
-				<p class="ppa-notice-message">
+			<?php
+			$ppa_login_url = wp_login_url( get_permalink() );
+
+			/** This filter is documented in includes/frontend/class-ppa-shortcodes.php */
+			$ppa_login_url = apply_filters( 'pressprimer_assignment_login_url', $ppa_login_url );
+			?>
+			<div class="ppa-login-required">
+				<div class="ppa-login-required-icon" aria-hidden="true">&#x1f512;</div>
+				<div class="ppa-login-required-message">
+					<p><?php esc_html_e( 'You need to be logged in to submit this assignment. Please log in to continue.', 'pressprimer-assignment' ); ?></p>
+				</div>
+				<a href="<?php echo esc_url( $ppa_login_url ); ?>" class="ppa-button ppa-button-primary ppa-button-large ppa-login-button">
+					<span class="ppa-button-icon" aria-hidden="true">&#x1f510;</span>
+					<?php esc_html_e( 'Log In to Submit', 'pressprimer-assignment' ); ?>
+				</a>
+				<?php if ( get_option( 'users_can_register' ) ) : ?>
 					<?php
-					printf(
-						/* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
-						esc_html__( 'Please %1$slog in%2$s to submit this assignment.', 'pressprimer-assignment' ),
-						'<a href="' . esc_url( wp_login_url( get_permalink() ) ) . '" class="ppa-login-link">',
-						'</a>'
-					);
+					$ppa_register_url = wp_registration_url();
+
+					/** This filter is documented in includes/frontend/class-ppa-shortcodes.php */
+					$ppa_register_url = apply_filters( 'pressprimer_assignment_register_url', $ppa_register_url );
 					?>
-				</p>
+					<p class="ppa-register-prompt">
+						<?php
+						printf(
+							/* translators: %s: registration link */
+							esc_html__( "Don't have an account? %s", 'pressprimer-assignment' ),
+							'<a href="' . esc_url( $ppa_register_url ) . '">' . esc_html__( 'Register here', 'pressprimer-assignment' ) . '</a>'
+						);
+						?>
+					</p>
+				<?php endif; ?>
 			</div>
 
 		<?php elseif ( $user_submission && PressPrimer_Assignment_Submission::STATUS_DRAFT !== $user_submission->status ) : ?>
@@ -97,6 +118,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 			 * @param PressPrimer_Assignment_Assignment $assignment      Assignment instance.
 			 */
 			do_action( 'pressprimer_assignment_after_submission_status', $user_submission, $assignment );
+
+			// When resubmission is allowed, include the form (hidden) so the
+			// "Submit Again" button can reveal it via JavaScript.
+			if ( $can_resubmit ) :
+				?>
+				<div class="ppa-resubmission-form-wrapper ppa-hidden">
+					<?php
+					/**
+					 * Fires before submission form is rendered (resubmission).
+					 *
+					 * @since 1.0.0
+					 *
+					 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+					 */
+					do_action( 'pressprimer_assignment_before_submission_form', $assignment );
+
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_submission_form().
+					echo $this->render_submission_form( $assignment, true );
+
+					/**
+					 * Fires after submission form is rendered (resubmission).
+					 *
+					 * @since 1.0.0
+					 *
+					 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+					 */
+					do_action( 'pressprimer_assignment_after_submission_form', $assignment );
+					?>
+				</div>
+				<?php
+			endif;
 			?>
 
 		<?php elseif ( $can_submit || $can_resubmit ) : ?>

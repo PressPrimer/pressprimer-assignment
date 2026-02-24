@@ -1,0 +1,13 @@
+/**
+ * PressPrimer Assignment - Admin Styles
+ *
+ * Styles for WordPress admin list tables and pages.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* Assignments list table: constrain ID column width */
+.column-id {
+	width: 50px;
+}

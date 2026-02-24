@@ -624,23 +624,6 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Get default hidden columns
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return array Hidden columns.
-	 */
-	public function get_hidden_columns() {
-		$hidden = get_user_option( 'managepressprimer-assignment_page_pressprimer-assignment-assignmentscolumnshidden' );
-
-		if ( false === $hidden ) {
-			return [];
-		}
-
-		return $hidden;
-	}
-
-	/**
 	 * Get sortable columns
 	 *
 	 * @since 1.0.0
@@ -762,7 +745,7 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 
 		// Set columns.
 		$columns               = $this->get_columns();
-		$hidden                = $this->get_hidden_columns();
+		$hidden                = get_hidden_columns( $this->screen );
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = [ $columns, $hidden, $sortable ];
 	}

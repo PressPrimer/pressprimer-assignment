@@ -53,6 +53,7 @@ class PressPrimer_Assignment_File_Service {
 		'doc',
 		'txt',
 		'rtf',
+		'odt',
 		'jpg',
 		'jpeg',
 		'png',
@@ -66,16 +67,17 @@ class PressPrimer_Assignment_File_Service {
 	 * @var array
 	 */
 	const ALLOWED_MIME_TYPES = [
-		'application/pdf'    => [ 'pdf' ],
+		'application/pdf'                         => [ 'pdf' ],
 		'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => [ 'docx' ],
-		'application/msword' => [ 'doc' ],
-		'text/plain'         => [ 'txt' ],
-		'text/x-c'           => [ 'txt' ],
-		'application/rtf'    => [ 'rtf' ],
-		'text/rtf'           => [ 'rtf' ],
-		'image/jpeg'         => [ 'jpg', 'jpeg' ],
-		'image/png'          => [ 'png' ],
-		'image/gif'          => [ 'gif' ],
+		'application/msword'                      => [ 'doc' ],
+		'text/plain'                              => [ 'txt' ],
+		'text/x-c'                                => [ 'txt' ],
+		'application/rtf'                         => [ 'rtf' ],
+		'text/rtf'                                => [ 'rtf' ],
+		'application/vnd.oasis.opendocument.text' => [ 'odt' ],
+		'image/jpeg'                              => [ 'jpg', 'jpeg' ],
+		'image/png'                               => [ 'png' ],
+		'image/gif'                               => [ 'gif' ],
 	];
 
 	/**

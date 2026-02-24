@@ -110,7 +110,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 * @since 1.0.0
 	 * @var int
 	 */
-	public $max_file_size = 10485760;
+	public $max_file_size = 5242880;
 
 	/**
 	 * Maximum number of files per submission
@@ -119,6 +119,14 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 * @var int
 	 */
 	public $max_files = 5;
+
+	/**
+	 * Submission type
+	 *
+	 * @since 1.0.0
+	 * @var string file|text|either
+	 */
+	public $submission_type = 'file';
 
 	/**
 	 * Assignment status
@@ -208,6 +216,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'allowed_file_types',
 			'max_file_size',
 			'max_files',
+			'submission_type',
 			'status',
 			'author_id',
 			'submission_count',
@@ -311,6 +320,14 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 					__( 'Assignment title cannot be empty.', 'pressprimer-assignment' )
 				);
 			}
+		}
+
+		// Validate submission_type.
+		if ( ! empty( $data['submission_type'] ) && ! in_array( $data['submission_type'], [ 'file', 'text', 'either' ], true ) ) {
+			return new WP_Error(
+				'ppa_invalid_submission_type',
+				__( 'Invalid submission type. Must be file, text, or either.', 'pressprimer-assignment' )
+			);
 		}
 
 		// Validate status.
@@ -559,6 +576,28 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 */
 	public function accepts_submissions() {
 		return 'published' === $this->status;
+	}
+
+	/**
+	 * Check if assignment accepts text submissions
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if text submissions are allowed.
+	 */
+	public function accepts_text_submission() {
+		return in_array( $this->submission_type, [ 'text', 'either' ], true );
+	}
+
+	/**
+	 * Check if assignment accepts file uploads
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if file uploads are allowed.
+	 */
+	public function accepts_file_upload() {
+		return in_array( $this->submission_type, [ 'file', 'either' ], true );
 	}
 
 	/**

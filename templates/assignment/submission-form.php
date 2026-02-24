@@ -37,7 +37,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
 	</h3>
 
-	<form id="ppa-submission-form" method="post" enctype="multipart/form-data">
+	<?php
+	$can_resubmit_data       = $assignment->allow_resubmission ? '1' : '0';
+	$resubmissions_remaining = 0;
+	if ( $assignment->allow_resubmission && $is_resubmission ) {
+		$ppa_user_id     = get_current_user_id();
+		$ppa_submissions = PressPrimer_Assignment_Submission::find(
+			[
+				'where'    => [
+					'assignment_id' => $assignment->id,
+					'user_id'       => $ppa_user_id,
+				],
+				'order_by' => 'submission_number',
+				'order'    => 'DESC',
+				'limit'    => 1,
+			]
+		);
+		if ( ! empty( $ppa_submissions ) ) {
+			$resubmissions_remaining = max( 0, ( $assignment->max_resubmissions + 1 ) - $ppa_submissions[0]->submission_number );
+		}
+	}
+	?>
+	<form id="ppa-submission-form" method="post" enctype="multipart/form-data"
+		data-can-resubmit="<?php echo esc_attr( $can_resubmit_data ); ?>"
+		data-resubmissions-remaining="<?php echo esc_attr( $resubmissions_remaining ); ?>">
 		<?php wp_nonce_field( 'ppa_submit_assignment', 'ppa_nonce' ); ?>
 		<input type="hidden" name="assignment_id" value="<?php echo esc_attr( $assignment->id ); ?>">
 

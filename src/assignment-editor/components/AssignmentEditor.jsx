@@ -53,13 +53,26 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				instructions: assignmentData.instructions || '',
 				grading_guidelines: assignmentData.grading_guidelines || '',
 				status: assignmentData.status || 'draft',
+				submission_type: assignmentData.submission_type || 'file',
 				max_points: assignmentData.max_points || 100,
 				passing_score: assignmentData.passing_score || 60,
 				allow_resubmission: !! assignmentData.allow_resubmission,
 				max_resubmissions: assignmentData.max_resubmissions || 1,
-				max_file_size: assignmentData.max_file_size || 10485760,
+				max_file_size:
+					parseInt( assignmentData.max_file_size, 10 ) || 5242880,
 				max_files: assignmentData.max_files || 5,
-				allowed_file_types: assignmentData.allowed_file_types || null,
+				allowed_file_types: assignmentData.allowed_file_types || [
+					'pdf',
+					'docx',
+					'doc',
+					'txt',
+					'rtf',
+					'odt',
+					'jpg',
+					'jpeg',
+					'png',
+					'gif',
+				],
 			} );
 		}
 	}, [ assignmentData, form ] );
@@ -163,13 +176,25 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						instructions: '',
 						grading_guidelines: '',
 						status: 'draft',
+						submission_type: 'file',
 						max_points: 100,
 						passing_score: 60,
 						allow_resubmission: false,
 						max_resubmissions: 1,
-						max_file_size: 10485760,
+						max_file_size: 5242880,
 						max_files: 5,
-						allowed_file_types: null,
+						allowed_file_types: [
+							'pdf',
+							'docx',
+							'doc',
+							'txt',
+							'rtf',
+							'odt',
+							'jpg',
+							'jpeg',
+							'png',
+							'gif',
+						],
 					} }
 				>
 					{ /* Header */ }

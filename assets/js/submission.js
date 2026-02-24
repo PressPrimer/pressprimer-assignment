@@ -393,7 +393,20 @@
 						self.handleUploadError( $item, file.name, message );
 					}
 				} else {
-					self.handleUploadError( $item, file.name );
+					// Parse error message from non-200 responses.
+					let errorMessage = ppaFrontend.i18n.uploadFailed;
+					try {
+						const errorResponse = JSON.parse( xhr.responseText );
+						if (
+							errorResponse.data &&
+							errorResponse.data.message
+						) {
+							errorMessage = errorResponse.data.message;
+						}
+					} catch ( e ) {
+						// Use default message if response isn't valid JSON.
+					}
+					self.handleUploadError( $item, file.name, errorMessage );
 				}
 
 				window.PPA.SubmissionForm.updateSubmitButton();
@@ -606,7 +619,7 @@
 		formatSize( bytes ) {
 			const units = [ 'B', 'KB', 'MB', 'GB' ];
 			let i = 0;
-			let size = bytes;
+			let size = parseFloat( bytes ) || 0;
 
 			while ( size >= 1024 && i < units.length - 1 ) {
 				size /= 1024;
@@ -693,6 +706,130 @@
 			setTimeout( function () {
 				$region.text( message );
 			}, 100 );
+		},
+	};
+
+	/* =========================================================================
+	   PPA.TypeSelector - Submission Type Selector Module
+	   ========================================================================= */
+
+	/**
+	 * Submission type selector module.
+	 *
+	 * Handles the "either" mode type selector where students choose
+	 * between file upload and text submission.
+	 */
+	window.PPA.TypeSelector = {
+		/**
+		 * Initialize the type selector module.
+		 *
+		 * Binds click handlers on type option buttons and back links.
+		 */
+		init() {
+			const $selector = $( '.ppa-submission-type-selector' );
+			if ( ! $selector.length ) {
+				return;
+			}
+
+			this.bindEvents();
+		},
+
+		/**
+		 * Bind event handlers.
+		 */
+		bindEvents() {
+			const self = this;
+
+			// Type option buttons.
+			$( document ).on(
+				'click.ppaTypeSelector',
+				'.ppa-type-option',
+				function () {
+					self.selectType( $( this ) );
+				}
+			);
+
+			// Back button to return to selector.
+			$( document ).on(
+				'click.ppaTypeSelector',
+				'.ppa-type-back-link',
+				function ( e ) {
+					e.preventDefault();
+					self.showSelector( $( this ) );
+				}
+			);
+		},
+
+		/**
+		 * Handle type selection.
+		 *
+		 * Hides the type selector and reveals the chosen panel.
+		 *
+		 * @param {jQuery} $button The clicked type option button.
+		 */
+		selectType( $button ) {
+			const type = $button.data( 'submission-type' );
+			const assignmentId = $button.data( 'assignment-id' );
+			const $assignment = $(
+				'.ppa-assignment[data-assignment-id="' + assignmentId + '"]'
+			);
+
+			if ( ! $assignment.length || ! type ) {
+				return;
+			}
+
+			// Hide the type selector.
+			$assignment.find( '.ppa-submission-type-selector' ).slideUp( 200 );
+
+			// Show the selected panel.
+			const $panel = $assignment.find( '.ppa-submission-type-' + type );
+			$panel.removeClass( 'ppa-hidden' ).slideDown( 200 );
+
+			// Add a back link if not already present.
+			if ( ! $panel.find( '.ppa-type-back-link' ).length ) {
+				const changeLabel =
+					ppaFrontend.i18n.changeType || 'Change submission type';
+				const $back = $( '<a>' )
+					.attr( 'href', '#' )
+					.addClass( 'ppa-type-back-link' )
+					.text( changeLabel );
+
+				$panel.prepend( $back );
+			}
+
+			// If file type was selected, initialize upload if needed.
+			if ( 'file' === type ) {
+				const $uploadContainer = $panel.find( '.ppa-upload-container' );
+				if (
+					$uploadContainer.length &&
+					! window.PPA.Upload.$container
+				) {
+					window.PPA.Upload.init( $uploadContainer );
+				}
+				window.PPA.SubmissionForm.init();
+			}
+		},
+
+		/**
+		 * Show the type selector again (go back).
+		 *
+		 * Hides the currently visible panel and shows the type selector.
+		 *
+		 * @param {jQuery} $link The back link that was clicked.
+		 */
+		showSelector( $link ) {
+			const $panel = $link.closest( '.ppa-submission-type-panel' );
+			const $assignment = $link.closest( '.ppa-assignment' );
+
+			// Hide the panel.
+			$panel.slideUp( 200, function () {
+				$( this ).addClass( 'ppa-hidden' );
+			} );
+
+			// Show the type selector.
+			$assignment
+				.find( '.ppa-submission-type-selector' )
+				.slideDown( 200 );
 		},
 	};
 
@@ -849,11 +986,143 @@
 				return;
 			}
 
-			// Confirmation dialog.
-			// eslint-disable-next-line no-alert
-			if ( ! window.confirm( ppaFrontend.i18n.confirmSubmit ) ) {
-				return;
+			// Show styled confirmation modal.
+			this.showConfirmModal( function () {
+				self.doSubmit();
+			} );
+		},
+
+		/**
+		 * Show a styled confirmation modal.
+		 *
+		 * @param {Function} onConfirm Callback when user confirms.
+		 */
+		showConfirmModal( onConfirm ) {
+			// Build contextual message.
+			const canResubmit =
+				this.$form.data( 'can-resubmit' ) === 1 ||
+				this.$form.data( 'can-resubmit' ) === '1';
+			const remaining = parseInt(
+				this.$form.data( 'resubmissions-remaining' ) || 0,
+				10
+			);
+
+			let message = ppaFrontend.i18n.confirmMessage;
+			if ( canResubmit && remaining > 0 ) {
+				const remainingTemplate =
+					remaining === 1
+						? ppaFrontend.i18n.resubmissionLeft
+						: ppaFrontend.i18n.resubmissionsLeft;
+				const remainingText = remainingTemplate.replace(
+					'%d',
+					remaining
+				);
+				message =
+					ppaFrontend.i18n.confirmMessageResub +
+					' (' +
+					remainingText +
+					')';
+			} else if ( canResubmit ) {
+				message = ppaFrontend.i18n.confirmMessageResub;
 			}
+
+			const cancelLabel = $( '<span>' )
+				.text( ppaFrontend.i18n.cancel )
+				.html();
+			const titleLabel = $( '<span>' )
+				.text( ppaFrontend.i18n.confirmTitle )
+				.html();
+			const messageLabel = $( '<span>' ).text( message ).html();
+			const submitLabel = $( '<span>' )
+				.text( ppaFrontend.i18n.submitAssignment )
+				.html();
+
+			const $overlay = $(
+				'<div class="ppa-confirm-overlay">' +
+					'<div class="ppa-confirm-dialog" role="alertdialog" ' +
+					'aria-labelledby="ppa-confirm-title" ' +
+					'aria-describedby="ppa-confirm-message">' +
+					'<div class="ppa-confirm-header">' +
+					'<h3 class="ppa-confirm-title" id="ppa-confirm-title">' +
+					titleLabel +
+					'</h3>' +
+					'<button type="button" class="ppa-confirm-close" ' +
+					'aria-label="' +
+					cancelLabel +
+					'">&times;</button>' +
+					'</div>' +
+					'<div class="ppa-confirm-body">' +
+					'<div class="ppa-confirm-icon">' +
+					'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" ' +
+					'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
+					'stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>' +
+					'<polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+					'</div>' +
+					'<p class="ppa-confirm-message" id="ppa-confirm-message">' +
+					messageLabel +
+					'</p>' +
+					'</div>' +
+					'<div class="ppa-confirm-footer">' +
+					'<button type="button" class="ppa-button ppa-button-secondary ppa-confirm-cancel">' +
+					cancelLabel +
+					'</button>' +
+					'<button type="button" class="ppa-button ppa-button-primary ppa-confirm-submit">' +
+					submitLabel +
+					'</button>' +
+					'</div>' +
+					'</div>' +
+					'</div>'
+			);
+
+			function closeModal() {
+				$( document ).off( 'keydown.ppaConfirm' );
+				$overlay.removeClass( 'ppa-confirm-overlay--visible' );
+				setTimeout( function () {
+					$overlay.remove();
+				}, 200 );
+			}
+
+			// Backdrop click closes.
+			$overlay.on( 'click', function ( e ) {
+				if ( $( e.target ).hasClass( 'ppa-confirm-overlay' ) ) {
+					closeModal();
+				}
+			} );
+
+			// Close (X) button.
+			$overlay.find( '.ppa-confirm-close' ).on( 'click', closeModal );
+
+			// Cancel button.
+			$overlay.find( '.ppa-confirm-cancel' ).on( 'click', closeModal );
+
+			// Submit button.
+			$overlay.find( '.ppa-confirm-submit' ).on( 'click', function () {
+				closeModal();
+				onConfirm();
+			} );
+
+			// Escape key closes.
+			$( document ).on( 'keydown.ppaConfirm', function ( e ) {
+				if ( e.key === 'Escape' ) {
+					closeModal();
+				}
+			} );
+
+			$( 'body' ).append( $overlay );
+
+			// Animate in after append (matches Quiz Admin Modal pattern).
+			setTimeout( function () {
+				$overlay.addClass( 'ppa-confirm-overlay--visible' );
+			}, 10 );
+		},
+
+		/**
+		 * Execute the actual submission.
+		 *
+		 * Called after the user confirms in the modal.
+		 */
+		doSubmit() {
+			const self = this;
 
 			this.isSubmitting = true;
 			this.$submitBtn
@@ -890,8 +1159,24 @@
 						self.handleSubmitError( message );
 					}
 				},
-				error() {
-					self.handleSubmitError( ppaFrontend.i18n.networkError );
+				error( jqXHR ) {
+					// Extract server error message from response if available.
+					let errorMessage = ppaFrontend.i18n.networkError;
+					try {
+						const errorResponse =
+							typeof jqXHR.responseJSON !== 'undefined'
+								? jqXHR.responseJSON
+								: JSON.parse( jqXHR.responseText );
+						if (
+							errorResponse.data &&
+							errorResponse.data.message
+						) {
+							errorMessage = errorResponse.data.message;
+						}
+					} catch ( e ) {
+						// Use default network error message.
+					}
+					self.handleSubmitError( errorMessage );
 				},
 			} );
 		},
@@ -960,25 +1245,26 @@
 			// Hide the status card.
 			$assignment.find( '.ppa-submission-status-card' ).slideUp( 200 );
 
-			// Show the submission form (it may be hidden or need to be loaded).
-			const $form = $assignment.find( '.ppa-submission-form' );
-			if ( $form.length ) {
-				$form.slideDown( 200 );
+			// Show the resubmission form wrapper (hidden in DOM by default).
+			const $wrapper = $assignment.find(
+				'.ppa-resubmission-form-wrapper'
+			);
+			if ( $wrapper.length ) {
+				$wrapper.removeClass( 'ppa-hidden' ).slideDown( 200 );
 
 				// Scroll to the form.
 				$( 'html, body' ).animate(
 					{
-						scrollTop: $form.offset().top - 50,
+						scrollTop: $wrapper.offset().top - 50,
 					},
 					300
 				);
 
-				// Re-initialize upload if needed.
-				const $uploadContainer = $form.find( '.ppa-upload-container' );
-				if (
-					$uploadContainer.length &&
-					! window.PPA.Upload.$container
-				) {
+				// Initialize upload if needed.
+				const $uploadContainer = $wrapper.find(
+					'.ppa-upload-container'
+				);
+				if ( $uploadContainer.length ) {
 					window.PPA.Upload.init( $uploadContainer );
 				}
 
@@ -994,9 +1280,15 @@
 	   ========================================================================= */
 
 	$( document ).ready( function () {
+		// Initialize type selector (for "either" mode assignments).
+		window.PPA.TypeSelector.init();
+
 		// Initialize upload module on each upload container.
+		// Skip containers inside hidden panels (type selector reveals them).
 		$( '.ppa-upload-container' ).each( function () {
-			window.PPA.Upload.init( $( this ) );
+			if ( ! $( this ).closest( '.ppa-hidden' ).length ) {
+				window.PPA.Upload.init( $( this ) );
+			}
 		} );
 
 		// Initialize submission form module.

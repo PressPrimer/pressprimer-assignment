@@ -89,6 +89,14 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 	public $file_hash = '';
 
 	/**
+	 * Whether text can be extracted from this file
+	 *
+	 * @since 1.0.0
+	 * @var int|null
+	 */
+	public $text_extractable = null;
+
+	/**
 	 * Sort order
 	 *
 	 * @since 1.0.0
@@ -132,6 +140,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 			'mime_type',
 			'file_extension',
 			'file_hash',
+			'text_extractable',
 			'sort_order',
 		];
 	}

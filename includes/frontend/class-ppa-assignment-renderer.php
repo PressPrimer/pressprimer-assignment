@@ -288,25 +288,70 @@ class PressPrimer_Assignment_Assignment_Renderer {
 	/**
 	 * Render submission form section
 	 *
-	 * Displays the file upload zone and submission form.
-	 * Loaded via the submission-form.php template.
+	 * Routes to the appropriate template based on the assignment's
+	 * submission_type setting:
+	 * - 'file': shows file upload form
+	 * - 'text': shows text editor (placeholder until Phase 5)
+	 * - 'either': shows type selector for student to choose
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+	 * @param PressPrimer_Assignment_Assignment $assignment      Assignment instance.
 	 * @param bool                              $is_resubmission Whether this is a resubmission.
 	 * @return string Rendered HTML.
 	 */
 	public function render_submission_form( $assignment, $is_resubmission = false ) {
-		$allowed_types = $assignment->get_allowed_file_types();
-		$accept_string = $this->build_accept_string( $allowed_types );
-
 		ob_start();
 
-		$template_path = $this->get_template_path( 'assignment/submission-form.php' );
+		if ( 'either' === $assignment->submission_type ) {
+			// Show type selector — student chooses between file and text.
+			$template_path = $this->get_template_path( 'assignment/submission-type-selector.php' );
 
-		if ( $template_path ) {
-			include $template_path;
+			if ( $template_path ) {
+				include $template_path;
+			}
+
+			// Also include the file upload form (hidden initially, revealed by JS).
+			$allowed_types = $assignment->get_allowed_file_types();
+			$accept_string = $this->build_accept_string( $allowed_types );
+
+			$form_template = $this->get_template_path( 'assignment/submission-form.php' );
+			if ( $form_template ) {
+				echo '<div class="ppa-submission-type-panel ppa-submission-type-file ppa-hidden">';
+				include $form_template;
+				echo '</div>';
+			}
+
+			// Text editor panel placeholder (Phase 5 will implement).
+			echo '<div class="ppa-submission-type-panel ppa-submission-type-text ppa-hidden">';
+			echo '<section class="ppa-submission-form" aria-label="' . esc_attr__( 'Text submission', 'pressprimer-assignment' ) . '">';
+			echo '<p class="ppa-notice ppa-notice-info"><span class="ppa-notice-message">';
+			echo esc_html__( 'Text editor will be available in a future update.', 'pressprimer-assignment' );
+			echo '</span></p></section>';
+			echo '</div>';
+		} elseif ( 'text' === $assignment->submission_type ) {
+			// Text-only submission (Phase 5 will implement full editor).
+			echo '<section class="ppa-submission-form" aria-label="' . esc_attr__( 'Text submission', 'pressprimer-assignment' ) . '">';
+			echo '<h3 class="ppa-form-heading">';
+			if ( $is_resubmission ) {
+				esc_html_e( 'Submit Again', 'pressprimer-assignment' );
+			} else {
+				esc_html_e( 'Submit Your Work', 'pressprimer-assignment' );
+			}
+			echo '</h3>';
+			echo '<p class="ppa-notice ppa-notice-info"><span class="ppa-notice-message">';
+			echo esc_html__( 'Text editor will be available in a future update.', 'pressprimer-assignment' );
+			echo '</span></p></section>';
+		} else {
+			// Default: file upload form.
+			$allowed_types = $assignment->get_allowed_file_types();
+			$accept_string = $this->build_accept_string( $allowed_types );
+
+			$template_path = $this->get_template_path( 'assignment/submission-form.php' );
+
+			if ( $template_path ) {
+				include $template_path;
+			}
 		}
 
 		return ob_get_clean();
@@ -398,7 +443,8 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			return true;
 		}
 
-		if ( ! empty( $display['show_file_info'] ) ) {
+		// Only show file info for assignments that accept file uploads.
+		if ( ! empty( $display['show_file_info'] ) && $assignment->accepts_file_upload() ) {
 			return true;
 		}
 
@@ -432,7 +478,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 				<?php endif; ?>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $display['show_file_info'] ) ) : ?>
+			<?php if ( ! empty( $display['show_file_info'] ) && $assignment->accepts_file_upload() ) : ?>
 				<?php $allowed_types = $assignment->get_allowed_file_types(); ?>
 				<div class="ppa-meta-item">
 					<span class="ppa-meta-label"><?php esc_html_e( 'Accepted Formats', 'pressprimer-assignment' ); ?></span>
@@ -533,11 +579,6 @@ class PressPrimer_Assignment_Assignment_Renderer {
 
 		// Must have an existing non-draft submission.
 		if ( null === $user_submission || PressPrimer_Assignment_Submission::STATUS_DRAFT === $user_submission->status ) {
-			return false;
-		}
-
-		// Submission must be returned to allow resubmission.
-		if ( PressPrimer_Assignment_Submission::STATUS_RETURNED !== $user_submission->status ) {
 			return false;
 		}
 

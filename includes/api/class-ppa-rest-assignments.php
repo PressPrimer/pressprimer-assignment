@@ -571,6 +571,13 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		if ( null !== $request->get_param( 'submission_type' ) ) {
+			$submission_type = sanitize_text_field( $request->get_param( 'submission_type' ) );
+			if ( in_array( $submission_type, [ 'file', 'text', 'either' ], true ) ) {
+				$data['submission_type'] = $submission_type;
+			}
+		}
+
 		// JSON fields.
 		if ( null !== $request->get_param( 'allowed_file_types' ) ) {
 			$file_types = $request->get_param( 'allowed_file_types' );
@@ -617,6 +624,7 @@ class PressPrimer_Assignment_REST_Assignments {
 			'allowed_file_types' => $assignment->allowed_file_types,
 			'max_file_size'      => (int) $assignment->max_file_size,
 			'max_files'          => (int) $assignment->max_files,
+			'submission_type'    => $assignment->submission_type,
 			'status'             => $assignment->status,
 			'author_id'          => (int) $assignment->author_id,
 			'submission_count'   => (int) $assignment->submission_count,
