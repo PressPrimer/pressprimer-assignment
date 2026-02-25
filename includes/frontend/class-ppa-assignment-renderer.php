@@ -715,6 +715,31 @@ class PressPrimer_Assignment_Assignment_Renderer {
 	}
 
 	/**
+	 * Check if current user has a draft submission for an assignment
+	 *
+	 * Used by the single template to prioritize showing the form
+	 * when a draft exists alongside a completed submission.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $assignment_id Assignment ID.
+	 * @return bool True if user has an active draft.
+	 */
+	public function has_draft( $assignment_id ) {
+		$text_draft = $this->get_text_draft( $assignment_id );
+		if ( $text_draft ) {
+			return true;
+		}
+
+		$file_draft = $this->get_file_draft( $assignment_id );
+		if ( $file_draft && count( $file_draft->get_files() ) > 0 ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get template file path
 	 *
 	 * Looks for template override in theme first, then falls back

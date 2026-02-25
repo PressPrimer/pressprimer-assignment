@@ -199,8 +199,8 @@ class PressPrimer_Assignment_Shortcodes {
 			'show_date'   => $this->parse_boolean( $atts['show_date'] ),
 		];
 
-		// Enqueue assets.
-		$this->get_frontend()->enqueue_assets();
+		// Enqueue assets (includes dashboard-specific stylesheet).
+		$this->get_frontend()->enqueue_dashboard_assets();
 
 		// Delegate to renderer.
 		if ( class_exists( 'PressPrimer_Assignment_Submissions_Renderer' ) ) {

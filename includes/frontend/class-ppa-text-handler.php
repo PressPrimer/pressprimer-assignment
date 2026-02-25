@@ -434,7 +434,7 @@ class PressPrimer_Assignment_Text_Handler {
 		}
 
 		// Determine submission number (for resubmissions).
-		$submission_number = $this->count_user_submissions( $user_id, $assignment_id ) + 1;
+		$submission_number = $this->get_next_submission_number( $user_id, $assignment_id );
 
 		// Create new draft.
 		$new_id = PressPrimer_Assignment_Submission::create(
@@ -521,7 +521,7 @@ class PressPrimer_Assignment_Text_Handler {
 			);
 		}
 
-		// Get the user's latest non-draft submission.
+		// Get the user's latest submission (by submission_number).
 		$submissions = PressPrimer_Assignment_Submission::find(
 			[
 				'where'    => [
@@ -545,18 +545,9 @@ class PressPrimer_Assignment_Text_Handler {
 			return true;
 		}
 
-		// Resubmission requires the latest submission to be returned.
-		if ( PressPrimer_Assignment_Submission::STATUS_RETURNED !== $latest->status ) {
-			return new WP_Error(
-				'ppa_awaiting_grading',
-				__( 'Your submission is still being reviewed. Resubmission will be available after it is returned.', 'pressprimer-assignment' )
-			);
-		}
-
 		// Check resubmission count against the limit.
-		$submitted_count = $this->count_user_submissions( $user_id, $assignment->id );
-
-		if ( $submitted_count > $assignment->max_resubmissions ) {
+		// Uses submission_number to match the renderer's can_user_resubmit() logic.
+		if ( $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return new WP_Error(
 				'ppa_max_resubmissions',
 				__( 'You have reached the maximum number of submissions for this assignment.', 'pressprimer-assignment' )
@@ -567,7 +558,38 @@ class PressPrimer_Assignment_Text_Handler {
 	}
 
 	/**
-	 * Count the user's non-draft submissions for an assignment
+	 * Get the next submission number for a user/assignment pair
+	 *
+	 * Uses MAX(submission_number) rather than COUNT(*) to avoid
+	 * unique constraint violations when submissions have been deleted.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $user_id       User ID.
+	 * @param int $assignment_id Assignment ID.
+	 * @return int Next submission number.
+	 */
+	private function get_next_submission_number( $user_id, $assignment_id ) {
+		global $wpdb;
+
+		$user_id       = absint( $user_id );
+		$assignment_id = absint( $assignment_id );
+		$table         = $wpdb->prefix . 'ppa_submissions';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$max = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT MAX(submission_number) FROM {$table} WHERE user_id = %d AND assignment_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$user_id,
+				$assignment_id
+			)
+		);
+
+		return $max + 1;
+	}
+
+	/**
+	 * Count non-draft submissions for a user/assignment pair
 	 *
 	 * @since 1.0.0
 	 *

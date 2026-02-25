@@ -67,12 +67,55 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php endif; ?>
 
 	<?php if ( $submission->is_text_submission() ) : ?>
+		<?php
+		$ppa_max_preview_words = 500;
+		$ppa_text_content      = $submission->text_content;
+		$ppa_is_truncated      = false;
+
+		if ( (int) $submission->word_count > $ppa_max_preview_words ) {
+			// Strip HTML but preserve line breaks for wpautop.
+			$ppa_plain_text = wp_strip_all_tags( $ppa_text_content );
+			$ppa_lines      = preg_split( '/\r\n|\r|\n/', $ppa_plain_text );
+			$ppa_word_total = 0;
+			$ppa_kept_lines = [];
+
+			foreach ( $ppa_lines as $ppa_line ) {
+				$ppa_line_words = preg_split( '/\s+/', $ppa_line, -1, PREG_SPLIT_NO_EMPTY );
+
+				if ( $ppa_word_total + count( $ppa_line_words ) > $ppa_max_preview_words ) {
+					$ppa_keep         = $ppa_max_preview_words - $ppa_word_total;
+					$ppa_kept_lines[] = implode( ' ', array_slice( $ppa_line_words, 0, $ppa_keep ) ) . "\xe2\x80\xa6";
+					$ppa_word_total   = $ppa_max_preview_words;
+					break;
+				}
+
+				$ppa_kept_lines[] = $ppa_line;
+				$ppa_word_total  += count( $ppa_line_words );
+			}
+
+			if ( $ppa_word_total >= $ppa_max_preview_words ) {
+				$ppa_text_content = implode( "\n", $ppa_kept_lines );
+				$ppa_is_truncated = true;
+			}
+		}
+		?>
 		<div class="ppa-submitted-text">
 			<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Your Submission', 'pressprimer-assignment' ); ?></h4>
 			<div class="ppa-submitted-text-content">
-				<?php echo wp_kses_post( wpautop( $submission->text_content ) ); ?>
+				<?php echo wp_kses_post( wpautop( $ppa_text_content ) ); ?>
 			</div>
-			<?php if ( $submission->word_count > 0 ) : ?>
+			<?php if ( $ppa_is_truncated ) : ?>
+				<p class="ppa-form-hint">
+					<?php
+					printf(
+						/* translators: %1$s: number of preview words shown, %2$s: total word count */
+						esc_html__( 'Preview showing the first %1$s of %2$s words.', 'pressprimer-assignment' ),
+						esc_html( number_format_i18n( $ppa_max_preview_words ) ),
+						esc_html( number_format_i18n( $submission->word_count ) )
+					);
+					?>
+				</p>
+			<?php elseif ( $submission->word_count > 0 ) : ?>
 				<p class="ppa-form-hint">
 					<?php
 					printf(

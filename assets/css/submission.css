@@ -799,6 +799,61 @@
 	color: var(--ppa-success);
 }
 
+.ppa-status-title {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--ppa-text);
+	margin: 0;
+}
+
+/* Submission details (date, submission number) */
+
+.ppa-submission-details {
+	margin-bottom: var(--ppa-space-lg);
+}
+
+.ppa-detail-row {
+	display: flex;
+	align-items: baseline;
+	gap: var(--ppa-space-sm);
+	margin: 0 0 var(--ppa-space-xs);
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.ppa-detail-row:last-child {
+	margin-bottom: 0;
+}
+
+.ppa-detail-label {
+	font-weight: 600;
+	color: var(--ppa-text);
+	white-space: nowrap;
+}
+
+.ppa-detail-value {
+	color: var(--ppa-text-secondary);
+}
+
+/* Resubmission section */
+
+.ppa-resubmit-section {
+	margin-top: var(--ppa-space-lg);
+	padding-top: var(--ppa-space-lg);
+	border-top: 1px solid var(--ppa-border-light);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ppa-space-md);
+	flex-wrap: wrap;
+}
+
+.ppa-resubmit-info {
+	font-size: 0.875rem;
+	color: var(--ppa-text-secondary);
+	margin: 0;
+}
+
 /* ==========================================================================
    Grade Display
    ========================================================================== */
@@ -1290,6 +1345,11 @@
 		max-height: 200px;
 		padding: var(--ppa-space-md);
 	}
+
+	.ppa-resubmit-section {
+		flex-direction: column;
+		align-items: flex-start;
+	}
 }
 
 @media (max-width: 480px) {
@@ -1493,6 +1553,7 @@
 
 .ppa-preview-section {
 	margin-bottom: var(--ppa-space-lg);
+	text-align: left;
 }
 
 .ppa-preview-section:last-child {
@@ -1708,6 +1769,14 @@
 		box-shadow: none;
 	}
 
+	.ppa-resubmit-section {
+		display: none;
+	}
+
+	.ppa-delete-submission {
+		display: none;
+	}
+
 	.ppa-submission-card {
 		box-shadow: none;
 		border: 1px solid #000;
@@ -1803,6 +1872,16 @@
 [dir="rtl"] .ppa-button-icon {
 	margin-right: 0;
 	margin-left: var(--ppa-space-sm);
+}
+
+/* Detail rows */
+[dir="rtl"] .ppa-detail-row {
+	flex-direction: row-reverse;
+}
+
+/* Resubmit section */
+[dir="rtl"] .ppa-resubmit-section {
+	flex-direction: row-reverse;
 }
 
 /* Previous submission cards */

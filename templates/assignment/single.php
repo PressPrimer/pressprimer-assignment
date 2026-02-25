@@ -55,6 +55,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 		 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
 		 */
 		do_action( 'pressprimer_assignment_after_info', $assignment );
+
+		// Check if a draft exists alongside a non-draft submission.
+		// Drafts take priority so the user returns to their in-progress work.
+		$ppa_has_active_draft = $is_logged_in
+			&& $user_submission
+			&& PressPrimer_Assignment_Submission::STATUS_DRAFT !== $user_submission->status
+			&& $this->has_draft( $assignment->id );
 		?>
 
 		<?php if ( ! $is_logged_in ) : ?>
@@ -92,6 +99,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</p>
 				<?php endif; ?>
 			</div>
+
+		<?php elseif ( $ppa_has_active_draft ) : ?>
+
+			<?php
+			/**
+			 * Fires before submission form is rendered (draft resume).
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+			 */
+			do_action( 'pressprimer_assignment_before_submission_form', $assignment );
+
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_submission_form().
+			echo $this->render_submission_form( $assignment, true );
+
+			/**
+			 * Fires after submission form is rendered (draft resume).
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+			 */
+			do_action( 'pressprimer_assignment_after_submission_form', $assignment );
+			?>
 
 		<?php elseif ( $user_submission && PressPrimer_Assignment_Submission::STATUS_DRAFT !== $user_submission->status ) : ?>
 

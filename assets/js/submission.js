@@ -1649,6 +1649,24 @@
 
 			const i18n = ppaFrontend.i18n || {};
 			const esc = this.escapeHtml;
+			const maxWords = 500;
+
+			// Truncate preview if content exceeds maxWords.
+			let displayContent = options.content || '';
+			let truncatedNotice = '';
+			if ( options.wordCount > maxWords ) {
+				displayContent = this.truncateHtmlByWords(
+					displayContent,
+					maxWords
+				);
+				truncatedNotice =
+					'<p class="ppa-form-hint">' +
+					esc(
+						i18n.previewTruncated ||
+							'This is a preview showing the first 500 words only.'
+					) +
+					'</p>';
+			}
 
 			const bodyHtml =
 				'<div class="ppa-preview-section">' +
@@ -1664,8 +1682,9 @@
 				esc( i18n.previewYourSubmission || 'Your Submission' ) +
 				'</h4>' +
 				'<div class="ppa-preview-text-content">' +
-				( options.content || '' ) +
+				displayContent +
 				'</div>' +
+				truncatedNotice +
 				'<div class="ppa-preview-word-count">' +
 				'<strong>' +
 				esc( i18n.previewWordCount || 'Word count' ) +
@@ -1937,6 +1956,63 @@
 			return String( text || '' ).replace( /[&<>"']/g, function ( m ) {
 				return map[ m ];
 			} );
+		},
+
+		/**
+		 * Truncate HTML content to a maximum number of words.
+		 *
+		 * Parses the HTML via a temporary DOM element, walks the
+		 * text nodes, and removes content after the word limit.
+		 *
+		 * @param {string} html     HTML content.
+		 * @param {number} maxWords Maximum number of words.
+		 * @return {string} Truncated HTML with trailing ellipsis.
+		 */
+		truncateHtmlByWords( html, maxWords ) {
+			const container = document.createElement( 'div' );
+			container.innerHTML = html;
+			let wordCount = 0;
+			let truncated = false;
+
+			const walk = function ( node ) {
+				if ( truncated ) {
+					node.parentNode.removeChild( node );
+					return;
+				}
+
+				if ( node.nodeType === 3 ) {
+					const words = node.textContent
+						.split( /\s+/ )
+						.filter( Boolean );
+					if ( wordCount + words.length > maxWords ) {
+						const keep = maxWords - wordCount;
+						node.textContent =
+							words.slice( 0, keep ).join( ' ' ) + '\u2026';
+						wordCount = maxWords;
+						truncated = true;
+					} else {
+						wordCount += words.length;
+					}
+				} else if ( node.nodeType === 1 ) {
+					// Process children in order; collect first to avoid
+					// live NodeList issues when removing nodes.
+					const children = Array.prototype.slice.call(
+						node.childNodes
+					);
+					for ( let i = 0; i < children.length; i++ ) {
+						walk( children[ i ] );
+					}
+				}
+			};
+
+			const topChildren = Array.prototype.slice.call(
+				container.childNodes
+			);
+			for ( let i = 0; i < topChildren.length; i++ ) {
+				walk( topChildren[ i ] );
+			}
+
+			return container.innerHTML;
 		},
 
 		/**

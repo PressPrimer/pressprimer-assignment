@@ -53,6 +53,12 @@
 
 .ppa-editor-container .mce-edit-area iframe {
 	min-height: 400px;
+	max-height: 750px;
+}
+
+.ppa-editor-container .mce-edit-area {
+	overflow-y: auto;
+	max-height: 750px;
 }
 
 /* Remove default WordPress editor borders since we provide our own */

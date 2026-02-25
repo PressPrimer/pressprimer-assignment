@@ -89,6 +89,7 @@ if ( $assignment->allow_resubmission && $is_resubmission ) {
 						'resize'                => true,
 						'wp_autoresize_on'      => true,
 						'autoresize_min_height' => 400,
+						'autoresize_max_height' => 750,
 					],
 				]
 			);

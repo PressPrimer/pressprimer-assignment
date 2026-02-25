@@ -683,7 +683,7 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
-		// Get the user's latest non-draft submission.
+		// Get the user's latest submission (by submission_number).
 		$submissions = PressPrimer_Assignment_Submission::find(
 			[
 				'where'    => [
@@ -707,18 +707,9 @@ class PressPrimer_Assignment_Submission_Handler {
 			return true;
 		}
 
-		// Resubmission requires the latest submission to be returned.
-		if ( PressPrimer_Assignment_Submission::STATUS_RETURNED !== $latest->status ) {
-			return new WP_Error(
-				'ppa_awaiting_grading',
-				__( 'Your submission is still being reviewed. Resubmission will be available after it is returned.', 'pressprimer-assignment' )
-			);
-		}
-
 		// Check resubmission count against the limit.
-		$submitted_count = $this->count_user_submissions( $user_id, $assignment->id );
-
-		if ( $submitted_count > $assignment->max_resubmissions ) {
+		// Uses submission_number to match the renderer's can_user_resubmit() logic.
+		if ( $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return new WP_Error(
 				'ppa_max_resubmissions',
 				__( 'You have reached the maximum number of submissions for this assignment.', 'pressprimer-assignment' )

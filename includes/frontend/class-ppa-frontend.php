@@ -113,6 +113,27 @@ class PressPrimer_Assignment_Frontend {
 	}
 
 	/**
+	 * Enqueue dashboard assets
+	 *
+	 * Loads the base assets plus the My Submissions dashboard stylesheet.
+	 * Called by the [ppa_my_submissions] shortcode.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_dashboard_assets() {
+		$this->enqueue_assets();
+
+		$version = PRESSPRIMER_ASSIGNMENT_VERSION;
+
+		wp_enqueue_style(
+			'ppa-my-submissions',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/my-submissions.css',
+			[ 'ppa-submission' ],
+			$version
+		);
+	}
+
+	/**
 	 * Enqueue frontend styles
 	 *
 	 * Loads the base submission stylesheet and the active theme stylesheet.
