@@ -97,6 +97,16 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 	public $text_extractable = null;
 
 	/**
+	 * Extracted text content from the file
+	 *
+	 * Populated asynchronously via WP Cron after upload.
+	 *
+	 * @since 1.0.0
+	 * @var string|null
+	 */
+	public $extracted_text = null;
+
+	/**
 	 * Sort order
 	 *
 	 * @since 1.0.0
@@ -141,6 +151,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 			'file_extension',
 			'file_hash',
 			'text_extractable',
+			'extracted_text',
 			'sort_order',
 		];
 	}

@@ -348,6 +348,12 @@
 			formData.append( 'assignment_id', this.assignmentId );
 			formData.append( 'nonce', ppaFrontend.nonce );
 
+			// Send known file IDs so the server can sync stale drafts.
+			const knownIds = $.map( this.files, function ( f ) {
+				return f.id;
+			} );
+			formData.append( 'known_file_ids', JSON.stringify( knownIds ) );
+
 			const xhr = new XMLHttpRequest();
 
 			// Track upload progress.
@@ -458,6 +464,16 @@
 			// Show remove button.
 			$item.find( '.ppa-file-remove' ).removeClass( 'ppa-hidden' );
 
+			// Show PDF text preview or extraction failure notice.
+			if ( data.text_preview ) {
+				this.showTextPreview( $item, data.text_preview );
+			} else if (
+				data.text_extractable === false ||
+				data.text_extractable === 0
+			) {
+				this.showExtractionNotice( $item );
+			}
+
 			this.announceToScreenReader(
 				this.escapeHtml( fileName ) +
 					' — ' +
@@ -490,6 +506,123 @@
 				this.escapeHtml( fileName ) + ' — ' + message,
 				'assertive'
 			);
+		},
+
+		/* -----------------------------------------------------------------
+		   PDF Text Preview
+		   ----------------------------------------------------------------- */
+
+		/**
+		 * Show a collapsible text preview below a PDF file item.
+		 *
+		 * Displays the first ~1000 characters of extracted PDF text
+		 * in a scrollable box, matching the PressPrimer Quiz pattern.
+		 *
+		 * @param {jQuery} $item       The file item element.
+		 * @param {string} previewText The extracted text to display.
+		 */
+		showTextPreview( $item, previewText ) {
+			const i18n = ppaFrontend.i18n || {};
+			const label = i18n.textPreviewLabel || 'Extracted Text Preview';
+			const toggleShow = i18n.textPreviewShow || 'Show preview';
+			const toggleHide = i18n.textPreviewHide || 'Hide preview';
+
+			const $wrapper = $( '<div>' ).addClass( 'ppa-file-text-preview' );
+
+			// Toggle button with dashicon span (matches Quiz pattern).
+			const $toggle = $( '<button>' )
+				.attr( 'type', 'button' )
+				.addClass( 'ppa-text-preview-toggle' )
+				.attr( 'aria-expanded', 'false' )
+				.append(
+					$( '<span>' ).addClass( 'dashicons dashicons-arrow-right' )
+				)
+				.append( ' ' + toggleShow );
+
+			// Content (initially hidden, shown with slideDown like Quiz).
+			const $content = $( '<div>' )
+				.addClass( 'ppa-text-preview-content' )
+				.css( 'display', 'none' );
+
+			$content.append(
+				$( '<div>' ).addClass( 'ppa-text-preview-label' ).text( label )
+			);
+
+			$content.append(
+				$( '<p>' )
+					.addClass( 'ppa-text-preview-description' )
+					.text(
+						i18n.textPreviewDescription ||
+							'This is the beginning of the text extracted from your file. It is provided so you can verify the content was captured correctly.'
+					)
+			);
+
+			$content.append(
+				$( '<div>' )
+					.addClass( 'ppa-text-preview-text' )
+					.text( previewText )
+			);
+
+			$toggle.on( 'click', function () {
+				const $icon = $toggle.find( '.dashicons' );
+				if ( $content.is( ':visible' ) ) {
+					$content.slideUp( 200 );
+					$icon
+						.removeClass( 'dashicons-arrow-down' )
+						.addClass( 'dashicons-arrow-right' );
+					$toggle
+						.contents()
+						.filter( function () {
+							return this.nodeType === 3;
+						} )
+						.last()
+						.replaceWith( ' ' + toggleShow );
+					$toggle.attr( 'aria-expanded', 'false' );
+				} else {
+					$content.slideDown( 200 );
+					$icon
+						.removeClass( 'dashicons-arrow-right' )
+						.addClass( 'dashicons-arrow-down' );
+					$toggle
+						.contents()
+						.filter( function () {
+							return this.nodeType === 3;
+						} )
+						.last()
+						.replaceWith( ' ' + toggleHide );
+					$toggle.attr( 'aria-expanded', 'true' );
+				}
+			} );
+
+			$wrapper.append( $toggle );
+			$wrapper.append( $content );
+			$item.after( $wrapper );
+		},
+
+		/**
+		 * Show a notice when PDF text extraction failed.
+		 *
+		 * Displays a small inline message below the file item
+		 * explaining that text could not be extracted.
+		 *
+		 * @param {jQuery} $item The file item element.
+		 */
+		showExtractionNotice( $item ) {
+			const i18n = ppaFrontend.i18n || {};
+			const $notice = $( '<div>' )
+				.addClass( 'ppa-file-text-preview ppa-extraction-notice' )
+				.append(
+					$( '<span>' )
+						.addClass( 'dashicons dashicons-info-outline' )
+						.attr( 'aria-hidden', 'true' )
+				)
+				.append(
+					' ' +
+						( i18n.extractionFailed ||
+							'Text could not be extracted from this file. It may be a scanned document or contain only images.' )
+				);
+
+			$item.after( $notice );
 		},
 
 		/* -----------------------------------------------------------------
@@ -594,9 +727,12 @@
 
 				// Remove from local files array.
 				this.files = $.grep( this.files, function ( f ) {
-					return f.id !== parseInt( fileId, 10 );
+					return parseInt( f.id, 10 ) !== parseInt( fileId, 10 );
 				} );
 			}
+
+			// Remove the text preview sibling (if any).
+			$item.next( '.ppa-file-text-preview' ).remove();
 
 			// Animate removal.
 			$item.fadeOut( 200, function () {
@@ -732,6 +868,17 @@
 			}
 
 			this.bindEvents();
+
+			// Auto-select type if user has an existing draft.
+			const autoType = $selector.data( 'auto-type' );
+			if ( autoType ) {
+				const $autoButton = $selector.find(
+					'.ppa-type-option[data-submission-type="' + autoType + '"]'
+				);
+				if ( $autoButton.length ) {
+					this.selectType( $autoButton );
+				}
+			}
 		},
 
 		/**
@@ -752,7 +899,7 @@
 			// Back button to return to selector.
 			$( document ).on(
 				'click.ppaTypeSelector',
-				'.ppa-type-back-link',
+				'.ppa-type-back-btn',
 				function ( e ) {
 					e.preventDefault();
 					self.showSelector( $( this ) );
@@ -785,19 +932,27 @@
 			const $panel = $assignment.find( '.ppa-submission-type-' + type );
 			$panel.removeClass( 'ppa-hidden' ).slideDown( 200 );
 
-			// Add a back link if not already present.
-			if ( ! $panel.find( '.ppa-type-back-link' ).length ) {
+			// Add a back button if not already present.
+			if ( ! $panel.find( '.ppa-type-back-btn' ).length ) {
 				const changeLabel =
 					ppaFrontend.i18n.changeType || 'Change submission type';
-				const $back = $( '<a>' )
-					.attr( 'href', '#' )
-					.addClass( 'ppa-type-back-link' )
-					.text( changeLabel );
+				const $icon = $( '<span>' )
+					.addClass( 'dashicons dashicons-arrow-left-alt2' )
+					.attr( 'aria-hidden', 'true' );
+				const $label = $( '<span>' ).text( changeLabel );
+				const $back = $( '<button>' )
+					.attr( 'type', 'button' )
+					.addClass(
+						'ppa-button ppa-button-secondary ppa-type-back-btn'
+					)
+					.append( $icon )
+					.append( ' ' )
+					.append( $label );
 
 				$panel.prepend( $back );
 			}
 
-			// If file type was selected, initialize upload if needed.
+			// Initialize the selected panel's module.
 			if ( 'file' === type ) {
 				const $uploadContainer = $panel.find( '.ppa-upload-container' );
 				if (
@@ -807,6 +962,12 @@
 					window.PPA.Upload.init( $uploadContainer );
 				}
 				window.PPA.SubmissionForm.init();
+			} else if (
+				'text' === type &&
+				window.PPA.TextEditor &&
+				! window.PPA.TextEditor.editor
+			) {
+				window.PPA.TextEditor.init();
 			}
 		},
 
@@ -891,21 +1052,63 @@
 			this.$notesField = $( '#ppa-student-notes' );
 			this.$charCount = $( '.ppa-char-current' );
 
+			// Always bind delegated handlers (delete, resubmit) since
+			// they target elements outside the form (status view).
+			this.bindGlobalEvents();
+
 			if ( ! this.$form.length ) {
 				return;
 			}
 
 			this.isSubmitting = false;
 
-			this.bindEvents();
+			this.bindFormEvents();
 			this.updateSubmitButton();
 		},
 
 		/**
-		 * Bind form event handlers.
+		 * Bind delegated handlers that live outside the form.
+		 *
+		 * These target the status view (resubmit / delete) and must
+		 * work even when no submission form is present on the page.
 		 */
-		bindEvents() {
+		bindGlobalEvents() {
 			const self = this;
+
+			$( document ).off( 'click.ppaForm', '#ppa-start-resubmit' );
+			$( document ).off( 'click.ppaForm', '.ppa-delete-submission' );
+
+			// Resubmission button (in the status view).
+			$( document ).on(
+				'click.ppaForm',
+				'#ppa-start-resubmit',
+				function ( e ) {
+					e.preventDefault();
+					self.startResubmission( $( this ) );
+				}
+			);
+
+			// Delete previous submission button.
+			$( document ).on(
+				'click.ppaForm',
+				'.ppa-delete-submission',
+				function ( e ) {
+					e.preventDefault();
+					self.deleteSubmission( $( this ) );
+				}
+			);
+		},
+
+		/**
+		 * Bind form-specific event handlers.
+		 */
+		bindFormEvents() {
+			const self = this;
+
+			// Remove any previous bindings to prevent duplicate handlers
+			// when init() is called more than once (e.g. type selector flow).
+			this.$notesField.off( 'input.ppaForm' );
+			this.$form.off( 'submit.ppaForm' );
 
 			// Character count on notes field.
 			this.$notesField.on( 'input.ppaForm', function () {
@@ -917,16 +1120,6 @@
 				e.preventDefault();
 				self.handleSubmit();
 			} );
-
-			// Resubmission button (in the status view).
-			$( document ).on(
-				'click.ppaForm',
-				'#ppa-start-resubmit',
-				function ( e ) {
-					e.preventDefault();
-					self.startResubmission( $( this ) );
-				}
-			);
 		},
 
 		/* -----------------------------------------------------------------
@@ -962,6 +1155,16 @@
 			const shouldEnable = hasFiles && ! uploading && ! this.isSubmitting;
 
 			this.$submitBtn.prop( 'disabled', ! shouldEnable );
+
+			// Show tooltip on disabled button (matches Quiz pattern).
+			if ( ! shouldEnable && ! uploading && ! this.isSubmitting ) {
+				const hint =
+					ppaFrontend.i18n.uploadHint ||
+					'Upload at least one file to enable submission.';
+				this.$submitBtn.attr( 'title', hint );
+			} else {
+				this.$submitBtn.removeAttr( 'title' );
+			}
 		},
 
 		/* -----------------------------------------------------------------
@@ -971,8 +1174,8 @@
 		/**
 		 * Handle form submission.
 		 *
-		 * Shows a confirmation dialog, then submits the assignment
-		 * via AJAX. Redirects or updates the page on success.
+		 * Shows a preview of files and notes, then submits
+		 * the assignment via AJAX on confirmation.
 		 */
 		handleSubmit() {
 			const self = this;
@@ -986,19 +1189,7 @@
 				return;
 			}
 
-			// Show styled confirmation modal.
-			this.showConfirmModal( function () {
-				self.doSubmit();
-			} );
-		},
-
-		/**
-		 * Show a styled confirmation modal.
-		 *
-		 * @param {Function} onConfirm Callback when user confirms.
-		 */
-		showConfirmModal( onConfirm ) {
-			// Build contextual message.
+			// Gather preview data.
 			const canResubmit =
 				this.$form.data( 'can-resubmit' ) === 1 ||
 				this.$form.data( 'can-resubmit' ) === '1';
@@ -1006,114 +1197,20 @@
 				this.$form.data( 'resubmissions-remaining' ) || 0,
 				10
 			);
+			const title = this.$form.data( 'assignment-title' ) || '';
+			const notes = this.$notesField ? this.$notesField.val() : '';
 
-			let message = ppaFrontend.i18n.confirmMessage;
-			if ( canResubmit && remaining > 0 ) {
-				const remainingTemplate =
-					remaining === 1
-						? ppaFrontend.i18n.resubmissionLeft
-						: ppaFrontend.i18n.resubmissionsLeft;
-				const remainingText = remainingTemplate.replace(
-					'%d',
-					remaining
-				);
-				message =
-					ppaFrontend.i18n.confirmMessageResub +
-					' (' +
-					remainingText +
-					')';
-			} else if ( canResubmit ) {
-				message = ppaFrontend.i18n.confirmMessageResub;
-			}
-
-			const cancelLabel = $( '<span>' )
-				.text( ppaFrontend.i18n.cancel )
-				.html();
-			const titleLabel = $( '<span>' )
-				.text( ppaFrontend.i18n.confirmTitle )
-				.html();
-			const messageLabel = $( '<span>' ).text( message ).html();
-			const submitLabel = $( '<span>' )
-				.text( ppaFrontend.i18n.submitAssignment )
-				.html();
-
-			const $overlay = $(
-				'<div class="ppa-confirm-overlay">' +
-					'<div class="ppa-confirm-dialog" role="alertdialog" ' +
-					'aria-labelledby="ppa-confirm-title" ' +
-					'aria-describedby="ppa-confirm-message">' +
-					'<div class="ppa-confirm-header">' +
-					'<h3 class="ppa-confirm-title" id="ppa-confirm-title">' +
-					titleLabel +
-					'</h3>' +
-					'<button type="button" class="ppa-confirm-close" ' +
-					'aria-label="' +
-					cancelLabel +
-					'">&times;</button>' +
-					'</div>' +
-					'<div class="ppa-confirm-body">' +
-					'<div class="ppa-confirm-icon">' +
-					'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" ' +
-					'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
-					'stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>' +
-					'<polyline points="22 4 12 14.01 9 11.01"/></svg>' +
-					'</div>' +
-					'<p class="ppa-confirm-message" id="ppa-confirm-message">' +
-					messageLabel +
-					'</p>' +
-					'</div>' +
-					'<div class="ppa-confirm-footer">' +
-					'<button type="button" class="ppa-button ppa-button-secondary ppa-confirm-cancel">' +
-					cancelLabel +
-					'</button>' +
-					'<button type="button" class="ppa-button ppa-button-primary ppa-confirm-submit">' +
-					submitLabel +
-					'</button>' +
-					'</div>' +
-					'</div>' +
-					'</div>'
-			);
-
-			function closeModal() {
-				$( document ).off( 'keydown.ppaConfirm' );
-				$overlay.removeClass( 'ppa-confirm-overlay--visible' );
-				setTimeout( function () {
-					$overlay.remove();
-				}, 200 );
-			}
-
-			// Backdrop click closes.
-			$overlay.on( 'click', function ( e ) {
-				if ( $( e.target ).hasClass( 'ppa-confirm-overlay' ) ) {
-					closeModal();
-				}
+			// Show submission preview modal.
+			window.PPA.SubmissionPreview.showFilePreview( {
+				title,
+				files: window.PPA.Upload.files,
+				notes,
+				canResubmit,
+				remaining,
+				onConfirm() {
+					self.doSubmit();
+				},
 			} );
-
-			// Close (X) button.
-			$overlay.find( '.ppa-confirm-close' ).on( 'click', closeModal );
-
-			// Cancel button.
-			$overlay.find( '.ppa-confirm-cancel' ).on( 'click', closeModal );
-
-			// Submit button.
-			$overlay.find( '.ppa-confirm-submit' ).on( 'click', function () {
-				closeModal();
-				onConfirm();
-			} );
-
-			// Escape key closes.
-			$( document ).on( 'keydown.ppaConfirm', function ( e ) {
-				if ( e.key === 'Escape' ) {
-					closeModal();
-				}
-			} );
-
-			$( 'body' ).append( $overlay );
-
-			// Animate in after append (matches Quiz Admin Modal pattern).
-			setTimeout( function () {
-				$overlay.addClass( 'ppa-confirm-overlay--visible' );
-			}, 10 );
 		},
 
 		/**
@@ -1189,6 +1286,9 @@
 		handleSubmitSuccess( data ) {
 			this.isSubmitting = false;
 
+			// Close the preview modal.
+			window.PPA.SubmissionPreview.hide();
+
 			window.PPA.Upload.announceToScreenReader(
 				ppaFrontend.i18n.submitted
 			);
@@ -1210,6 +1310,10 @@
 		 */
 		handleSubmitError( message ) {
 			this.isSubmitting = false;
+
+			// Close the preview modal.
+			window.PPA.SubmissionPreview.hide();
+
 			this.$submitBtn
 				.prop( 'disabled', false )
 				.text(
@@ -1218,6 +1322,89 @@
 
 			window.PPA.Upload.showError( message );
 			window.PPA.Upload.announceToScreenReader( message, 'assertive' );
+		},
+
+		/* -----------------------------------------------------------------
+		   Delete Previous Submission
+		   ----------------------------------------------------------------- */
+
+		/**
+		 * Delete a previous submission.
+		 *
+		 * Shows a confirmation prompt, then sends an AJAX request
+		 * to delete the submission and removes its card from the DOM.
+		 *
+		 * @param {jQuery} $button The delete button that was clicked.
+		 */
+		deleteSubmission( $button ) {
+			const i18n = ppaFrontend.i18n || {};
+
+			window.PPA.SubmissionPreview.showConfirm( {
+				title: i18n.confirmDeleteTitle || 'Delete Submission',
+				message:
+					i18n.confirmDelete ||
+					'Are you sure you want to delete this submission? This cannot be undone.',
+				confirm: i18n.confirmDeleteButton || 'Delete',
+				cancel: i18n.cancel || 'Cancel',
+				variant: 'danger',
+				onConfirm() {
+					const submissionId = parseInt(
+						$button.data( 'submission-id' ),
+						10
+					);
+					const $card = $button.closest( '.ppa-submission-card' );
+
+					$button.prop( 'disabled', true );
+
+					$.ajax( {
+						url: ppaFrontend.ajaxUrl,
+						type: 'POST',
+						data: {
+							action: 'ppa_delete_submission',
+							submission_id: submissionId,
+							nonce: ppaFrontend.nonce,
+						},
+						success( response ) {
+							if ( response.success ) {
+								$card.fadeOut( 200, function () {
+									$( this ).remove();
+
+									// If no more cards, remove the entire section.
+									const $list = $(
+										'.ppa-previous-submissions .ppa-submissions-list'
+									);
+									if (
+										$list.length &&
+										! $list.find( '.ppa-submission-card' )
+											.length
+									) {
+										$list
+											.closest(
+												'.ppa-previous-submissions'
+											)
+											.fadeOut( 200, function () {
+												$( this ).remove();
+											} );
+									}
+								} );
+							} else {
+								const message =
+									response.data && response.data.message
+										? response.data.message
+										: i18n.uploadFailed;
+								window.PPA.Upload.showError( message );
+								$button.prop( 'disabled', false );
+							}
+						},
+						error() {
+							window.PPA.Upload.showError(
+								i18n.networkError || 'Network error.'
+							);
+							$button.prop( 'disabled', false );
+						},
+					} );
+				},
+			} );
 		},
 
 		/* -----------------------------------------------------------------
@@ -1272,6 +1459,503 @@
 					ppaFrontend.i18n.dragDropHere
 				);
 			}
+		},
+	};
+
+	/* =========================================================================
+	   PPA.SubmissionPreview - Submission Preview Module
+	   ========================================================================= */
+
+	/**
+	 * Submission preview module.
+	 *
+	 * Displays a review screen before final submission showing either
+	 * the file list (with PDF warnings) or text content, assignment
+	 * title, student notes, and confirm/back actions.
+	 */
+	window.PPA.SubmissionPreview = {
+		/**
+		 * Callback to execute when the user confirms submission.
+		 *
+		 * @type {Function|null}
+		 */
+		onConfirm: null,
+
+		/**
+		 * The current overlay element.
+		 *
+		 * @type {jQuery|null}
+		 */
+		$overlay: null,
+
+		/**
+		 * Show the preview modal for a file upload submission.
+		 *
+		 * Builds the preview with file list, total size, PDF warnings,
+		 * student notes, and confirm/cancel buttons.
+		 *
+		 * @param {Object}   options             Preview options.
+		 * @param {string}   options.title       Assignment title.
+		 * @param {Array}    options.files       Array of file data objects.
+		 * @param {string}   options.notes       Student notes text.
+		 * @param {boolean}  options.canResubmit Whether resubmission is allowed.
+		 * @param {number}   options.remaining   Resubmissions remaining.
+		 * @param {Function} options.onConfirm   Callback when confirmed.
+		 */
+		showFilePreview( options ) {
+			this.onConfirm = options.onConfirm;
+
+			const i18n = ppaFrontend.i18n || {};
+			const esc = this.escapeHtml;
+
+			// Build file list HTML.
+			let filesHtml = '';
+			let totalSize = 0;
+			let hasPdfWarning = false;
+
+			for ( let i = 0; i < options.files.length; i++ ) {
+				const file = options.files[ i ];
+				const ext = ( file.name || '' )
+					.split( '.' )
+					.pop()
+					.toUpperCase();
+				const sizeStr = this.formatSize( file.size || 0 );
+
+				totalSize += parseInt( file.size, 10 ) || 0;
+
+				let warningHtml = '';
+				if (
+					file.text_extractable === false ||
+					file.text_extractable === 0
+				) {
+					const fileName = ( file.name || '' ).toLowerCase();
+					if (
+						fileName.endsWith( '.pdf' ) ||
+						file.type === 'application/pdf'
+					) {
+						hasPdfWarning = true;
+						warningHtml =
+							'<span class="ppa-preview-file-warning dashicons dashicons-warning" ' +
+							'title="' +
+							esc(
+								i18n.pdfWarningShort || 'Text extraction issue'
+							) +
+							'" aria-hidden="true"></span>';
+					}
+				}
+
+				filesHtml +=
+					'<li class="ppa-preview-file-item">' +
+					'<span class="ppa-preview-file-icon" aria-hidden="true">' +
+					esc( ext ) +
+					'</span>' +
+					'<span class="ppa-preview-file-name">' +
+					esc( file.name ) +
+					'</span>' +
+					'<span class="ppa-preview-file-size">' +
+					esc( sizeStr ) +
+					'</span>' +
+					warningHtml +
+					'</li>';
+			}
+
+			// Build PDF warning section.
+			let pdfWarningHtml = '';
+			if ( hasPdfWarning ) {
+				pdfWarningHtml =
+					'<div class="ppa-preview-pdf-warning">' +
+					'<div class="ppa-notice ppa-notice-warning">' +
+					'<strong>' +
+					esc( i18n.pdfWarningTitle || 'Text Extraction Issue' ) +
+					'</strong>' +
+					'<p>' +
+					esc(
+						i18n.pdfWarningMessage ||
+							'We could not extract readable text from one or more PDF files. This may affect future features like automatic feedback.'
+					) +
+					'</p>' +
+					'<details><summary>' +
+					esc( i18n.pdfWarningWhy || 'Why does this matter?' ) +
+					'</summary>' +
+					'<p>' +
+					esc(
+						i18n.pdfWarningDetails ||
+							'Some PDFs are scanned images without embedded text. For best results, consider using the text editor or uploading a DOCX file instead.'
+					) +
+					'</p></details>' +
+					'</div>' +
+					'</div>';
+			}
+
+			// Build notes section.
+			let notesHtml = '';
+			if ( options.notes && options.notes.trim() ) {
+				notesHtml =
+					'<div class="ppa-preview-section">' +
+					'<h4 class="ppa-preview-section-title">' +
+					esc( i18n.previewNotes || 'Your Notes' ) +
+					'</h4>' +
+					'<div class="ppa-preview-notes-content">' +
+					esc( options.notes ) +
+					'</div>' +
+					'</div>';
+			}
+
+			const bodyHtml =
+				'<div class="ppa-preview-section">' +
+				'<div class="ppa-preview-assignment-info">' +
+				'<strong>' +
+				esc( i18n.previewAssignment || 'Assignment' ) +
+				':</strong> ' +
+				esc( options.title || '' ) +
+				'</div>' +
+				'</div>' +
+				'<div class="ppa-preview-section">' +
+				'<h4 class="ppa-preview-section-title">' +
+				esc( i18n.previewFiles || 'Files' ) +
+				'</h4>' +
+				'<ul class="ppa-preview-file-list">' +
+				filesHtml +
+				'</ul>' +
+				'<div class="ppa-preview-total-size">' +
+				'<strong>' +
+				esc( i18n.previewTotalSize || 'Total size' ) +
+				':</strong> ' +
+				esc( this.formatSize( totalSize ) ) +
+				'</div>' +
+				'</div>' +
+				pdfWarningHtml +
+				notesHtml;
+
+			this.showModal( bodyHtml, options );
+		},
+
+		/**
+		 * Show the preview modal for a text submission.
+		 *
+		 * Builds the preview with text content, word count,
+		 * and confirm/cancel buttons.
+		 *
+		 * @param {Object}   options             Preview options.
+		 * @param {string}   options.title       Assignment title.
+		 * @param {string}   options.content     HTML content from editor.
+		 * @param {number}   options.wordCount   Word count.
+		 * @param {boolean}  options.canResubmit Whether resubmission is allowed.
+		 * @param {number}   options.remaining   Resubmissions remaining.
+		 * @param {Function} options.onConfirm   Callback when confirmed.
+		 */
+		showTextPreview( options ) {
+			this.onConfirm = options.onConfirm;
+
+			const i18n = ppaFrontend.i18n || {};
+			const esc = this.escapeHtml;
+
+			const bodyHtml =
+				'<div class="ppa-preview-section">' +
+				'<div class="ppa-preview-assignment-info">' +
+				'<strong>' +
+				esc( i18n.previewAssignment || 'Assignment' ) +
+				':</strong> ' +
+				esc( options.title || '' ) +
+				'</div>' +
+				'</div>' +
+				'<div class="ppa-preview-section">' +
+				'<h4 class="ppa-preview-section-title">' +
+				esc( i18n.previewYourSubmission || 'Your Submission' ) +
+				'</h4>' +
+				'<div class="ppa-preview-text-content">' +
+				( options.content || '' ) +
+				'</div>' +
+				'<div class="ppa-preview-word-count">' +
+				'<strong>' +
+				esc( i18n.previewWordCount || 'Word count' ) +
+				':</strong> ' +
+				esc( String( options.wordCount || 0 ) ) +
+				'</div>' +
+				'</div>';
+
+			this.showModal( bodyHtml, options );
+		},
+
+		/**
+		 * Build and display the preview modal.
+		 *
+		 * @param {string} bodyHtml The preview body HTML content.
+		 * @param {Object} options  Options with canResubmit and remaining.
+		 */
+		showModal( bodyHtml, options ) {
+			const self = this;
+			const i18n = ppaFrontend.i18n || {};
+			const esc = this.escapeHtml;
+
+			// Build contextual resubmission message.
+			let resubMessage = '';
+			if ( options.canResubmit && options.remaining > 0 ) {
+				const remainingTemplate =
+					options.remaining === 1
+						? i18n.resubmissionLeft
+						: i18n.resubmissionsLeft;
+				if ( remainingTemplate ) {
+					resubMessage =
+						'<p class="ppa-preview-resubmission-info">' +
+						esc(
+							remainingTemplate.replace( '%d', options.remaining )
+						) +
+						'</p>';
+				}
+			}
+
+			const titleLabel = esc(
+				i18n.previewTitle || 'Review Your Submission'
+			);
+			const backLabel = esc( i18n.previewGoBack || 'Go Back & Edit' );
+			const confirmLabel = esc(
+				i18n.previewConfirm || 'Confirm & Submit'
+			);
+
+			const $overlay = $(
+				'<div class="ppa-confirm-overlay ppa-preview-overlay">' +
+					'<div class="ppa-confirm-dialog ppa-preview-dialog" role="dialog" ' +
+					'aria-modal="true" aria-labelledby="ppa-preview-title">' +
+					'<div class="ppa-confirm-header ppa-preview-header">' +
+					'<h3 class="ppa-confirm-title" id="ppa-preview-title">' +
+					titleLabel +
+					'</h3>' +
+					'<button type="button" class="ppa-confirm-close" ' +
+					'aria-label="' +
+					esc( i18n.cancel || 'Cancel' ) +
+					'">&times;</button>' +
+					'</div>' +
+					'<div class="ppa-confirm-body ppa-preview-body">' +
+					bodyHtml +
+					resubMessage +
+					'</div>' +
+					'<div class="ppa-confirm-footer ppa-preview-footer">' +
+					'<button type="button" class="ppa-button ppa-button-secondary ppa-preview-back">' +
+					backLabel +
+					'</button>' +
+					'<button type="button" class="ppa-button ppa-button-primary ppa-preview-confirm">' +
+					confirmLabel +
+					'</button>' +
+					'</div>' +
+					'</div>' +
+					'</div>'
+			);
+
+			this.$overlay = $overlay;
+
+			function closeModal() {
+				$( document ).off( 'keydown.ppaPreview' );
+				$overlay.removeClass( 'ppa-confirm-overlay--visible' );
+				setTimeout( function () {
+					$overlay.remove();
+				}, 200 );
+				self.$overlay = null;
+			}
+
+			// Backdrop click closes.
+			$overlay.on( 'click', function ( e ) {
+				if ( $( e.target ).hasClass( 'ppa-preview-overlay' ) ) {
+					closeModal();
+				}
+			} );
+
+			// Close (X) button.
+			$overlay.find( '.ppa-confirm-close' ).on( 'click', closeModal );
+
+			// Back button.
+			$overlay.find( '.ppa-preview-back' ).on( 'click', closeModal );
+
+			// Confirm button.
+			$overlay.find( '.ppa-preview-confirm' ).on( 'click', function () {
+				// Disable buttons to prevent double-click.
+				$overlay
+					.find( '.ppa-preview-confirm' )
+					.prop( 'disabled', true )
+					.text( i18n.submitting || 'Submitting...' );
+				$overlay.find( '.ppa-preview-back' ).prop( 'disabled', true );
+
+				if ( self.onConfirm ) {
+					self.onConfirm();
+				}
+			} );
+
+			// Escape key closes.
+			$( document ).on( 'keydown.ppaPreview', function ( e ) {
+				if ( e.key === 'Escape' ) {
+					closeModal();
+				}
+			} );
+
+			$( 'body' ).append( $overlay );
+
+			// Animate in after append.
+			setTimeout( function () {
+				$overlay.addClass( 'ppa-confirm-overlay--visible' );
+				// Focus the confirm button for keyboard users.
+				$overlay.find( '.ppa-preview-confirm' ).trigger( 'focus' );
+			}, 10 );
+		},
+
+		/**
+		 * Close the preview modal (called on submit success/error).
+		 */
+		hide() {
+			if ( this.$overlay ) {
+				$( document ).off( 'keydown.ppaPreview' );
+				this.$overlay.remove();
+				this.$overlay = null;
+			}
+		},
+
+		/**
+		 * Show a generic confirmation modal.
+		 *
+		 * Reuses the same styled modal as submission preview for
+		 * consistent UI across all confirmation dialogs.
+		 *
+		 * @param {Object}   options           Confirm options.
+		 * @param {string}   options.title     Modal title.
+		 * @param {string}   options.message   Body message text.
+		 * @param {string}   options.confirm   Confirm button label.
+		 * @param {string}   options.cancel    Cancel button label.
+		 * @param {string}   options.variant   Button style: 'danger' or 'primary'.
+		 * @param {Function} options.onConfirm Callback when confirmed.
+		 */
+		showConfirm( options ) {
+			const esc = this.escapeHtml;
+			const i18n = ppaFrontend.i18n || {};
+
+			const titleLabel = esc( options.title || '' );
+			const messageText = esc( options.message || '' );
+			const confirmLabel = esc(
+				options.confirm || i18n.previewConfirm || 'Confirm'
+			);
+			const cancelLabel = esc(
+				options.cancel || i18n.cancel || 'Cancel'
+			);
+			const variant = options.variant || 'primary';
+
+			const confirmClass =
+				variant === 'danger'
+					? 'ppa-button ppa-button-danger'
+					: 'ppa-button ppa-button-primary';
+
+			const $overlay = $(
+				'<div class="ppa-confirm-overlay">' +
+					'<div class="ppa-confirm-dialog" role="alertdialog" ' +
+					'aria-modal="true" aria-labelledby="ppa-confirm-title" ' +
+					'aria-describedby="ppa-confirm-message">' +
+					'<div class="ppa-confirm-header">' +
+					'<h3 class="ppa-confirm-title" id="ppa-confirm-title">' +
+					titleLabel +
+					'</h3>' +
+					'<button type="button" class="ppa-confirm-close" ' +
+					'aria-label="' +
+					esc( i18n.cancel || 'Cancel' ) +
+					'">&times;</button>' +
+					'</div>' +
+					'<div class="ppa-confirm-body">' +
+					'<p class="ppa-confirm-message" id="ppa-confirm-message">' +
+					messageText +
+					'</p>' +
+					'</div>' +
+					'<div class="ppa-confirm-footer">' +
+					'<button type="button" class="ppa-button ppa-button-secondary ppa-confirm-cancel">' +
+					cancelLabel +
+					'</button>' +
+					'<button type="button" class="' +
+					confirmClass +
+					' ppa-confirm-ok">' +
+					confirmLabel +
+					'</button>' +
+					'</div>' +
+					'</div>' +
+					'</div>'
+			);
+
+			function closeConfirm() {
+				$( document ).off( 'keydown.ppaConfirm' );
+				$overlay.removeClass( 'ppa-confirm-overlay--visible' );
+				setTimeout( function () {
+					$overlay.remove();
+				}, 200 );
+			}
+
+			// Backdrop click.
+			$overlay.on( 'click', function ( e ) {
+				if ( $( e.target ).hasClass( 'ppa-confirm-overlay' ) ) {
+					closeConfirm();
+				}
+			} );
+
+			// Close / Cancel buttons.
+			$overlay.find( '.ppa-confirm-close' ).on( 'click', closeConfirm );
+			$overlay.find( '.ppa-confirm-cancel' ).on( 'click', closeConfirm );
+
+			// Confirm button.
+			$overlay.find( '.ppa-confirm-ok' ).on( 'click', function () {
+				closeConfirm();
+				if ( options.onConfirm ) {
+					options.onConfirm();
+				}
+			} );
+
+			// Escape key.
+			$( document ).on( 'keydown.ppaConfirm', function ( e ) {
+				if ( e.key === 'Escape' ) {
+					closeConfirm();
+				}
+			} );
+
+			$( 'body' ).append( $overlay );
+
+			setTimeout( function () {
+				$overlay.addClass( 'ppa-confirm-overlay--visible' );
+				$overlay.find( '.ppa-confirm-cancel' ).trigger( 'focus' );
+			}, 10 );
+		},
+
+		/* -----------------------------------------------------------------
+		   Utilities
+		   ----------------------------------------------------------------- */
+
+		/**
+		 * Escape HTML entities.
+		 *
+		 * @param {string} text Raw text.
+		 * @return {string} Escaped HTML.
+		 */
+		escapeHtml( text ) {
+			const map = {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#039;',
+			};
+			return String( text || '' ).replace( /[&<>"']/g, function ( m ) {
+				return map[ m ];
+			} );
+		},
+
+		/**
+		 * Format bytes into a human-readable size string.
+		 *
+		 * @param {number} bytes The number of bytes.
+		 * @return {string} Formatted size.
+		 */
+		formatSize( bytes ) {
+			const units = [ 'B', 'KB', 'MB', 'GB' ];
+			let i = 0;
+			let size = parseFloat( bytes ) || 0;
+
+			while ( size >= 1024 && i < units.length - 1 ) {
+				size /= 1024;
+				i++;
+			}
+
+			return size.toFixed( 1 ) + ' ' + units[ i ];
 		},
 	};
 

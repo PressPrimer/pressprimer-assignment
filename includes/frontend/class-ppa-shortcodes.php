@@ -142,7 +142,13 @@ class PressPrimer_Assignment_Shortcodes {
 		}
 
 		// Enqueue assets.
-		$this->get_frontend()->enqueue_assets();
+		$frontend = $this->get_frontend();
+		$frontend->enqueue_assets();
+
+		// Enqueue text editor assets if assignment accepts text submissions.
+		if ( $assignment->accepts_text_submission() ) {
+			$frontend->enqueue_text_editor_assets();
+		}
 
 		// Delegate to renderer.
 		if ( class_exists( 'PressPrimer_Assignment_Assignment_Renderer' ) ) {

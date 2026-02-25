@@ -155,6 +155,7 @@ class PressPrimer_Assignment_Schema {
 			file_extension VARCHAR(20) NOT NULL,
 			file_hash CHAR(64) NOT NULL,
 			text_extractable TINYINT(1) DEFAULT NULL,
+			extracted_text LONGTEXT DEFAULT NULL,
 			sort_order INT UNSIGNED NOT NULL DEFAULT 0,
 			uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),

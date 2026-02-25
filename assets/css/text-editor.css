@@ -1,0 +1,221 @@
+/**
+ * PressPrimer Assignment - Text Editor Styles
+ *
+ * Styles for the TinyMCE-based text editor submission form,
+ * including editor container, word count, save status, and actions.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Text Editor Form Container
+   ========================================================================== */
+
+.ppa-text-editor-form {
+	margin-top: var(--ppa-space-xl);
+}
+
+.ppa-editor-instructions {
+	font-size: var(--ppa-font-size-sm, 0.875rem);
+	color: var(--ppa-text-secondary, #50575e);
+	margin-bottom: var(--ppa-space-lg);
+	line-height: var(--ppa-line-height, 1.6);
+}
+
+/* ==========================================================================
+   Editor Container
+   ========================================================================== */
+
+.ppa-editor-container {
+	margin-bottom: var(--ppa-space-md);
+	border: 2px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-md);
+	overflow: hidden;
+	transition: border-color 0.2s ease;
+}
+
+.ppa-editor-container:focus-within {
+	border-color: var(--ppa-primary);
+	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.15);
+}
+
+/* TinyMCE toolbar */
+.ppa-editor-container .mce-toolbar-grp {
+	background: var(--ppa-background-gray, #f6f7f7);
+	border-bottom: 1px solid var(--ppa-border-light, #dcdcde);
+}
+
+/* TinyMCE editor body */
+.ppa-editor-container .mce-edit-area {
+	background: var(--ppa-background, #ffffff);
+}
+
+.ppa-editor-container .mce-edit-area iframe {
+	min-height: 400px;
+}
+
+/* Remove default WordPress editor borders since we provide our own */
+.ppa-editor-container .wp-editor-container {
+	border: none;
+}
+
+.ppa-editor-container .mce-tinymce {
+	box-shadow: none;
+}
+
+/* ==========================================================================
+   Editor Footer (Word Count + Save Status)
+   ========================================================================== */
+
+.ppa-editor-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--ppa-space-sm) var(--ppa-space-md);
+	background: var(--ppa-background-gray, #f6f7f7);
+	border: 1px solid var(--ppa-border-light, #dcdcde);
+	border-radius: var(--ppa-radius-md);
+	margin-bottom: var(--ppa-space-lg);
+}
+
+/* ==========================================================================
+   Word & Character Counts
+   ========================================================================== */
+
+.ppa-editor-counts {
+	display: flex;
+	align-items: center;
+	gap: var(--ppa-space-sm);
+	font-size: 0.8125rem;
+	color: var(--ppa-text-secondary, #50575e);
+}
+
+.ppa-count-separator {
+	color: var(--ppa-text-light, #787c82);
+}
+
+#ppa-word-count-value,
+#ppa-char-count-value {
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Save Status
+   ========================================================================== */
+
+.ppa-save-status {
+	font-size: 0.8125rem;
+	line-height: 1.4;
+}
+
+.ppa-status-saved {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ppa-space-xs);
+	color: var(--ppa-success, #00a32a);
+}
+
+.ppa-status-saved .dashicons {
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+}
+
+.ppa-status-saving {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ppa-space-xs);
+	color: var(--ppa-text-light, #787c82);
+}
+
+.ppa-status-unsaved {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ppa-space-xs);
+	color: var(--ppa-warning, #dba617);
+}
+
+.ppa-status-error {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ppa-space-xs);
+	color: var(--ppa-error, #d63638);
+}
+
+/* ==========================================================================
+   Editor Actions (Save Draft + Submit)
+   ========================================================================== */
+
+.ppa-editor-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--ppa-space-md);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+	.ppa-editor-footer {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--ppa-space-xs);
+	}
+
+	.ppa-editor-container .mce-edit-area iframe {
+		min-height: 300px;
+	}
+}
+
+@media (max-width: 480px) {
+	.ppa-editor-container .mce-edit-area iframe {
+		min-height: 250px;
+	}
+
+	.ppa-editor-actions {
+		flex-direction: column;
+	}
+
+	.ppa-editor-actions .ppa-button {
+		width: 100%;
+	}
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+	.ppa-text-editor-form,
+	.ppa-editor-actions,
+	.ppa-save-status {
+		display: none;
+	}
+}
+
+/* ==========================================================================
+   RTL (Right-to-Left) Language Support
+   ========================================================================== */
+
+[dir="rtl"] .ppa-editor-footer {
+	flex-direction: row-reverse;
+}
+
+[dir="rtl"] .ppa-word-count {
+	flex-direction: row-reverse;
+}
+
+[dir="rtl"] .ppa-editor-actions {
+	flex-direction: row-reverse;
+}
+
+[dir="rtl"] .ppa-status-saved,
+[dir="rtl"] .ppa-status-saving,
+[dir="rtl"] .ppa-status-unsaved,
+[dir="rtl"] .ppa-status-error {
+	flex-direction: row-reverse;
+}

@@ -108,6 +108,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.1.0', '<' ) ) {
 			self::migrate_to_1_1_0();
 		}
+		if ( version_compare( $from_version, '1.2.0', '<' ) ) {
+			self::migrate_to_1_2_0();
+		}
 	}
 
 	/**
@@ -157,6 +160,30 @@ class PressPrimer_Assignment_Migrator {
 		if ( ! $column_exists ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN text_extractable TINYINT(1) DEFAULT NULL AFTER file_hash" );
+		}
+	}
+
+	/**
+	 * Migration to 1.2.0
+	 *
+	 * Adds extracted_text column to submission_files for storing
+	 * full PDF text extraction results (populated asynchronously).
+	 *
+	 * @since 1.0.0
+	 */
+	private static function migrate_to_1_2_0() {
+		global $wpdb;
+
+		$files_table = $wpdb->prefix . 'ppa_submission_files';
+
+		// Add extracted_text column.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $files_table, 'extracted_text' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN extracted_text LONGTEXT DEFAULT NULL AFTER text_extractable" );
 		}
 	}
 

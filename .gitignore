@@ -11,8 +11,14 @@ sitemap.xml
 *.log
 
 # Dependencies
-/vendor/
 node_modules/
+
+# Vendor: ignore everything, then whitelist production packages
+/vendor/*
+!/vendor/autoload.php
+!/vendor/composer/
+!/vendor/smalot/
+!/vendor/symfony/
 
 # IDE
 .idea/

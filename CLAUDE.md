@@ -660,6 +660,119 @@ Before writing CSS for any new frontend component:
 
 ---
 
+## Frontend Component Style Guide (CRITICAL)
+
+**NEVER invent new styles from scratch.** Always reuse existing CSS classes and patterns from `assets/css/submission.css`. Before writing any new CSS, search the stylesheet for an existing class that does what you need.
+
+### Rule: Reuse Before You Create
+
+When building any new frontend UI:
+
+1. **Search `submission.css` first** for existing classes that match the need
+2. **Check Quiz's equivalent** if Assignment doesn't have it yet
+3. **Only create new classes** if no existing pattern covers the use case
+4. **New classes must use CSS variables** — never hardcode colors, spacing, fonts, or shadows
+
+### Assignment Component Classes
+
+These classes exist in `assets/css/submission.css`. Use them instead of creating new styles.
+
+#### Buttons
+
+Quiz equivalent: `.ppq-button`, `.ppq-button-primary`, `.ppq-button-secondary` (in `quiz.css` and `themes/default.css`).
+
+| Class | Use For | Notes |
+|-------|---------|-------|
+| `.ppa-button` | Base class for all buttons | Always combine with a variant |
+| `.ppa-button-primary` | Primary actions (submit, save) | `--ppa-primary` background, white text |
+| `.ppa-button-secondary` | Secondary actions (cancel, go back) | `--ppa-background` background, border, `--ppa-text` text |
+| `.ppa-button-danger` | Destructive actions (delete) | `--ppa-error` background, white text. **Assignment-only** — Quiz does not have this. |
+| `.ppa-button-small` | Compact buttons | Smaller padding and font |
+| `.ppa-button-large` | Prominent buttons | Larger padding and font |
+| `.ppa-button-loading` | Loading state | Adds spinner animation |
+
+**Never style buttons with raw colors.** Always use `.ppa-button` + variant.
+
+#### Modals / Confirmation Dialogs
+
+Quiz equivalent: `.ppq-modal-overlay`, `.ppq-modal`, `.ppq-modal-header`, `.ppq-modal-body`, `.ppq-modal-footer` (in `admin.css`). Assignment uses `ppa-confirm-*` naming instead.
+
+| Class | Use For |
+|-------|---------|
+| `.ppa-confirm-overlay` | Full-screen backdrop |
+| `.ppa-confirm-dialog` | Modal container |
+| `.ppa-confirm-header` | Header with title and close button |
+| `.ppa-confirm-body` | Content area |
+| `.ppa-confirm-footer` | Button row |
+
+**The confirm modal is appended to `<body>`, outside `.ppa-theme-*` wrappers.** Any class used inside a modal MUST work without theme-scoped selectors. Always provide CSS variable fallbacks (e.g., `var(--ppa-text, #1d2327)`).
+
+#### Status & Feedback
+
+Quiz equivalent: `.ppq-notice`, `.ppq-notice-success`, `.ppq-notice-error`, `.ppq-notice-warning`, `.ppq-notice-info` (in `quiz.css`).
+
+| Class | Use For |
+|-------|---------|
+| `.ppa-upload-error` | Inline error below the upload zone |
+
+For frontend error feedback, prefer inline error messages (`Upload.showError()`) or styled modals (`SubmissionPreview.showConfirm()`) over `window.alert()`.
+
+#### Collapsible / Expandable Sections
+
+Verified from Quiz's `question-builder.js` (`toggleFeedback` method) and `admin.css` (`.ppq-feedback-toggle`).
+
+**Quiz pattern — follow this exactly:**
+- Clickable trigger with a `<span class="dashicons">` icon in the HTML (NOT CSS `::before` pseudo-elements)
+- `dashicons-arrow-right` (collapsed) / `dashicons-arrow-down` (expanded)
+- jQuery `slideDown(200)` / `slideUp(200)` for animation (NOT CSS class toggling)
+- Toggle color: `--ppa-primary` (`#0073aa`) with `--ppa-primary-hover` (`#005a87`) on hover
+
+```javascript
+// Toggle handler (from Quiz's toggleFeedback)
+$toggle.on('click', function() {
+    var $icon = $toggle.find('.dashicons');
+    if ($content.is(':visible')) {
+        $content.slideUp(200);
+        $icon.removeClass('dashicons-arrow-down').addClass('dashicons-arrow-right');
+    } else {
+        $content.slideDown(200);
+        $icon.removeClass('dashicons-arrow-right').addClass('dashicons-arrow-down');
+    }
+});
+```
+
+#### Typography Colors
+
+Verified from Quiz's `themes/default.css` — Assignment uses the same values with `--ppa-` prefix.
+
+| Variable | Quiz Equivalent | Use For |
+|----------|-----------------|---------|
+| `--ppa-text` (`#1d2327`) | `--ppq-text` | Primary content, headings |
+| `--ppa-text-secondary` (`#50575e`) | `--ppq-text-secondary` | Supporting text, labels |
+| `--ppa-text-light` (`#787c82`) | `--ppq-text-light` | Hints, placeholders, meta info |
+| `--ppa-primary` (`#0073aa`) | `--ppq-primary` | Links, toggle triggers, primary actions |
+
+#### Spacing
+
+Verified from Quiz's `themes/default.css` — same values with `--ppa-` prefix.
+
+| Variable | Size | Use For |
+|----------|------|---------|
+| `--ppa-space-xs` | 0.25rem | Tight gaps (icon to text) |
+| `--ppa-space-sm` | 0.5rem | Related element spacing |
+| `--ppa-space-md` | 1rem | Section spacing, form field gaps, helper text below buttons |
+| `--ppa-space-lg` | 1.5rem | Major section separation |
+| `--ppa-space-xl` | 2rem | Page-level separation |
+
+### Color Rules
+
+1. **Never hardcode hex colors** in new CSS — always use CSS variables
+2. **Hover states:** use the `-hover` variant of the same color family (e.g., `--ppa-primary` → `--ppa-primary-hover`). Never use the same color for default and hover.
+3. **Text on colored backgrounds:** always `#ffffff` (white) on primary/danger/dark backgrounds
+4. **Interactive elements outside theme wrappers** (modals appended to body): always include fallback values, e.g., `var(--ppa-text, #1d2327)`
+
+---
+
 ## Important Reminders
 
 1. **Always run PHPCS before committing** - Pre-commit hook does this automatically
@@ -671,3 +784,4 @@ Before writing CSS for any new frontend component:
 7. **phpcs:ignore for escaping = REJECTION** - Always use wp_kses() instead
 8. **File upload security** - Validate extension, MIME type, and magic bytes
 9. **Store files outside webroot** - Serve via PHP with permission checks
+10. **Reuse existing CSS classes** - Search `submission.css` before creating new styles

@@ -25,7 +25,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 
-<section class="ppa-submission-type-selector" aria-label="<?php esc_attr_e( 'Choose submission method', 'pressprimer-assignment' ); ?>">
+<section class="ppa-submission-type-selector"
+	aria-label="<?php esc_attr_e( 'Choose submission method', 'pressprimer-assignment' ); ?>"
+	<?php if ( ! empty( $has_text_draft ) ) : ?>
+		data-auto-type="text"
+	<?php elseif ( ! empty( $has_file_draft ) ) : ?>
+		data-auto-type="file"
+	<?php endif; ?>
+>
 	<h3 class="ppa-form-heading">
 		<?php
 		if ( $is_resubmission ) {

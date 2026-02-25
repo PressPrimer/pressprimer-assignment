@@ -80,7 +80,10 @@ class PressPrimer_Assignment_Plugin {
 		// Initialize addon manager (allows premium addons to register)
 		$this->init_addon_manager();
 
-		// Initialize components
+		// Register cron hooks.
+		$this->register_cron_hooks();
+
+		// Initialize components.
 		$this->init_admin();
 		$this->init_frontend();
 		$this->init_integrations();
@@ -120,6 +123,19 @@ class PressPrimer_Assignment_Plugin {
 			if ( class_exists( 'PressPrimer_Assignment_Capabilities' ) ) {
 				PressPrimer_Assignment_Capabilities::setup_capabilities();
 			}
+		}
+	}
+
+	/**
+	 * Register WP Cron action hooks
+	 *
+	 * Registers callbacks for scheduled background tasks.
+	 *
+	 * @since 1.0.0
+	 */
+	private function register_cron_hooks() {
+		if ( class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
+			add_action( 'ppa_extract_pdf_text', [ 'PressPrimer_Assignment_PDF_Service', 'process_scheduled_extraction' ] );
 		}
 	}
 
@@ -171,6 +187,12 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_Submission_Handler' ) ) {
 			$handler = new PressPrimer_Assignment_Submission_Handler();
 			$handler->init();
+		}
+
+		// Initialize text submission handler.
+		if ( class_exists( 'PressPrimer_Assignment_Text_Handler' ) ) {
+			$text_handler = new PressPrimer_Assignment_Text_Handler();
+			$text_handler->init();
 		}
 	}
 

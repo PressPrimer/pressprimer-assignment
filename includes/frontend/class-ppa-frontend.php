@@ -38,6 +38,14 @@ class PressPrimer_Assignment_Frontend {
 	private $assets_enqueued = false;
 
 	/**
+	 * Whether text editor assets have been enqueued
+	 *
+	 * @since 1.0.0
+	 * @var bool
+	 */
+	private $text_editor_enqueued = false;
+
+	/**
 	 * Initialize frontend
 	 *
 	 * Registers the file download handler on init.
@@ -65,6 +73,43 @@ class PressPrimer_Assignment_Frontend {
 		$this->enqueue_scripts();
 
 		$this->assets_enqueued = true;
+	}
+
+	/**
+	 * Enqueue text editor assets
+	 *
+	 * Loads the text editor stylesheet when an assignment uses
+	 * text-based submissions. Called by the renderer when rendering
+	 * a text editor template.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_text_editor_assets() {
+		if ( $this->text_editor_enqueued ) {
+			return;
+		}
+
+		$version = PRESSPRIMER_ASSIGNMENT_VERSION;
+
+		wp_enqueue_style(
+			'ppa-text-editor',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/text-editor.css',
+			[ 'ppa-submission' ],
+			$version
+		);
+
+		wp_enqueue_script(
+			'ppa-text-editor',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/js/text-editor.js',
+			[ 'jquery', 'ppa-submission' ],
+			$version,
+			true
+		);
+
+		// Ensure WordPress editor scripts are loaded for wp_editor() on frontend.
+		wp_enqueue_editor();
+
+		$this->text_editor_enqueued = true;
 	}
 
 	/**
@@ -139,29 +184,59 @@ class PressPrimer_Assignment_Frontend {
 			'restUrl'   => rest_url( 'ppa/v1/' ),
 			'nonce'     => wp_create_nonce( 'ppa_frontend_nonce' ),
 			'restNonce' => wp_create_nonce( 'wp_rest' ),
+			'textNonce' => wp_create_nonce( 'ppa_save_text_draft' ),
 			'i18n'      => [
-				'uploading'           => __( 'Uploading...', 'pressprimer-assignment' ),
-				'uploadComplete'      => __( 'Upload complete.', 'pressprimer-assignment' ),
-				'uploadFailed'        => __( 'Upload failed. Please try again.', 'pressprimer-assignment' ),
-				'submitting'          => __( 'Submitting...', 'pressprimer-assignment' ),
-				'submitted'           => __( 'Submission complete.', 'pressprimer-assignment' ),
-				'confirmSubmit'       => __( 'Are you sure you want to submit? This action cannot be undone.', 'pressprimer-assignment' ),
-				'removeFile'          => __( 'Remove file', 'pressprimer-assignment' ),
-				'dragDropHere'        => __( 'Drag and drop files here or click to browse', 'pressprimer-assignment' ),
-				'maxFilesReached'     => __( 'Maximum number of files reached.', 'pressprimer-assignment' ),
-				'fileTooLarge'        => __( 'File is too large.', 'pressprimer-assignment' ),
-				'invalidFileType'     => __( 'File type not allowed.', 'pressprimer-assignment' ),
-				'networkError'        => __( 'A network error occurred. Please try again.', 'pressprimer-assignment' ),
-				'submitAssignment'    => __( 'Submit Assignment', 'pressprimer-assignment' ),
-				'changeType'          => __( 'Change submission type', 'pressprimer-assignment' ),
-				'confirmTitle'        => __( 'Ready to submit?', 'pressprimer-assignment' ),
-				'confirmMessage'      => __( 'Once submitted, your assignment will be sent for review.', 'pressprimer-assignment' ),
-				'confirmMessageResub' => __( 'Once submitted, your assignment will be sent for review. You can submit again if needed.', 'pressprimer-assignment' ),
+				'uploading'              => __( 'Uploading...', 'pressprimer-assignment' ),
+				'uploadComplete'         => __( 'Upload complete.', 'pressprimer-assignment' ),
+				'uploadFailed'           => __( 'Upload failed. Please try again.', 'pressprimer-assignment' ),
+				'submitting'             => __( 'Submitting...', 'pressprimer-assignment' ),
+				'submitted'              => __( 'Submission complete.', 'pressprimer-assignment' ),
+				'confirmSubmit'          => __( 'Are you sure you want to submit? This action cannot be undone.', 'pressprimer-assignment' ),
+				'removeFile'             => __( 'Remove file', 'pressprimer-assignment' ),
+				'dragDropHere'           => __( 'Drag and drop files here or click to browse', 'pressprimer-assignment' ),
+				'maxFilesReached'        => __( 'Maximum number of files reached.', 'pressprimer-assignment' ),
+				'fileTooLarge'           => __( 'File is too large.', 'pressprimer-assignment' ),
+				'invalidFileType'        => __( 'File type not allowed.', 'pressprimer-assignment' ),
+				'networkError'           => __( 'A network error occurred. Please try again.', 'pressprimer-assignment' ),
+				'submitAssignment'       => __( 'Submit Assignment', 'pressprimer-assignment' ),
+				'changeType'             => __( 'Change submission type', 'pressprimer-assignment' ),
+				'confirmTitle'           => __( 'Ready to submit?', 'pressprimer-assignment' ),
+				'confirmMessage'         => __( 'Once submitted, your assignment will be sent for review.', 'pressprimer-assignment' ),
+				'confirmMessageResub'    => __( 'Once submitted, your assignment will be sent for review. You can submit again if needed.', 'pressprimer-assignment' ),
 				/* translators: %d: number of submissions remaining */
-				'resubmissionLeft'    => __( '%d submission remaining', 'pressprimer-assignment' ),
+				'resubmissionLeft'       => __( '%d submission remaining', 'pressprimer-assignment' ),
 				/* translators: %d: number of submissions remaining */
-				'resubmissionsLeft'   => __( '%d submissions remaining', 'pressprimer-assignment' ),
-				'cancel'              => __( 'Cancel', 'pressprimer-assignment' ),
+				'resubmissionsLeft'      => __( '%d submissions remaining', 'pressprimer-assignment' ),
+				'cancel'                 => __( 'Cancel', 'pressprimer-assignment' ),
+				'draftSaved'             => __( 'Draft saved', 'pressprimer-assignment' ),
+				'saving'                 => __( 'Saving...', 'pressprimer-assignment' ),
+				'unsavedChanges'         => __( 'Unsaved changes', 'pressprimer-assignment' ),
+				'saveFailed'             => __( 'Save failed', 'pressprimer-assignment' ),
+				'emptyContent'           => __( 'Please write something before submitting.', 'pressprimer-assignment' ),
+				'saveDraft'              => __( 'Save Draft', 'pressprimer-assignment' ),
+				'confirmDelete'          => __( 'Are you sure you want to delete this submission? This cannot be undone.', 'pressprimer-assignment' ),
+				'confirmDeleteTitle'     => __( 'Delete Submission', 'pressprimer-assignment' ),
+				'confirmDeleteButton'    => __( 'Delete', 'pressprimer-assignment' ),
+				'previewTitle'           => __( 'Review Your Submission', 'pressprimer-assignment' ),
+				'previewGoBack'          => __( 'Go Back & Edit', 'pressprimer-assignment' ),
+				'previewConfirm'         => __( 'Confirm & Submit', 'pressprimer-assignment' ),
+				'previewAssignment'      => __( 'Assignment', 'pressprimer-assignment' ),
+				'previewFiles'           => __( 'Files', 'pressprimer-assignment' ),
+				'previewTotalSize'       => __( 'Total size', 'pressprimer-assignment' ),
+				'previewNotes'           => __( 'Your Notes', 'pressprimer-assignment' ),
+				'previewYourSubmission'  => __( 'Your Submission', 'pressprimer-assignment' ),
+				'previewWordCount'       => __( 'Word count', 'pressprimer-assignment' ),
+				'textPreviewLabel'       => __( 'Extracted Text Preview', 'pressprimer-assignment' ),
+				'textPreviewShow'        => __( 'Show preview', 'pressprimer-assignment' ),
+				'textPreviewHide'        => __( 'Hide preview', 'pressprimer-assignment' ),
+				'textPreviewDescription' => __( 'This is the beginning of the text extracted from your file. It is provided so you can verify the content was captured correctly.', 'pressprimer-assignment' ),
+				'pdfWarningShort'        => __( 'Text extraction issue', 'pressprimer-assignment' ),
+				'pdfWarningTitle'        => __( 'Text Extraction Issue', 'pressprimer-assignment' ),
+				'pdfWarningMessage'      => __( 'We could not extract readable text from one or more PDF files. This may affect future features like automatic feedback.', 'pressprimer-assignment' ),
+				'pdfWarningWhy'          => __( 'Why does this matter?', 'pressprimer-assignment' ),
+				'pdfWarningDetails'      => __( 'Some PDFs are scanned images without embedded text. For best results, consider using the text editor or uploading a DOCX file instead.', 'pressprimer-assignment' ),
+				'uploadHint'             => __( 'Upload at least one file to enable submission.', 'pressprimer-assignment' ),
+				'extractionFailed'       => __( 'Text could not be extracted from this file. It may be a scanned document or contain only images.', 'pressprimer-assignment' ),
 			],
 		];
 

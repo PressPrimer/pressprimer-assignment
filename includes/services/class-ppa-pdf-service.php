@@ -2,9 +2,13 @@
 /**
  * PDF text extraction service
  *
- * Provides PDF text extraction checking for upload validation.
- * Used during file upload to determine if a PDF contains extractable
- * text or is a scanned image (which may affect future AI features).
+ * Provides robust PDF text extraction for assignment submissions.
+ * Uses Smalot\PdfParser as the primary method with pdftotext as fallback.
+ * Includes garbage text filtering to ensure extraction quality.
+ *
+ * Two-tier extraction strategy:
+ * - Quick check (first 3 pages) during upload for the text_extractable flag.
+ * - Full extraction (all pages) via WP Cron for AI features.
  *
  * @package PressPrimer_Assignment
  * @subpackage Services
@@ -19,8 +23,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * PDF service class
  *
- * Checks whether PDF files contain extractable text using
- * available system tools (pdftotext) or basic PHP fallback.
+ * Extracts text from PDF files using multiple methods with
+ * quality filtering. Supports both synchronous quick checks
+ * and asynchronous full extraction via WP Cron.
  *
  * @since 1.0.0
  */
@@ -35,19 +40,98 @@ class PressPrimer_Assignment_PDF_Service {
 	const MIN_WORD_COUNT = 10;
 
 	/**
-	 * Maximum bytes to read for PHP fallback extraction
+	 * Number of pages to check during quick extractability check
 	 *
 	 * @since 1.0.0
 	 * @var int
 	 */
-	const MAX_READ_BYTES = 5242880;
+	const QUICK_CHECK_PAGES = 10;
 
 	/**
-	 * Check if a PDF has extractable text
+	 * Temporary files to clean up on shutdown
 	 *
-	 * Attempts text extraction using available methods and returns
-	 * the result. A PDF is considered "extractable" if at least
-	 * MIN_WORD_COUNT words can be extracted.
+	 * @since 1.0.0
+	 * @var array
+	 */
+	private $temp_files = [];
+
+	/**
+	 * Constructor
+	 *
+	 * Registers cleanup handler for temporary files.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		register_shutdown_function( [ $this, 'cleanup_temp_files' ] );
+	}
+
+	// =========================================================================
+	// Public API.
+	// =========================================================================
+
+	/**
+	 * Extract text from a PDF file
+	 *
+	 * Attempts extraction using Smalot\PdfParser first, then
+	 * pdftotext as fallback. Returns WP_Error if neither works.
+	 * Does NOT fall back to basic PHP regex extraction — that
+	 * method produces too much garbage.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $file_path Full path to PDF file.
+	 * @param int    $max_pages Maximum pages to extract (0 = all pages).
+	 * @return string|WP_Error Extracted text or WP_Error on failure.
+	 */
+	public function extract_text( $file_path, $max_pages = 0 ) {
+		if ( ! file_exists( $file_path ) || ! is_readable( $file_path ) ) {
+			return new WP_Error(
+				'ppa_file_not_found',
+				__( 'PDF file not found or not readable.', 'pressprimer-assignment' )
+			);
+		}
+
+		// Verify it's actually a PDF by checking magic bytes.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading first 5 bytes for magic byte check.
+		$header = file_get_contents( $file_path, false, null, 0, 5 );
+
+		if ( '%PDF-' !== $header ) {
+			return new WP_Error(
+				'ppa_not_a_pdf',
+				__( 'File is not a valid PDF.', 'pressprimer-assignment' )
+			);
+		}
+
+		// Method 1: Try Smalot\PdfParser if available.
+		if ( class_exists( '\\Smalot\\PdfParser\\Parser' ) ) {
+			$text = $this->extract_with_smalot( $file_path, $max_pages );
+			if ( ! is_wp_error( $text ) && ! empty( trim( $text ) ) ) {
+				return $text;
+			}
+		}
+
+		// Method 2: Try pdftotext command-line tool.
+		$text = $this->extract_with_pdftotext( $file_path, $max_pages );
+		if ( ! is_wp_error( $text ) && ! empty( trim( $text ) ) ) {
+			$text = $this->filter_garbage_text( $text );
+			if ( ! empty( trim( $text ) ) ) {
+				return $text;
+			}
+		}
+
+		// Do NOT fall back to basic PHP extraction — it produces too much garbage.
+		return new WP_Error(
+			'ppa_pdf_extraction_failed',
+			__( 'Unable to extract readable text from this PDF. The file may be a scanned image or use embedded fonts that cannot be read.', 'pressprimer-assignment' )
+		);
+	}
+
+	/**
+	 * Check if a PDF has extractable text (quick check)
+	 *
+	 * Performs a fast extraction of the first few pages to determine
+	 * whether the PDF contains readable text. Used during file upload.
 	 *
 	 * @since 1.0.0
 	 *
@@ -57,58 +141,31 @@ class PressPrimer_Assignment_PDF_Service {
 	 *
 	 *     @type bool   $extractable Whether text was successfully extracted.
 	 *     @type int    $word_count  Number of words extracted.
-	 *     @type string $method      Extraction method used ('pdftotext', 'php', 'none').
+	 *     @type string $method      Extraction method used ('smalot', 'pdftotext', 'none').
 	 * }
 	 */
-	public static function check_text_extractable( $file_path ) {
+	public function check_text_extractable( $file_path ) {
 		$default = [
 			'extractable' => false,
 			'word_count'  => 0,
 			'method'      => 'none',
 		];
 
-		if ( ! file_exists( $file_path ) || ! is_readable( $file_path ) ) {
+		$text = $this->extract_text( $file_path, self::QUICK_CHECK_PAGES );
+
+		if ( is_wp_error( $text ) || empty( trim( $text ) ) ) {
 			return $default;
 		}
 
-		// Verify it's actually a PDF by checking magic bytes.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading first 5 bytes for magic byte check.
-		$header = file_get_contents( $file_path, false, null, 0, 5 );
-
-		if ( '%PDF-' !== $header ) {
-			return $default;
-		}
-
-		// Try pdftotext first (most reliable).
-		$result = self::extract_via_pdftotext( $file_path );
-
-		if ( false !== $result ) {
-			return self::evaluate_extraction( $result, 'pdftotext' );
-		}
-
-		// Fallback to basic PHP extraction.
-		$result = self::extract_via_php( $file_path );
-
-		if ( false !== $result ) {
-			return self::evaluate_extraction( $result, 'php' );
-		}
-
-		return $default;
-	}
-
-	/**
-	 * Evaluate extracted text and return structured result
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $text   Extracted text.
-	 * @param string $method Extraction method used.
-	 * @return array Structured extraction result.
-	 */
-	private static function evaluate_extraction( $text, $method ) {
-		// Clean whitespace.
+		// Clean whitespace and count words.
 		$clean_text = trim( preg_replace( '/\s+/', ' ', $text ) );
 		$word_count = str_word_count( $clean_text );
+
+		// Determine which method succeeded.
+		$method = 'pdftotext';
+		if ( class_exists( '\\Smalot\\PdfParser\\Parser' ) ) {
+			$method = 'smalot';
+		}
 
 		return [
 			'extractable' => $word_count >= self::MIN_WORD_COUNT,
@@ -118,115 +175,341 @@ class PressPrimer_Assignment_PDF_Service {
 	}
 
 	/**
-	 * Extract text using pdftotext command-line tool
+	 * Schedule full text extraction via WP Cron
 	 *
-	 * Uses the poppler-utils pdftotext binary if available on the server.
-	 * This is the most reliable extraction method.
+	 * Schedules an asynchronous cron event to extract all text from
+	 * a PDF file. This keeps uploads fast while ensuring full text
+	 * is available for AI features.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $file_path Full path to PDF file.
-	 * @return string|false Extracted text or false if pdftotext unavailable.
+	 * @param int $file_id Submission file record ID.
 	 */
-	private static function extract_via_pdftotext( $file_path ) {
-		// Check if exec is available.
-		if ( ! function_exists( 'exec' ) ) {
-			return false;
+	public static function schedule_full_extraction( $file_id ) {
+		$file_id = absint( $file_id );
+
+		if ( 0 === $file_id ) {
+			return;
 		}
 
-		// Check if disabled by PHP configuration.
-		$disabled = explode( ',', ini_get( 'disable_functions' ) );
-		$disabled = array_map( 'trim', $disabled );
+		wp_schedule_single_event( time(), 'ppa_extract_pdf_text', [ $file_id ] );
+	}
 
-		if ( in_array( 'exec', $disabled, true ) ) {
-			return false;
+	/**
+	 * Process a scheduled full text extraction
+	 *
+	 * WP Cron callback that performs full text extraction on a PDF file
+	 * and stores the result in the database.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $file_id Submission file record ID.
+	 */
+	public static function process_scheduled_extraction( $file_id ) {
+		$file_id = absint( $file_id );
+
+		if ( 0 === $file_id ) {
+			return;
 		}
 
-		// Check if pdftotext is installed.
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Checking for pdftotext availability.
-		exec( 'which pdftotext 2>/dev/null', $which_output, $return_var );
+		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
+
+		if ( ! $file || 'pdf' !== strtolower( $file->file_extension ) ) {
+			return;
+		}
+
+		$full_path = $file->get_full_path();
+
+		if ( ! file_exists( $full_path ) ) {
+			return;
+		}
+
+		// Extract all pages.
+		$service = new self();
+		$text    = $service->extract_text( $full_path, 0 );
+
+		if ( is_wp_error( $text ) ) {
+			// Extraction failed — ensure flag reflects this.
+			$file->text_extractable = 0;
+			$file->save();
+			return;
+		}
+
+		// Store the extracted text.
+		$file->extracted_text   = $text;
+		$file->text_extractable = 1;
+		$file->save();
+	}
+
+	// =========================================================================
+	// Private extraction methods.
+	// =========================================================================
+
+	/**
+	 * Extract PDF text using Smalot\PdfParser
+	 *
+	 * Primary extraction method. Handles complex PDF structures
+	 * and custom font encodings better than basic methods.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $file_path Path to PDF file.
+	 * @param int    $max_pages Maximum pages to extract (0 = all pages).
+	 * @return string|WP_Error Extracted text or WP_Error.
+	 */
+	private function extract_with_smalot( $file_path, $max_pages = 0 ) {
+		try {
+			// Exclude image binary data from text extraction.
+			$config = new \Smalot\PdfParser\Config();
+			$config->setRetainImageContent( false );
+
+			$parser     = new \Smalot\PdfParser\Parser( [], $config );
+			$pdf        = $parser->parseFile( $file_path );
+			$page_limit = $max_pages > 0 ? $max_pages : null;
+			$text       = $pdf->getText( $page_limit );
+
+			// Filter out garbage/binary content.
+			$text = $this->filter_garbage_text( $text );
+
+			return $text;
+		} catch ( \Exception $e ) {
+			return new WP_Error(
+				'ppa_pdf_parser_error',
+				$e->getMessage()
+			);
+		}
+	}
+
+	/**
+	 * Extract PDF text using pdftotext command-line tool
+	 *
+	 * Fallback extraction method using poppler-utils pdftotext.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $file_path Path to PDF file.
+	 * @param int    $max_pages Maximum pages to extract (0 = all pages).
+	 * @return string|WP_Error Extracted text or WP_Error.
+	 */
+	private function extract_with_pdftotext( $file_path, $max_pages = 0 ) {
+		$pdftotext_path = $this->find_executable( 'pdftotext' );
+
+		if ( ! $pdftotext_path ) {
+			return new WP_Error(
+				'ppa_pdftotext_not_found',
+				__( 'pdftotext command not available.', 'pressprimer-assignment' )
+			);
+		}
+
+		// Create temp output file.
+		$temp_output        = wp_tempnam( 'ppa_pdf_' );
+		$this->temp_files[] = $temp_output;
+
+		// Build command with proper escaping.
+		if ( $max_pages > 0 ) {
+			$command = sprintf(
+				'%s -layout -l %d %s %s 2>&1',
+				escapeshellcmd( $pdftotext_path ),
+				(int) $max_pages,
+				escapeshellarg( $file_path ),
+				escapeshellarg( $temp_output )
+			);
+		} else {
+			$command = sprintf(
+				'%s -layout %s %s 2>&1',
+				escapeshellcmd( $pdftotext_path ),
+				escapeshellarg( $file_path ),
+				escapeshellarg( $temp_output )
+			);
+		}
+
+		// Execute command.
+		$output     = [];
+		$return_var = 0;
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Extracting text from PDF.
+		exec( $command, $output, $return_var );
 
 		if ( 0 !== $return_var ) {
-			return false;
+			return new WP_Error(
+				'ppa_pdftotext_error',
+				__( 'pdftotext command failed.', 'pressprimer-assignment' )
+			);
 		}
 
-		// Create temp file for output.
-		$temp_file = wp_tempnam( 'ppa_pdf_' );
-
-		if ( ! $temp_file ) {
-			return false;
-		}
-
-		// Extract text (first 5 pages max to limit processing time).
-		$command = sprintf(
-			'pdftotext -layout -l 5 %s %s 2>/dev/null',
-			escapeshellarg( $file_path ),
-			escapeshellarg( $temp_file )
-		);
-
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Extracting text from PDF for extractability check.
-		exec( $command, $exec_output, $return_var );
-
-		if ( 0 !== $return_var || ! file_exists( $temp_file ) ) {
-			wp_delete_file( $temp_file );
-			return false;
+		// Read the output file.
+		if ( ! file_exists( $temp_output ) ) {
+			return new WP_Error(
+				'ppa_pdftotext_no_output',
+				__( 'pdftotext did not produce output.', 'pressprimer-assignment' )
+			);
 		}
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading temp file with extracted PDF text.
-		$text = file_get_contents( $temp_file );
-		wp_delete_file( $temp_file );
+		$text = file_get_contents( $temp_output );
+
+		// Clean up temp file immediately.
+		wp_delete_file( $temp_output );
 
 		if ( false === $text ) {
-			return false;
+			return new WP_Error(
+				'ppa_pdftotext_read_error',
+				__( 'Could not read pdftotext output.', 'pressprimer-assignment' )
+			);
 		}
 
 		return $text;
 	}
 
+	// =========================================================================
+	// Text quality filtering.
+	// =========================================================================
+
 	/**
-	 * Basic PHP-based PDF text extraction (fallback)
+	 * Filter garbage text from PDF extraction
 	 *
-	 * Attempts to extract text from PDF stream objects using
-	 * simple pattern matching. Less reliable than pdftotext
-	 * but works without external dependencies.
+	 * PDFs with custom font encodings can produce unreadable characters.
+	 * This method filters out lines that appear to be garbage by checking
+	 * for actual recognizable words with vowels (real English words have vowels).
+	 *
+	 * Ported from PressPrimer Quiz where it proved effective at filtering
+	 * out binary data, font encoding artifacts, and other extraction noise.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $file_path Full path to PDF file.
-	 * @return string|false Extracted text or false on failure.
+	 * @param string $text Raw extracted text.
+	 * @return string Filtered text.
 	 */
-	private static function extract_via_php( $file_path ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading PDF binary content for text extraction.
-		$content = file_get_contents( $file_path, false, null, 0, self::MAX_READ_BYTES );
+	private function filter_garbage_text( $text ) {
+		$lines            = explode( "\n", $text );
+		$filtered         = [];
+		$total_real_words = 0;
+		$total_lines      = 0;
 
-		if ( false === $content ) {
-			return false;
-		}
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+			if ( empty( $line ) ) {
+				continue;
+			}
 
-		$text = '';
+			$line_length = mb_strlen( $line );
 
-		// Method 1: Extract text from Tj/TJ operators (most common).
-		if ( preg_match_all( '/\(([^)]+)\)\s*Tj/s', $content, $matches ) ) {
-			$text .= implode( ' ', $matches[1] );
-		}
-
-		// Method 2: Extract from TJ arrays.
-		if ( preg_match_all( '/\[(.*?)\]\s*TJ/s', $content, $matches ) ) {
-			foreach ( $matches[1] as $match ) {
-				if ( preg_match_all( '/\(([^)]*)\)/', $match, $inner ) ) {
-					$text .= ' ' . implode( '', $inner[1] );
+			// Count words that look like real English (contain at least one vowel).
+			// This filters out garbage like "bbLb", "CHsss", "qY33" etc.
+			preg_match_all( '/\b[a-zA-Z]{2,}\b/', $line, $words );
+			$real_word_count = 0;
+			if ( ! empty( $words[0] ) ) {
+				foreach ( $words[0] as $word ) {
+					// Real English words contain vowels (including 'y' as vowel).
+					if ( preg_match( '/[aeiouyAEIOUY]/', $word ) ) {
+						++$real_word_count;
+					}
 				}
+			}
+
+			// Skip lines that are long but have very few real words.
+			if ( $line_length > 30 && $real_word_count < 3 ) {
+				continue;
+			}
+
+			// Skip lines with high density of special characters (>25%).
+			$special_chars = preg_match_all( '/[^a-zA-Z0-9\s\.,!?\'\"-]/', $line );
+			if ( $line_length > 15 && ( $special_chars / $line_length ) > 0.25 ) {
+				continue;
+			}
+
+			// Skip lines that look like encoded data.
+			if ( preg_match( '/[{}\[\]|\\\\<>~`^@#$%&*+=]{3,}/', $line ) ) {
+				continue;
+			}
+
+			// Skip lines with excessive repeated characters.
+			if ( preg_match( '/(.)\1{4,}/', $line ) ) {
+				continue;
+			}
+
+			// Skip lines that are mostly uppercase consonants (common in garbage).
+			$uppercase_consonants = preg_match_all( '/[BCDFGHJKLMNPQRSTVWXZ]/', $line );
+			if ( $line_length > 20 && ( $uppercase_consonants / $line_length ) > 0.3 ) {
+				continue;
+			}
+
+			$filtered[]        = $line;
+			$total_real_words += $real_word_count;
+			++$total_lines;
+		}
+
+		$result = implode( "\n", $filtered );
+
+		// If we have very few real words overall, the extraction likely failed.
+		if ( $total_lines > 5 && ( $total_real_words / $total_lines ) < 2 ) {
+			return '';
+		}
+
+		// If total real word count is too low for the amount of text, reject it.
+		if ( strlen( $result ) > 300 && $total_real_words < 30 ) {
+			return '';
+		}
+
+		return $result;
+	}
+
+	// =========================================================================
+	// Utility methods.
+	// =========================================================================
+
+	/**
+	 * Find an executable in common system paths
+	 *
+	 * Searches standard locations for a command-line tool, with
+	 * fallback to the `which` command.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $name Executable name (e.g., 'pdftotext').
+	 * @return string|false Full path to executable or false if not found.
+	 */
+	private function find_executable( $name ) {
+		// Common paths to check.
+		$paths = [
+			'/usr/bin/' . $name,
+			'/usr/local/bin/' . $name,
+			'/opt/homebrew/bin/' . $name,
+			'/opt/local/bin/' . $name,
+		];
+
+		foreach ( $paths as $path ) {
+			if ( file_exists( $path ) && is_executable( $path ) ) {
+				return $path;
 			}
 		}
 
-		if ( empty( trim( $text ) ) ) {
-			return false;
+		// Try 'which' command as fallback.
+		if ( function_exists( 'exec' ) && ! in_array( 'exec', array_map( 'trim', explode( ',', ini_get( 'disable_functions' ) ) ), true ) ) {
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Finding pdftotext executable.
+			$which_result = @exec( 'which ' . escapeshellarg( $name ) . ' 2>/dev/null' );
+
+			if ( ! empty( $which_result ) && file_exists( $which_result ) ) {
+				return $which_result;
+			}
 		}
 
-		// Clean up common PDF encoding artifacts.
-		$text = preg_replace( '/\\\\(\d{3})/', '', $text );
-		$text = str_replace( [ '\\(', '\\)', '\\\\' ], [ '(', ')', '\\' ], $text );
+		return false;
+	}
 
-		return $text;
+	/**
+	 * Clean up temporary files
+	 *
+	 * Removes any temporary files created during extraction.
+	 * Registered as a shutdown function in the constructor.
+	 *
+	 * @since 1.0.0
+	 */
+	public function cleanup_temp_files() {
+		foreach ( $this->temp_files as $file ) {
+			if ( file_exists( $file ) ) {
+				wp_delete_file( $file );
+			}
+		}
+		$this->temp_files = [];
 	}
 }

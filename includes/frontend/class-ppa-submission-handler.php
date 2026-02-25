@@ -44,6 +44,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		add_action( 'wp_ajax_ppa_upload_file', [ $this, 'handle_upload' ] );
 		add_action( 'wp_ajax_ppa_remove_file', [ $this, 'handle_remove' ] );
 		add_action( 'wp_ajax_ppa_submit_assignment', [ $this, 'handle_submit' ] );
+		add_action( 'wp_ajax_ppa_delete_submission', [ $this, 'handle_delete_submission' ] );
 	}
 
 	/**
@@ -164,6 +165,18 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
+		// Sync draft files with client state to remove stale uploads
+		// from previous sessions. The client sends the IDs of files it
+		// currently tracks; any draft files not in that list are removed.
+		$known_ids_raw = isset( $_POST['known_file_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['known_file_ids'] ) ) : '[]';
+		$known_ids     = json_decode( $known_ids_raw, true );
+
+		if ( ! is_array( $known_ids ) ) {
+			$known_ids = [];
+		}
+
+		$this->sync_draft_files( $submission, $known_ids );
+
 		// Check file count limit.
 		$existing_files = $submission->get_files();
 		if ( count( $existing_files ) >= $assignment->max_files ) {
@@ -194,16 +207,17 @@ class PressPrimer_Assignment_Submission_Handler {
 		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
 
 		$response_data = [
-			'id'   => $file->id,
+			'id'   => (int) $file->id,
 			'name' => $file->original_filename,
-			'size' => $file->file_size,
+			'size' => (int) $file->file_size,
 			'type' => $file->mime_type,
 		];
 
 		// Check PDF text extraction if this is a PDF file.
 		if ( 'pdf' === strtolower( $file->file_extension ) && class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
-			$full_path = $file->get_full_path();
-			$pdf_check = PressPrimer_Assignment_PDF_Service::check_text_extractable( $full_path );
+			$full_path   = $file->get_full_path();
+			$pdf_service = new PressPrimer_Assignment_PDF_Service();
+			$pdf_check   = $pdf_service->check_text_extractable( $full_path );
 
 			// Store result on the file record.
 			$file->text_extractable = $pdf_check['extractable'] ? 1 : 0;
@@ -211,6 +225,23 @@ class PressPrimer_Assignment_Submission_Handler {
 
 			// Include in response for the frontend preview.
 			$response_data['text_extractable'] = $pdf_check['extractable'];
+
+			// Include extracted text preview (first 3 pages, truncated for display).
+			if ( $pdf_check['extractable'] ) {
+				$preview_text = $pdf_service->extract_text( $full_path, PressPrimer_Assignment_PDF_Service::QUICK_CHECK_PAGES );
+
+				if ( ! is_wp_error( $preview_text ) && ! empty( trim( $preview_text ) ) ) {
+					// Truncate to 1000 characters for the frontend preview.
+					$preview_text = trim( $preview_text );
+					if ( mb_strlen( $preview_text ) > 1000 ) {
+						$preview_text = mb_substr( $preview_text, 0, 1000 );
+					}
+					$response_data['text_preview'] = $preview_text;
+				}
+			}
+
+			// Schedule full text extraction via WP Cron.
+			PressPrimer_Assignment_PDF_Service::schedule_full_extraction( $file->id );
 		}
 
 		wp_send_json_success( $response_data );
@@ -505,7 +536,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		}
 
 		// Determine submission number (for resubmissions).
-		$submission_number = $this->count_user_submissions( $user_id, $assignment_id ) + 1;
+		$submission_number = $this->get_next_submission_number( $user_id, $assignment_id );
 
 		// Create new draft.
 		$submission_id = PressPrimer_Assignment_Submission::create(
@@ -551,6 +582,37 @@ class PressPrimer_Assignment_Submission_Handler {
 		);
 
 		return ! empty( $drafts ) ? $drafts[0] : null;
+	}
+
+	/**
+	 * Sync draft files with the client's known file IDs
+	 *
+	 * Removes files from a draft submission that the client does not
+	 * know about. This handles stale drafts from previous upload
+	 * sessions where files were uploaded but never submitted.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param PressPrimer_Assignment_Submission $draft         Draft submission instance.
+	 * @param array                             $known_file_ids File IDs the client currently tracks.
+	 */
+	private function sync_draft_files( $draft, $known_file_ids ) {
+		$files = $draft->get_files();
+
+		if ( empty( $files ) ) {
+			return;
+		}
+
+		$known_file_ids = array_map( 'absint', $known_file_ids );
+
+		foreach ( $files as $file ) {
+			if ( ! in_array( (int) $file->id, $known_file_ids, true ) ) {
+				$file->delete();
+			}
+		}
+
+		// Clear cached files so next call re-queries.
+		$draft->get_files( true );
 	}
 
 	/**
@@ -664,6 +726,105 @@ class PressPrimer_Assignment_Submission_Handler {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Handle AJAX request to delete a previous submission
+	 *
+	 * Allows users to delete their own previous (non-current) submissions.
+	 * Only the submission owner can delete their submissions.
+	 * Properly cleans up associated files from disk.
+	 *
+	 * AJAX action: ppa_delete_submission
+	 *
+	 * @since 1.0.0
+	 */
+	public function handle_delete_submission() {
+		// Verify nonce.
+		if ( ! check_ajax_referer( 'ppa_frontend_nonce', 'nonce', false ) ) {
+			wp_send_json_error(
+				[ 'message' => __( 'Security check failed.', 'pressprimer-assignment' ) ],
+				403
+			);
+		}
+
+		$submission_id = isset( $_POST['submission_id'] ) ? absint( $_POST['submission_id'] ) : 0;
+
+		if ( 0 === $submission_id ) {
+			wp_send_json_error(
+				[ 'message' => __( 'Invalid submission.', 'pressprimer-assignment' ) ],
+				400
+			);
+		}
+
+		$submission = PressPrimer_Assignment_Submission::get( $submission_id );
+
+		if ( ! $submission ) {
+			wp_send_json_error(
+				[ 'message' => __( 'Submission not found.', 'pressprimer-assignment' ) ],
+				404
+			);
+		}
+
+		// Only the submission owner can delete it.
+		$user_id = get_current_user_id();
+		if ( (int) $submission->user_id !== $user_id ) {
+			wp_send_json_error(
+				[ 'message' => __( 'You do not have permission to delete this submission.', 'pressprimer-assignment' ) ],
+				403
+			);
+		}
+
+		// Delete associated files (with physical file cleanup).
+		$files = $submission->get_files();
+		foreach ( $files as $file ) {
+			$file->delete();
+		}
+
+		// Delete the submission record.
+		$result = $submission->delete();
+
+		if ( true === $result ) {
+			wp_send_json_success(
+				[ 'message' => __( 'Submission deleted.', 'pressprimer-assignment' ) ]
+			);
+		} else {
+			wp_send_json_error(
+				[ 'message' => __( 'Failed to delete submission.', 'pressprimer-assignment' ) ],
+				500
+			);
+		}
+	}
+
+	/**
+	 * Get the next submission number for a user/assignment pair
+	 *
+	 * Uses MAX(submission_number) rather than COUNT(*) to avoid
+	 * unique key collisions when earlier submissions are deleted.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $user_id       User ID.
+	 * @param int $assignment_id Assignment ID.
+	 * @return int Next submission number.
+	 */
+	private function get_next_submission_number( $user_id, $assignment_id ) {
+		global $wpdb;
+
+		$user_id       = absint( $user_id );
+		$assignment_id = absint( $assignment_id );
+		$table         = $wpdb->prefix . 'ppa_submissions';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$max = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT MAX(submission_number) FROM {$table} WHERE user_id = %d AND assignment_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$user_id,
+				$assignment_id
+			)
+		);
+
+		return $max + 1;
 	}
 
 	/**

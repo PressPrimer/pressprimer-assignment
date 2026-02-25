@@ -64,6 +64,8 @@ vendor/*/README.md
 vendor/*/*/README.md
 vendor/*/tests
 vendor/*/*/tests
+vendor/*/doc
+vendor/*/*/doc
 vendor/*/.editorconfig
 vendor/*/*/.editorconfig
 vendor/*/*.php-dist

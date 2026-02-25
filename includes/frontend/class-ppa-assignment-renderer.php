@@ -304,6 +304,17 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		ob_start();
 
 		if ( 'either' === $assignment->submission_type ) {
+			// Check if user has an existing text draft (to auto-open the text panel).
+			$draft_submission = $this->get_text_draft( $assignment->id );
+			$has_text_draft   = $draft_submission && ! empty( $draft_submission->text_content );
+
+			// Also check for existing file draft.
+			$has_file_draft = false;
+			if ( ! $has_text_draft ) {
+				$file_draft     = $this->get_file_draft( $assignment->id );
+				$has_file_draft = $file_draft && count( $file_draft->get_files() ) > 0;
+			}
+
 			// Show type selector — student chooses between file and text.
 			$template_path = $this->get_template_path( 'assignment/submission-type-selector.php' );
 
@@ -322,26 +333,22 @@ class PressPrimer_Assignment_Assignment_Renderer {
 				echo '</div>';
 			}
 
-			// Text editor panel placeholder (Phase 5 will implement).
-			echo '<div class="ppa-submission-type-panel ppa-submission-type-text ppa-hidden">';
-			echo '<section class="ppa-submission-form" aria-label="' . esc_attr__( 'Text submission', 'pressprimer-assignment' ) . '">';
-			echo '<p class="ppa-notice ppa-notice-info"><span class="ppa-notice-message">';
-			echo esc_html__( 'Text editor will be available in a future update.', 'pressprimer-assignment' );
-			echo '</span></p></section>';
-			echo '</div>';
-		} elseif ( 'text' === $assignment->submission_type ) {
-			// Text-only submission (Phase 5 will implement full editor).
-			echo '<section class="ppa-submission-form" aria-label="' . esc_attr__( 'Text submission', 'pressprimer-assignment' ) . '">';
-			echo '<h3 class="ppa-form-heading">';
-			if ( $is_resubmission ) {
-				esc_html_e( 'Submit Again', 'pressprimer-assignment' );
-			} else {
-				esc_html_e( 'Submit Your Work', 'pressprimer-assignment' );
+			// Text editor panel.
+			$draft_submission = $this->get_text_draft( $assignment->id );
+			$editor_template  = $this->get_template_path( 'assignment/text-editor.php' );
+			if ( $editor_template ) {
+				echo '<div class="ppa-submission-type-panel ppa-submission-type-text ppa-hidden">';
+				include $editor_template;
+				echo '</div>';
 			}
-			echo '</h3>';
-			echo '<p class="ppa-notice ppa-notice-info"><span class="ppa-notice-message">';
-			echo esc_html__( 'Text editor will be available in a future update.', 'pressprimer-assignment' );
-			echo '</span></p></section>';
+		} elseif ( 'text' === $assignment->submission_type ) {
+			// Text-only submission.
+			$draft_submission = $this->get_text_draft( $assignment->id );
+			$template_path    = $this->get_template_path( 'assignment/text-editor.php' );
+
+			if ( $template_path ) {
+				include $template_path;
+			}
 		} else {
 			// Default: file upload form.
 			$allowed_types = $assignment->get_allowed_file_types();
@@ -479,12 +486,6 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			<?php endif; ?>
 
 			<?php if ( ! empty( $display['show_file_info'] ) && $assignment->accepts_file_upload() ) : ?>
-				<?php $allowed_types = $assignment->get_allowed_file_types(); ?>
-				<div class="ppa-meta-item">
-					<span class="ppa-meta-label"><?php esc_html_e( 'Accepted Formats', 'pressprimer-assignment' ); ?></span>
-					<span class="ppa-meta-value"><?php echo esc_html( implode( ', ', array_map( 'strtoupper', $allowed_types ) ) ); ?></span>
-				</div>
-
 				<div class="ppa-meta-item">
 					<span class="ppa-meta-label"><?php esc_html_e( 'Max File Size', 'pressprimer-assignment' ); ?></span>
 					<span class="ppa-meta-value"><?php echo esc_html( size_format( $assignment->max_file_size ) ); ?></span>
@@ -646,6 +647,71 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		];
 
 		return isset( $labels[ $status ] ) ? $labels[ $status ] : $status;
+	}
+
+	/**
+	 * Get existing text draft for the current user
+	 *
+	 * Looks for an existing draft submission for the current user
+	 * and assignment. Returns null if none exists.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $assignment_id Assignment ID.
+	 * @return PressPrimer_Assignment_Submission|null Draft submission or null.
+	 */
+	private function get_text_draft( $assignment_id ) {
+		$user_id = get_current_user_id();
+		if ( 0 === $user_id ) {
+			return null;
+		}
+
+		$drafts = PressPrimer_Assignment_Submission::find(
+			[
+				'where'    => [
+					'assignment_id' => $assignment_id,
+					'user_id'       => $user_id,
+					'status'        => PressPrimer_Assignment_Submission::STATUS_DRAFT,
+				],
+				'order_by' => 'created_at',
+				'order'    => 'DESC',
+				'limit'    => 1,
+			]
+		);
+
+		return ! empty( $drafts ) ? $drafts[0] : null;
+	}
+
+	/**
+	 * Get existing file draft for the current user
+	 *
+	 * Looks for an existing draft submission that has uploaded files.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $assignment_id Assignment ID.
+	 * @return PressPrimer_Assignment_Submission|null Draft submission or null.
+	 */
+	private function get_file_draft( $assignment_id ) {
+		$user_id = get_current_user_id();
+		if ( 0 === $user_id ) {
+			return null;
+		}
+
+		$drafts = PressPrimer_Assignment_Submission::find(
+			[
+				'where'    => [
+					'assignment_id' => $assignment_id,
+					'user_id'       => $user_id,
+					'status'        => PressPrimer_Assignment_Submission::STATUS_DRAFT,
+				],
+				'order_by' => 'created_at',
+				'order'    => 'DESC',
+				'limit'    => 1,
+			]
+		);
+
+		return ! empty( $drafts ) ? $drafts[0] : null;
 	}
 
 	/**

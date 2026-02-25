@@ -66,7 +66,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	<?php endif; ?>
 
-	<?php if ( ! empty( $files ) ) : ?>
+	<?php if ( $submission->is_text_submission() ) : ?>
+		<div class="ppa-submitted-text">
+			<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Your Submission', 'pressprimer-assignment' ); ?></h4>
+			<div class="ppa-submitted-text-content">
+				<?php echo wp_kses_post( wpautop( $submission->text_content ) ); ?>
+			</div>
+			<?php if ( $submission->word_count > 0 ) : ?>
+				<p class="ppa-form-hint">
+					<?php
+					printf(
+						/* translators: %s: word count */
+						esc_html__( '%s words', 'pressprimer-assignment' ),
+						esc_html( number_format_i18n( $submission->word_count ) )
+					);
+					?>
+				</p>
+			<?php endif; ?>
+		</div>
+	<?php elseif ( ! empty( $files ) ) : ?>
 		<div class="ppa-submitted-files">
 			<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Submitted Files', 'pressprimer-assignment' ); ?></h4>
 			<ul class="ppa-file-list" role="list">
@@ -166,13 +184,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php endif; ?>
 
 	<?php if ( ! empty( $previous_submissions ) ) : ?>
-		<details class="ppa-previous-submissions">
-			<summary class="ppa-previous-summary">
-				<?php esc_html_e( 'View Previous Submissions', 'pressprimer-assignment' ); ?>
-			</summary>
-			<ul class="ppa-previous-list">
-				<?php foreach ( $previous_submissions as $prev ) : ?>
-					<?php
+		<div class="ppa-previous-submissions">
+			<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Previous Submissions', 'pressprimer-assignment' ); ?></h4>
+			<div class="ppa-submissions-list">
+				<?php
+				$shown = 0;
+				foreach ( $previous_submissions as $prev ) :
+					if ( $shown >= 3 ) {
+						break;
+					}
+					++$shown;
+
 					$prev_date = '';
 					if ( ! empty( $prev->submitted_at ) ) {
 						$prev_date = date_i18n(
@@ -181,22 +203,54 @@ if ( ! defined( 'ABSPATH' ) ) {
 						);
 					}
 					?>
-					<li class="ppa-previous-item">
-						<?php
-						printf(
-							/* translators: %1$d: submission number, %2$s: date, %3$s: score or "Not graded" */
-							esc_html__( 'Submission #%1$d - %2$s - Score: %3$s', 'pressprimer-assignment' ),
-							(int) $prev->submission_number,
-							esc_html( $prev_date ),
-							null !== $prev->score
-								? esc_html( number_format_i18n( $prev->score, 1 ) )
-								: esc_html__( 'Not graded', 'pressprimer-assignment' )
-						);
-						?>
-					</li>
+					<div class="ppa-submission-card" data-submission-id="<?php echo esc_attr( $prev->id ); ?>">
+						<div class="ppa-submission-card-info">
+							<span class="ppa-submission-card-number">
+								<?php
+								printf(
+									/* translators: %d: submission number */
+									esc_html__( 'Submission #%d', 'pressprimer-assignment' ),
+									(int) $prev->submission_number
+								);
+								?>
+							</span>
+							<span class="ppa-submission-card-date">
+								<?php echo esc_html( $prev_date ); ?>
+							</span>
+						</div>
+						<div class="ppa-submission-card-actions">
+							<?php if ( null !== $prev->score ) : ?>
+								<span class="ppa-submission-card-points <?php echo esc_attr( $prev->passed ? 'ppa-passed' : 'ppa-failed' ); ?>">
+									<?php
+									echo esc_html(
+										sprintf(
+											/* translators: %1$s: score, %2$s: max points */
+											__( '%1$s / %2$s', 'pressprimer-assignment' ),
+											number_format_i18n( $prev->score, 1 ),
+											number_format_i18n( $assignment->max_points, 0 )
+										)
+									);
+									?>
+									<?php if ( $prev->passed ) : ?>
+										<span class="ppa-pass-badge" aria-label="<?php esc_attr_e( 'Passed', 'pressprimer-assignment' ); ?>">&#10003;</span>
+									<?php endif; ?>
+								</span>
+							<?php else : ?>
+								<span class="ppa-submission-card-ungraded">
+									<?php esc_html_e( 'Not graded', 'pressprimer-assignment' ); ?>
+								</span>
+							<?php endif; ?>
+							<button type="button"
+								class="ppa-delete-submission"
+								data-submission-id="<?php echo esc_attr( $prev->id ); ?>"
+								aria-label="<?php esc_attr_e( 'Delete this submission', 'pressprimer-assignment' ); ?>">
+								<span class="dashicons dashicons-trash" aria-hidden="true"></span>
+							</button>
+						</div>
+					</div>
 				<?php endforeach; ?>
-			</ul>
-		</details>
+			</div>
+		</div>
 	<?php endif; ?>
 
 </section>

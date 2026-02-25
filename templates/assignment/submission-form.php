@@ -60,7 +60,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	?>
 	<form id="ppa-submission-form" method="post" enctype="multipart/form-data"
 		data-can-resubmit="<?php echo esc_attr( $can_resubmit_data ); ?>"
-		data-resubmissions-remaining="<?php echo esc_attr( $resubmissions_remaining ); ?>">
+		data-resubmissions-remaining="<?php echo esc_attr( $resubmissions_remaining ); ?>"
+		data-assignment-title="<?php echo esc_attr( $assignment->title ); ?>">
 		<?php wp_nonce_field( 'ppa_submit_assignment', 'ppa_nonce' ); ?>
 		<input type="hidden" name="assignment_id" value="<?php echo esc_attr( $assignment->id ); ?>">
 
@@ -137,13 +138,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 				class="ppa-button ppa-button-primary ppa-submit-button"
 				id="ppa-submit-btn"
 				disabled
-				aria-describedby="ppa-submit-hint"
 			>
 				<?php esc_html_e( 'Submit Assignment', 'pressprimer-assignment' ); ?>
 			</button>
-			<p class="ppa-form-hint" id="ppa-submit-hint">
-				<?php esc_html_e( 'Upload at least one file to enable submission.', 'pressprimer-assignment' ); ?>
-			</p>
 		</div>
 	</form>
 </section>
