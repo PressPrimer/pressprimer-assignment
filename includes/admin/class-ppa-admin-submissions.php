@@ -56,7 +56,14 @@ class PressPrimer_Assignment_Admin_Submissions {
 	public function maybe_add_screen_options() {
 		$screen = get_current_screen();
 
-		if ( $screen && 'pressprimer-assignment_page_pressprimer-assignment-submissions' === $screen->id ) {
+		if ( ! $screen ) {
+			return;
+		}
+
+		// Match the screen ID by the submenu slug suffix.
+		// WordPress may convert hyphens to underscores in the parent slug portion
+		// of the screen ID, so we check for the unique submenu slug instead.
+		if ( false !== strpos( $screen->id, 'pressprimer-assignment-submissions' ) ) {
 			$this->screen_options();
 		}
 	}
@@ -83,6 +90,20 @@ class PressPrimer_Assignment_Admin_Submissions {
 		);
 
 		$this->list_table = new PressPrimer_Assignment_Submissions_List_Table();
+
+		// Register columns with the screen for Screen Options column toggles.
+		$screen = get_current_screen();
+		if ( $screen ) {
+			$columns = $this->list_table->get_columns();
+
+			add_filter(
+				"manage_{$screen->id}_columns",
+				function () use ( $columns ) {
+					return $columns;
+				}
+			);
+		}
+
 		add_filter( 'set-screen-option', [ $this, 'set_screen_option' ], 10, 3 );
 	}
 
@@ -617,7 +638,7 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 		);
 
 		$columns               = $this->get_columns();
-		$hidden                = [];
+		$hidden                = get_hidden_columns( $this->screen );
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = [ $columns, $hidden, $sortable ];
 	}

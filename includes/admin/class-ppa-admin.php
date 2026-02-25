@@ -26,6 +26,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 class PressPrimer_Assignment_Admin {
 
 	/**
+	 * Sub-admin instances
+	 *
+	 * Stored so the same instance used for screen_options()
+	 * is reused for render(), preserving the list_table reference.
+	 *
+	 * @since 1.0.0
+	 * @var array
+	 */
+	private $sub_admins = [];
+
+	/**
 	 * Initialize admin functionality
 	 *
 	 * Hooks into WordPress admin to add menus and enqueue assets.
@@ -34,6 +45,7 @@ class PressPrimer_Assignment_Admin {
 	 */
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'register_menus' ] );
+		add_action( 'admin_menu', [ $this, 'add_grading_badge' ], 999 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
 		// Initialize sub-admin classes.
@@ -48,29 +60,20 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	private function init_sub_admins() {
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Settings' ) ) {
-			$settings = new PressPrimer_Assignment_Admin_Settings();
-			$settings->init();
-		}
+		$classes = [
+			'settings'    => 'PressPrimer_Assignment_Admin_Settings',
+			'assignments' => 'PressPrimer_Assignment_Admin_Assignments',
+			'submissions' => 'PressPrimer_Assignment_Admin_Submissions',
+			'categories'  => 'PressPrimer_Assignment_Admin_Categories',
+			'grading'     => 'PressPrimer_Assignment_Admin_Grading',
+			'reports'     => 'PressPrimer_Assignment_Admin_Reports',
+		];
 
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Assignments' ) ) {
-			$assignments = new PressPrimer_Assignment_Admin_Assignments();
-			$assignments->init();
-		}
-
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Submissions' ) ) {
-			$submissions = new PressPrimer_Assignment_Admin_Submissions();
-			$submissions->init();
-		}
-
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Categories' ) ) {
-			$categories = new PressPrimer_Assignment_Admin_Categories();
-			$categories->init();
-		}
-
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Reports' ) ) {
-			$reports = new PressPrimer_Assignment_Admin_Reports();
-			$reports->init();
+		foreach ( $classes as $key => $class_name ) {
+			if ( class_exists( $class_name ) ) {
+				$this->sub_admins[ $key ] = new $class_name();
+				$this->sub_admins[ $key ]->init();
+			}
 		}
 	}
 
@@ -135,6 +138,16 @@ class PressPrimer_Assignment_Admin {
 			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
 			'pressprimer-assignment-submissions',
 			[ $this, 'render_submissions' ]
+		);
+
+		// Grading queue submenu.
+		add_submenu_page(
+			'pressprimer-assignment',
+			__( 'Grading', 'pressprimer-assignment' ),
+			__( 'Grading', 'pressprimer-assignment' ),
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			'pressprimer-assignment-grading',
+			[ $this, 'render_grading' ]
 		);
 
 		// Categories submenu.
@@ -235,6 +248,58 @@ class PressPrimer_Assignment_Admin {
 				],
 			]
 		);
+
+		// Conditionally enqueue React bundles per page.
+		$this->maybe_enqueue_react_bundle( $current_page );
+	}
+
+	/**
+	 * Conditionally enqueue React bundles for specific admin pages
+	 *
+	 * Loads the compiled React bundle and its auto-generated asset
+	 * dependencies for pages that use React-based interfaces.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $current_page Current admin page slug.
+	 */
+	private function maybe_enqueue_react_bundle( $current_page ) {
+		$bundles = [
+			'pressprimer-assignment'         => 'dashboard',
+			'pressprimer-assignment-reports' => 'reports',
+		];
+
+		if ( ! isset( $bundles[ $current_page ] ) ) {
+			return;
+		}
+
+		$bundle_name = $bundles[ $current_page ];
+		$asset_file  = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/' . $bundle_name . '.asset.php';
+
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		$asset = require $asset_file;
+
+		wp_enqueue_script(
+			'ppa-' . $bundle_name,
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/' . $bundle_name . '.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
+
+		// Enqueue the CSS if it exists.
+		$css_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/' . $bundle_name . '.css';
+		if ( file_exists( $css_file ) ) {
+			wp_enqueue_style(
+				'ppa-' . $bundle_name,
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/' . $bundle_name . '.css',
+				[ 'ppa-admin' ],
+				$asset['version']
+			);
+		}
 	}
 
 	/**
@@ -262,9 +327,8 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_assignments() {
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Assignments' ) ) {
-			$admin = new PressPrimer_Assignment_Admin_Assignments();
-			$admin->render();
+		if ( isset( $this->sub_admins['assignments'] ) ) {
+			$this->sub_admins['assignments']->render();
 		}
 	}
 
@@ -274,9 +338,19 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_submissions() {
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Submissions' ) ) {
-			$admin = new PressPrimer_Assignment_Admin_Submissions();
-			$admin->render();
+		if ( isset( $this->sub_admins['submissions'] ) ) {
+			$this->sub_admins['submissions']->render();
+		}
+	}
+
+	/**
+	 * Render grading queue page
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_grading() {
+		if ( isset( $this->sub_admins['grading'] ) ) {
+			$this->sub_admins['grading']->render();
 		}
 	}
 
@@ -286,9 +360,8 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_categories() {
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Categories' ) ) {
-			$admin = new PressPrimer_Assignment_Admin_Categories();
-			$admin->render();
+		if ( isset( $this->sub_admins['categories'] ) ) {
+			$this->sub_admins['categories']->render();
 		}
 	}
 
@@ -315,9 +388,48 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_settings() {
-		if ( class_exists( 'PressPrimer_Assignment_Admin_Settings' ) ) {
-			$admin = new PressPrimer_Assignment_Admin_Settings();
-			$admin->render();
+		if ( isset( $this->sub_admins['settings'] ) ) {
+			$this->sub_admins['settings']->render();
+		}
+	}
+
+	/**
+	 * Add pending count badge to Grading menu item
+	 *
+	 * Appends the WordPress admin badge markup to the Grading
+	 * submenu label showing how many submissions await grading.
+	 *
+	 * @since 1.0.0
+	 */
+	public function add_grading_badge() {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return;
+		}
+
+		if ( ! class_exists( 'PressPrimer_Assignment_Grading_Queue_Service' ) ) {
+			return;
+		}
+
+		$count = PressPrimer_Assignment_Grading_Queue_Service::get_pending_count();
+
+		if ( $count < 1 ) {
+			return;
+		}
+
+		global $submenu;
+
+		if ( ! isset( $submenu['pressprimer-assignment'] ) ) {
+			return;
+		}
+
+		foreach ( $submenu['pressprimer-assignment'] as $key => $item ) {
+			if ( 'pressprimer-assignment-grading' === $item[2] ) {
+				$submenu['pressprimer-assignment'][ $key ][0] .= sprintf( // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- WordPress core pattern for admin menu badges.
+					' <span class="awaiting-mod count-%1$d"><span class="pending-count">%1$d</span></span>',
+					$count
+				);
+				break;
+			}
 		}
 	}
 

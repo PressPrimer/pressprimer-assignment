@@ -1,5 +1,7 @@
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const path = require( 'path' );
+// eslint-disable-next-line import/no-extraneous-dependencies
+const CopyPlugin = require( 'copy-webpack-plugin' );
 
 module.exports = {
 	...defaultConfig,
@@ -58,4 +60,25 @@ module.exports = {
 			return '[name].js';
 		},
 	},
+	plugins: [
+		...( defaultConfig.plugins || [] ),
+		new CopyPlugin( {
+			patterns: [
+				{
+					from: path.resolve(
+						process.cwd(),
+						'node_modules',
+						'pdfjs-dist',
+						'build',
+						'pdf.worker.min.js'
+					),
+					to: path.resolve(
+						process.cwd(),
+						'build',
+						'pdf.worker.min.js'
+					),
+				},
+			],
+		} ),
+	],
 };

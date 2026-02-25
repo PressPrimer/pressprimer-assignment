@@ -235,6 +235,18 @@ class PressPrimer_Assignment_Plugin {
 			$assignments_api = new PressPrimer_Assignment_REST_Assignments();
 			$assignments_api->init();
 		}
+
+		// Grading Queue REST API.
+		if ( class_exists( 'PressPrimer_Assignment_REST_Grading_Queue' ) ) {
+			$grading_queue_api = new PressPrimer_Assignment_REST_Grading_Queue();
+			$grading_queue_api->init();
+		}
+
+		// Submissions REST API.
+		if ( class_exists( 'PressPrimer_Assignment_REST_Submissions' ) ) {
+			$submissions_api = new PressPrimer_Assignment_REST_Submissions();
+			$submissions_api->init();
+		}
 	}
 
 	/**

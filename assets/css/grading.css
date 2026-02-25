@@ -1,0 +1,113 @@
+/**
+ * PressPrimer Assignment - Grading Interface Styles
+ *
+ * Styles for the React grading form used when action=grade.
+ * Handles the split-panel layout, header bar, score section,
+ * and return button coloring.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* Header bar */
+.ppa-grading-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 0;
+	margin-bottom: 16px;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.ppa-grading-header-left,
+.ppa-grading-header-center,
+.ppa-grading-header-right {
+	display: flex;
+	align-items: center;
+}
+
+/* Main split-panel area */
+.ppa-grading-main {
+	min-height: calc(100vh - 180px);
+}
+
+/* Document card fills available height */
+.ppa-grading-document-card {
+	height: 100%;
+	min-height: calc(100vh - 200px);
+}
+
+.ppa-grading-document-card .ant-card-body {
+	padding: 0;
+	height: 100%;
+}
+
+/* Grading form card */
+.ppa-grading-form-card {
+	position: sticky;
+	top: 46px;
+	max-height: calc(100vh - 80px);
+	overflow-y: auto;
+}
+
+/* Score section quick score buttons */
+.ppa-quick-scores {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+}
+
+/* Return button styling */
+.ppa-btn-return.ant-btn-primary {
+	background-color: #00a32a;
+	border-color: #00a32a;
+}
+
+.ppa-btn-return.ant-btn-primary:hover {
+	background-color: #008a20;
+	border-color: #008a20;
+}
+
+.ppa-btn-return.ant-btn-primary:disabled {
+	background-color: #f0f0f0;
+	border-color: #d9d9d9;
+	color: rgba(0, 0, 0, 0.25);
+}
+
+/* Grading guidelines details/summary */
+.ppa-guidelines-reference summary {
+	list-style: none;
+	cursor: pointer;
+}
+
+.ppa-guidelines-reference summary::-webkit-details-marker {
+	display: none;
+}
+
+.ppa-guidelines-reference summary::before {
+	content: "▶ ";
+	font-size: 10px;
+	margin-right: 4px;
+}
+
+.ppa-guidelines-reference[open] summary::before {
+	content: "▼ ";
+}
+
+/* Keyboard shortcuts help */
+.ppa-shortcuts-help {
+	border-top: 1px solid #f0f0f0;
+	padding-top: 12px;
+}
+
+/* Returned notice */
+.ppa-returned-notice {
+	text-align: center;
+	padding: 8px 0;
+}
+
+/* Pass/fail preview tags */
+.ppa-pass-preview .ant-tag {
+	font-size: 13px;
+	padding: 4px 12px;
+}

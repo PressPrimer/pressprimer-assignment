@@ -60,8 +60,14 @@ class PressPrimer_Assignment_Admin_Assignments {
 	public function maybe_add_screen_options() {
 		$screen = get_current_screen();
 
-		// Only add screen options on the assignments list page.
-		if ( $screen && 'pressprimer-assignment_page_pressprimer-assignment-assignments' === $screen->id ) {
+		if ( ! $screen ) {
+			return;
+		}
+
+		// Match the screen ID by the submenu slug suffix.
+		// WordPress may convert hyphens to underscores in the parent slug portion
+		// of the screen ID, so we check for the unique submenu slug instead.
+		if ( false !== strpos( $screen->id, 'pressprimer-assignment-assignments' ) ) {
 			$this->screen_options();
 		}
 	}
