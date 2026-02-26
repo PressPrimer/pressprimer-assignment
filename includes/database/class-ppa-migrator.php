@@ -111,6 +111,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.2.0', '<' ) ) {
 			self::migrate_to_1_2_0();
 		}
+		if ( version_compare( $from_version, '1.3.0', '<' ) ) {
+			self::migrate_to_1_3_0();
+		}
 	}
 
 	/**
@@ -184,6 +187,30 @@ class PressPrimer_Assignment_Migrator {
 		if ( ! $column_exists ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN extracted_text LONGTEXT DEFAULT NULL AFTER text_extractable" );
+		}
+	}
+
+	/**
+	 * Migration to 1.3.0
+	 *
+	 * Adds notification_email column to assignments table for
+	 * per-assignment email notification recipients.
+	 *
+	 * @since 1.0.0
+	 */
+	private static function migrate_to_1_3_0() {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		// Add notification_email to assignments.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $assignments_table, 'notification_email' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN notification_email VARCHAR(500) DEFAULT NULL AFTER author_id" );
 		}
 	}
 

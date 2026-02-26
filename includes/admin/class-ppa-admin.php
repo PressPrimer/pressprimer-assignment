@@ -96,7 +96,7 @@ class PressPrimer_Assignment_Admin {
 		 */
 		$plugin_name = apply_filters(
 			'pressprimer_assignment_plugin_name',
-			__( 'PPA Assignments', 'pressprimer-assignment' )
+			__( 'Assignments', 'pressprimer-assignment' )
 		);
 
 		// Main menu page (Dashboard).

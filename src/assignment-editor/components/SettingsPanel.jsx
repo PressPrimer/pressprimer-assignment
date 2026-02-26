@@ -24,6 +24,7 @@ import {
 	TrophyOutlined,
 	FileTextOutlined,
 	EditOutlined,
+	MailOutlined,
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -489,6 +490,49 @@ const SettingsPanel = ( { form } ) => {
 						'pressprimer-assignment'
 					) }
 				</Text>
+
+				<div style={ { marginTop: 24 } }>
+					<Form.Item
+						label={
+							<Space>
+								<MailOutlined />
+								<span>
+									{ __(
+										'Notification Email',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Additional email addresses to notify when a student submits. The assignment author always receives the notification.',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="notification_email"
+						extra={ __(
+							'Comma-separated email addresses. Leave blank to only notify the assignment author.',
+							'pressprimer-assignment'
+						) }
+					>
+						<Input
+							placeholder={ __(
+								'e.g., instructor@school.edu, ta@school.edu',
+								'pressprimer-assignment'
+							) }
+							style={ { width: 300 } }
+							size="small"
+						/>
+					</Form.Item>
+				</div>
 			</Card>
 		</Space>
 	);

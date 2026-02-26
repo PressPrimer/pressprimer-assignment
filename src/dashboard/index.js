@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  */
 const Dashboard = () => {
 	const data = window.pressprimerAssignmentDashboardData || {};
-	const pluginName = data.pluginName || 'PPA Assignments';
+	const pluginName = data.pluginName || 'Assignments';
 
 	return (
 		<div className="wrap">

@@ -578,6 +578,25 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		// Notification email (comma-separated email addresses).
+		if ( null !== $request->get_param( 'notification_email' ) ) {
+			$raw_emails = sanitize_text_field( $request->get_param( 'notification_email' ) );
+			if ( '' === trim( $raw_emails ) ) {
+				$data['notification_email'] = null;
+			} else {
+				// Validate each email address individually.
+				$emails = array_map( 'trim', explode( ',', $raw_emails ) );
+				$valid  = [];
+				foreach ( $emails as $email_addr ) {
+					$sanitized_email = sanitize_email( $email_addr );
+					if ( is_email( $sanitized_email ) ) {
+						$valid[] = $sanitized_email;
+					}
+				}
+				$data['notification_email'] = ! empty( $valid ) ? implode( ', ', $valid ) : null;
+			}
+		}
+
 		// JSON fields.
 		if ( null !== $request->get_param( 'allowed_file_types' ) ) {
 			$file_types = $request->get_param( 'allowed_file_types' );
@@ -627,6 +646,7 @@ class PressPrimer_Assignment_REST_Assignments {
 			'submission_type'    => $assignment->submission_type,
 			'status'             => $assignment->status,
 			'author_id'          => (int) $assignment->author_id,
+			'notification_email' => $assignment->notification_email ?? '',
 			'submission_count'   => (int) $assignment->submission_count,
 			'graded_count'       => (int) $assignment->graded_count,
 			'created_at'         => $assignment->created_at,

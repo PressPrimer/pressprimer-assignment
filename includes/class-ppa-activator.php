@@ -109,6 +109,9 @@ class PressPrimer_Assignment_Activator {
 			PressPrimer_Assignment_Capabilities::setup_capabilities();
 		}
 
+		// Create default pages.
+		self::create_default_pages();
+
 		// Flush rewrite rules
 		flush_rewrite_rules();
 
@@ -178,6 +181,44 @@ class PressPrimer_Assignment_Activator {
 			// This is a critical safety measure to prevent accidental data loss
 			$existing_settings['remove_data_on_uninstall'] = false;
 			update_option( 'pressprimer_assignment_settings', $existing_settings );
+		}
+	}
+
+	/**
+	 * Create default pages
+	 *
+	 * Creates a "My Submissions" page with the shortcode on first activation.
+	 * Stores the page ID in settings so it can be referenced by the email service.
+	 * Only creates the page once; skips if the setting already has a valid page.
+	 *
+	 * @since 1.0.0
+	 */
+	private static function create_default_pages() {
+		$settings = get_option( 'pressprimer_assignment_settings', [] );
+
+		// Check if a page is already mapped and still exists.
+		if ( ! empty( $settings['my_submissions_page_id'] ) ) {
+			$existing = get_post( absint( $settings['my_submissions_page_id'] ) );
+			if ( $existing && 'trash' !== $existing->post_status ) {
+				return;
+			}
+		}
+
+		// Create the page.
+		$page_id = wp_insert_post(
+			[
+				'post_type'    => 'page',
+				'post_title'   => __( 'My Submissions', 'pressprimer-assignment' ),
+				'post_name'    => 'my-submissions',
+				'post_content' => '<!-- wp:shortcode -->[ppa_my_submissions]<!-- /wp:shortcode -->',
+				'post_status'  => 'publish',
+				'post_author'  => get_current_user_id() ?: 1,
+			]
+		);
+
+		if ( $page_id && ! is_wp_error( $page_id ) ) {
+			$settings['my_submissions_page_id'] = $page_id;
+			update_option( 'pressprimer_assignment_settings', $settings );
 		}
 	}
 

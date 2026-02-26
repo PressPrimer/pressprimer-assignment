@@ -145,6 +145,17 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	public $author_id = 0;
 
 	/**
+	 * Notification email addresses (comma-separated)
+	 *
+	 * Additional email addresses that receive new submission notifications
+	 * alongside the assignment author.
+	 *
+	 * @since 1.0.0
+	 * @var string|null
+	 */
+	public $notification_email = null;
+
+	/**
 	 * Cached submission count
 	 *
 	 * @since 1.0.0
@@ -219,6 +230,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'submission_type',
 			'status',
 			'author_id',
+			'notification_email',
 			'submission_count',
 			'graded_count',
 		];

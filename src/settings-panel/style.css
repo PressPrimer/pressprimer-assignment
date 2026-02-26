@@ -1,0 +1,278 @@
+/**
+ * Settings Panel Styles
+ *
+ * Matches PressPrimer Quiz settings panel for visual consistency.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+.ppa-settings-container {
+	background: #f0f2f5;
+	min-height: calc(100vh - 32px); /* Account for WP admin bar */
+	padding: 24px;
+}
+
+.ppa-settings-header {
+	background: #334155;
+	padding: 12px;
+	padding-left: 32px;
+	border-radius: 12px;
+	margin-bottom: 24px;
+	color: #fff;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.ppa-settings-header-content {
+	flex: 1;
+	padding: 20px 0;
+}
+
+.ppa-settings-header h1 {
+	margin: 0 0 8px 0;
+	font-size: 28px;
+	font-weight: 600;
+	color: #fff;
+}
+
+.ppa-settings-header p {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.75);
+	font-size: 15px;
+}
+
+.ppa-settings-header-mascot {
+	height: 130px;
+	width: auto;
+	flex-shrink: 0;
+}
+
+/* Main settings layout */
+.ppa-settings-layout {
+	display: flex;
+	gap: 24px;
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	overflow: hidden;
+}
+
+/* Vertical tabs sidebar */
+.ppa-settings-tabs {
+	width: 220px;
+	min-width: 220px;
+	background: #fafafa;
+	border-right: 1px solid #f0f0f0;
+	padding: 16px 0;
+}
+
+.ppa-settings-tab {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+	padding: 14px 20px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	font-size: 14px;
+	color: #1d2327;
+	text-align: left;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.ppa-settings-tab:hover {
+	background: #f0f0f0;
+	color: #2271b1;
+}
+
+.ppa-settings-tab--active {
+	background: #fff;
+	color: #2271b1;
+	font-weight: 600;
+}
+
+.ppa-settings-tab--active::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	background: #2271b1;
+}
+
+.ppa-settings-tab .anticon {
+	font-size: 18px;
+}
+
+/* Tab content area */
+.ppa-settings-content {
+	flex: 1;
+	padding: 24px;
+	min-height: 600px;
+}
+
+.ppa-settings-section {
+	margin-bottom: 32px;
+}
+
+.ppa-settings-section:last-child {
+	margin-bottom: 0;
+}
+
+.ppa-settings-section-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 8px 0;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.ppa-settings-section-description {
+	color: #646970;
+	margin-bottom: 16px;
+	font-size: 13px;
+}
+
+/* Form field styling */
+.ppa-settings-field {
+	margin-bottom: 20px;
+}
+
+.ppa-settings-field:last-child {
+	margin-bottom: 0;
+}
+
+.ppa-settings-field .ant-form-item {
+	margin-bottom: 0;
+}
+
+.ppa-settings-field .ant-form-item-label > label {
+	font-weight: 500;
+}
+
+/* Danger zone styling */
+.ppa-danger-zone {
+	border: 1px solid #ff4d4f;
+	border-radius: 8px;
+	padding: 20px;
+	background: #fff2f0;
+}
+
+.ppa-danger-zone .ppa-settings-section-title {
+	color: #cf1322;
+}
+
+/* Save button footer */
+.ppa-settings-footer {
+	display: flex;
+	justify-content: flex-end;
+	padding: 16px 24px;
+	background: #fafafa;
+	border-top: 1px solid #f0f0f0;
+	margin: 0 -24px -24px -24px;
+}
+
+/* System info table */
+.ppa-system-info {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.ppa-system-info th,
+.ppa-system-info td {
+	padding: 12px 16px;
+	text-align: left;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.ppa-system-info th {
+	width: 200px;
+	font-weight: 500;
+	color: #1d2327;
+	background: #fafafa;
+}
+
+.ppa-system-info td {
+	color: #3c434a;
+}
+
+.ppa-system-info tr:last-child th,
+.ppa-system-info tr:last-child td {
+	border-bottom: none;
+}
+
+/* Token list for email templates */
+.ppa-token-list {
+	background: #fafafa;
+	border: 1px solid #f0f0f0;
+	border-radius: 6px;
+	padding: 12px 16px;
+	margin-top: 8px;
+}
+
+.ppa-token-list code {
+	background: #e6f7ff;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 12px;
+	color: #1890ff;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1024px) {
+	.ppa-settings-layout {
+		flex-direction: column;
+	}
+
+	.ppa-settings-tabs {
+		width: 100%;
+		min-width: 100%;
+		border-right: none;
+		border-bottom: 1px solid #f0f0f0;
+		display: flex;
+		flex-wrap: wrap;
+		padding: 8px;
+	}
+
+	.ppa-settings-tab {
+		padding: 10px 16px;
+	}
+
+	.ppa-settings-tab--active::before {
+		display: none;
+	}
+
+	.ppa-settings-tab--active {
+		background: #2271b1;
+		color: #fff;
+		border-radius: 4px;
+	}
+
+	.ppa-settings-tab--active:hover {
+		color: #fff;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.ppa-settings-container {
+		padding: 12px;
+	}
+
+	.ppa-settings-header {
+		padding: 16px;
+	}
+
+	.ppa-settings-content {
+		padding: 16px;
+	}
+
+	.ppa-system-info th {
+		width: 120px;
+	}
+}

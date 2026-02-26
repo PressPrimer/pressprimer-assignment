@@ -76,6 +76,7 @@ class PressPrimer_Assignment_Schema {
 			submission_type ENUM('file', 'text', 'either') NOT NULL DEFAULT 'file',
 			status ENUM('draft', 'published', 'archived') NOT NULL DEFAULT 'draft',
 			author_id BIGINT UNSIGNED NOT NULL,
+			notification_email VARCHAR(500) DEFAULT NULL,
 			submission_count INT UNSIGNED NOT NULL DEFAULT 0,
 			graded_count INT UNSIGNED NOT NULL DEFAULT 0,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

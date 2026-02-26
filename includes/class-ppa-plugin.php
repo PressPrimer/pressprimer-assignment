@@ -83,6 +83,9 @@ class PressPrimer_Assignment_Plugin {
 		// Register cron hooks.
 		$this->register_cron_hooks();
 
+		// Register email notification hooks.
+		$this->register_email_hooks();
+
 		// Initialize components.
 		$this->init_admin();
 		$this->init_frontend();
@@ -136,6 +139,21 @@ class PressPrimer_Assignment_Plugin {
 	private function register_cron_hooks() {
 		if ( class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
 			add_action( 'ppa_extract_pdf_text', [ 'PressPrimer_Assignment_PDF_Service', 'process_scheduled_extraction' ] );
+		}
+	}
+
+	/**
+	 * Register email notification hooks
+	 *
+	 * Sets up email notifications for submission and grading events.
+	 * Runs on both frontend and admin contexts since AJAX handlers
+	 * fire in admin context.
+	 *
+	 * @since 1.0.0
+	 */
+	private function register_email_hooks() {
+		if ( class_exists( 'PressPrimer_Assignment_Email_Service' ) ) {
+			PressPrimer_Assignment_Email_Service::register_hooks();
 		}
 	}
 
@@ -246,6 +264,12 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_REST_Submissions' ) ) {
 			$submissions_api = new PressPrimer_Assignment_REST_Submissions();
 			$submissions_api->init();
+		}
+
+		// Settings REST API.
+		if ( class_exists( 'PressPrimer_Assignment_REST_Settings' ) ) {
+			$settings_api = new PressPrimer_Assignment_REST_Settings();
+			$settings_api->init();
 		}
 	}
 
