@@ -124,6 +124,22 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 			$where_params[] = absint( $args['assignment_id'] );
 		}
 
+		// Only show the most recent submission per user/assignment pair.
+		// A subquery finds the latest pending submission ID for each
+		// (user_id, assignment_id) group, and we filter the main query
+		// to only include those IDs. This avoids grading old submissions
+		// when a student has resubmitted.
+		$latest_subquery_where  = "WHERE assignment_id IN ({$id_placeholders}) AND status IN ({$status_placeholders})";
+		$latest_subquery_params = array_merge( $assignment_ids, $statuses );
+
+		if ( $has_assignment_filter ) {
+			$latest_subquery_where   .= ' AND assignment_id = %d';
+			$latest_subquery_params[] = absint( $args['assignment_id'] );
+		}
+
+		$latest_join   = "JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} {$latest_subquery_where} GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id";
+		$latest_params = $latest_subquery_params;
+
 		// Pagination.
 		$per_page = min( absint( $args['per_page'] ), 100 );
 		$page     = max( 1, absint( $args['page'] ) );
@@ -137,13 +153,13 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$is_asc = 'ASC' === strtoupper( $args['order'] );
 
 		// Get total count (separate query per CLAUDE.md rules).
-		$count_params = $where_params;
+		$count_params = array_merge( $where_params, $latest_params );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$total = (int) $wpdb->get_var(
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses + optional assignment filter).
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses + optional assignment filter + subquery params).
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$submissions_table} s JOIN {$assignments_table} a ON s.assignment_id = a.id {$where_sql}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from $wpdb->prefix, WHERE built with placeholders.
+				"SELECT COUNT(*) FROM {$submissions_table} s JOIN {$assignments_table} a ON s.assignment_id = a.id {$latest_join} {$where_sql}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from $wpdb->prefix, WHERE and JOIN built with placeholders.
 				$count_params
 			)
 		);
@@ -153,25 +169,25 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 			s.submitted_at, s.created_at, s.submission_number,
 			a.title AS assignment_title, a.max_points';
 
-		$limit_params = array_merge( $where_params, [ $per_page, $offset ] );
+		$limit_params = array_merge( $where_params, $latest_params, [ $per_page, $offset ] );
 
 		$orderby_col = self::$allowed_orderby[ $orderby_key ];
 
 		if ( $is_asc ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$rows = $wpdb->get_results(
-				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses + optional assignment filter + pagination).
+				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses + optional assignment filter + subquery params + pagination).
 				$wpdb->prepare(
-					"SELECT {$select_fields} FROM {$submissions_table} s JOIN {$assignments_table} a ON s.assignment_id = a.id {$where_sql} ORDER BY {$orderby_col} ASC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from $wpdb->prefix, columns from validated whitelist.
+					"SELECT {$select_fields} FROM {$submissions_table} s JOIN {$assignments_table} a ON s.assignment_id = a.id {$latest_join} {$where_sql} ORDER BY {$orderby_col} ASC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from $wpdb->prefix, columns from validated whitelist.
 					$limit_params
 				)
 			);
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$rows = $wpdb->get_results(
-				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses + optional assignment filter + pagination).
+				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses + optional assignment filter + subquery params + pagination).
 				$wpdb->prepare(
-					"SELECT {$select_fields} FROM {$submissions_table} s JOIN {$assignments_table} a ON s.assignment_id = a.id {$where_sql} ORDER BY {$orderby_col} DESC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from $wpdb->prefix, columns from validated whitelist.
+					"SELECT {$select_fields} FROM {$submissions_table} s JOIN {$assignments_table} a ON s.assignment_id = a.id {$latest_join} {$where_sql} ORDER BY {$orderby_col} DESC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names from $wpdb->prefix, columns from validated whitelist.
 					$limit_params
 				)
 			);
@@ -231,13 +247,21 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		}
 
 		$id_placeholders = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
-		$params          = array_merge( $assignment_ids, [ 'submitted', 'grading' ] );
+
+		// Count only the latest submission per user/assignment pair
+		// to match the grading queue display.
+		$params = array_merge(
+			$assignment_ids,
+			[ 'submitted', 'grading' ],
+			$assignment_ids,
+			[ 'submitted', 'grading' ]
+		);
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (int) $wpdb->get_var(
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + 2 status strings).
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + 2 status strings, repeated for subquery).
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status IN (%s, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
+				"SELECT COUNT(*) FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status IN (%s, %s) GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN (%s, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
 				$params
 			)
 		);
@@ -267,14 +291,22 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		}
 
 		$id_placeholders = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
-		$params          = array_merge( $assignment_ids, [ 'submitted', 'grading', $current_id ] );
 
-		// Get the next oldest pending submission (FIFO).
+		// Only consider the latest submission per user/assignment pair.
+		$params = array_merge(
+			$assignment_ids,
+			[ 'submitted', 'grading' ],
+			$assignment_ids,
+			[ 'submitted', 'grading', $current_id ]
+		);
+
+		// Get the next oldest pending submission (FIFO), restricted to
+		// the latest submission per user/assignment.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$next_id = $wpdb->get_var(
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + 2 status strings + current_id).
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs + statuses for subquery + assignment IDs + statuses + current_id).
 			$wpdb->prepare(
-				"SELECT id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status IN (%s, %s) AND id != %d ORDER BY submitted_at ASC, created_at ASC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
+				"SELECT s.id FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status IN (%s, %s) GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN (%s, %s) AND s.id != %d ORDER BY s.submitted_at ASC, s.created_at ASC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
 				$params
 			)
 		);

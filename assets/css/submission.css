@@ -1444,6 +1444,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	flex-wrap: wrap;
 	padding: var(--ppa-space-md) var(--ppa-space-lg);
 	background: var(--ppa-background);
 	border: 2px solid var(--ppa-border-light);
@@ -1500,6 +1501,35 @@
 	display: flex;
 	align-items: center;
 	gap: var(--ppa-space-md);
+}
+
+.ppa-submission-card-feedback {
+	width: 100%;
+	margin-top: var(--ppa-space-sm);
+	padding-top: var(--ppa-space-sm);
+	border-top: 1px solid var(--ppa-border-light);
+}
+
+.ppa-submission-card-feedback-label {
+	display: block;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--ppa-text-secondary);
+	margin-bottom: var(--ppa-space-xs);
+}
+
+.ppa-submission-card-feedback-text {
+	font-size: var(--ppa-font-size-sm, 0.875rem);
+	color: var(--ppa-text);
+	line-height: var(--ppa-line-height);
+}
+
+.ppa-submission-card-feedback-text p {
+	margin: 0 0 var(--ppa-space-xs) 0;
+}
+
+.ppa-submission-card-feedback-text p:last-child {
+	margin-bottom: 0;
 }
 
 .ppa-delete-submission {

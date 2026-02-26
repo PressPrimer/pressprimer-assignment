@@ -766,6 +766,19 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
+		// Graded and returned submissions cannot be deleted by students.
+		$protected_statuses = [
+			PressPrimer_Assignment_Submission::STATUS_GRADED,
+			PressPrimer_Assignment_Submission::STATUS_RETURNED,
+		];
+
+		if ( in_array( $submission->status, $protected_statuses, true ) ) {
+			wp_send_json_error(
+				[ 'message' => __( 'Graded submissions cannot be deleted.', 'pressprimer-assignment' ) ],
+				403
+			);
+		}
+
 		// Delete associated files (with physical file cleanup).
 		$files = $submission->get_files();
 		foreach ( $files as $file ) {

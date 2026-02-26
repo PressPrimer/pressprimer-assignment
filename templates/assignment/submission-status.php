@@ -245,6 +245,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 							strtotime( $prev->submitted_at )
 						);
 					}
+
+					$prev_is_graded = in_array(
+						$prev->status,
+						[
+							PressPrimer_Assignment_Submission::STATUS_GRADED,
+							PressPrimer_Assignment_Submission::STATUS_RETURNED,
+						],
+						true
+					);
 					?>
 					<div class="ppa-submission-card" data-submission-id="<?php echo esc_attr( $prev->id ); ?>">
 						<div class="ppa-submission-card-info">
@@ -283,13 +292,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 									<?php esc_html_e( 'Not graded', 'pressprimer-assignment' ); ?>
 								</span>
 							<?php endif; ?>
-							<button type="button"
-								class="ppa-delete-submission"
-								data-submission-id="<?php echo esc_attr( $prev->id ); ?>"
-								aria-label="<?php esc_attr_e( 'Delete this submission', 'pressprimer-assignment' ); ?>">
-								<span class="dashicons dashicons-trash" aria-hidden="true"></span>
-							</button>
+							<?php if ( ! $prev_is_graded ) : ?>
+								<button type="button"
+									class="ppa-delete-submission"
+									data-submission-id="<?php echo esc_attr( $prev->id ); ?>"
+									aria-label="<?php esc_attr_e( 'Delete this submission', 'pressprimer-assignment' ); ?>">
+									<span class="dashicons dashicons-trash" aria-hidden="true"></span>
+								</button>
+							<?php endif; ?>
 						</div>
+						<?php if ( $prev_is_graded && ! empty( $prev->feedback ) ) : ?>
+							<div class="ppa-submission-card-feedback">
+								<span class="ppa-submission-card-feedback-label"><?php esc_html_e( 'Feedback:', 'pressprimer-assignment' ); ?></span>
+								<div class="ppa-submission-card-feedback-text">
+									<?php echo wp_kses_post( wpautop( $prev->feedback ) ); ?>
+								</div>
+							</div>
+						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
 			</div>
