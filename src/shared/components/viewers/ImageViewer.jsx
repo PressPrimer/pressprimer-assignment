@@ -59,7 +59,10 @@ const ImageViewer = ( { url, alt = '' } ) => {
 				const response = await window.fetch( url, {
 					credentials: 'same-origin',
 					headers: {
-						'X-WP-Nonce': window.ppaGradingData?.nonce || '',
+						'X-WP-Nonce':
+							window.ppaGradingData?.nonce ||
+							window.ppaSubmissionDetailData?.nonce ||
+							'',
 					},
 				} );
 

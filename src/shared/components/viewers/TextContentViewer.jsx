@@ -9,9 +9,10 @@
  * @since 1.0.0
  */
 
+import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { Empty } from 'antd';
-import { FileTextOutlined } from '@ant-design/icons';
+import { Empty, Button } from 'antd';
+import { FileTextOutlined, DownloadOutlined } from '@ant-design/icons';
 
 /**
  * TextContentViewer component
@@ -22,6 +23,32 @@ import { FileTextOutlined } from '@ant-design/icons';
  * @return {JSX.Element} Rendered component.
  */
 const TextContentViewer = ( { content = null, wordCount = null } ) => {
+	/**
+	 * Download the text content as a .txt file.
+	 *
+	 * Strips HTML tags and converts entities to produce plain text.
+	 */
+	const handleDownload = useCallback( () => {
+		if ( ! content ) {
+			return;
+		}
+
+		// Strip HTML tags to get plain text.
+		const tempDiv = document.createElement( 'div' );
+		tempDiv.innerHTML = content;
+		const plainText = tempDiv.textContent || tempDiv.innerText || '';
+
+		const blob = new Blob( [ plainText ], { type: 'text/plain' } );
+		const url = URL.createObjectURL( blob );
+		const link = document.createElement( 'a' );
+		link.href = url;
+		link.download = 'submission.txt';
+		document.body.appendChild( link );
+		link.click();
+		document.body.removeChild( link );
+		URL.revokeObjectURL( url );
+	}, [ content ] );
+
 	if ( ! content ) {
 		return (
 			<Empty
@@ -54,15 +81,22 @@ const TextContentViewer = ( { content = null, wordCount = null } ) => {
 					<FileTextOutlined style={ { marginRight: 4 } } />
 					{ __( 'Text Submission', 'pressprimer-assignment' ) }
 				</span>
-				{ wordCount !== null && (
-					<span>
-						{ sprintf(
+				<span>
+					{ wordCount !== null &&
+						sprintf(
 							/* translators: %s: number of words */
 							__( '%s words', 'pressprimer-assignment' ),
 							Number( wordCount ).toLocaleString()
 						) }
-					</span>
-				) }
+					<Button
+						icon={ <DownloadOutlined /> }
+						size="small"
+						onClick={ handleDownload }
+						style={ { marginLeft: 8 } }
+					>
+						{ __( 'Download TXT', 'pressprimer-assignment' ) }
+					</Button>
+				</span>
 			</div>
 
 			{ /* Content area */ }

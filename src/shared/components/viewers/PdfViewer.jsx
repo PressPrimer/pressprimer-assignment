@@ -23,7 +23,9 @@ import * as pdfjsLib from 'pdfjs-dist';
 // The worker file is copied to the build directory by webpack CopyPlugin.
 // buildUrl is passed from PHP via wp_localize_script.
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-	( window.ppaGradingData?.buildUrl || '' ) + 'pdf.worker.min.js'; // eslint-disable-line no-undef
+	( window.ppaGradingData?.buildUrl ||
+		window.ppaSubmissionDetailData?.buildUrl ||
+		'' ) + 'pdf.worker.min.js'; // eslint-disable-line no-undef
 
 /**
  * Default scale and zoom limits.
@@ -125,7 +127,10 @@ const PdfViewer = ( { url } ) => {
 				const response = await window.fetch( url, {
 					credentials: 'same-origin',
 					headers: {
-						'X-WP-Nonce': window.ppaGradingData?.nonce || '',
+						'X-WP-Nonce':
+							window.ppaGradingData?.nonce ||
+							window.ppaSubmissionDetailData?.nonce ||
+							'',
 					},
 				} );
 

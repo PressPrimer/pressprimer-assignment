@@ -37,6 +37,12 @@ module.exports = {
 			'onboarding',
 			'index.js'
 		),
+		'submission-detail': path.resolve(
+			process.cwd(),
+			'src',
+			'submission-detail',
+			'index.js'
+		),
 		'blocks/assignment/index': path.resolve(
 			process.cwd(),
 			'blocks',

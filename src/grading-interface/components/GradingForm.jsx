@@ -37,7 +37,7 @@ import {
 	CloseCircleOutlined,
 	SendOutlined,
 } from '@ant-design/icons';
-import DocumentPanel from './DocumentPanel';
+import DocumentPanel from '../../shared/components/viewers/DocumentPanel';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;

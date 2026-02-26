@@ -232,154 +232,103 @@ class PressPrimer_Assignment_Admin_Submissions {
 	/**
 	 * Render submission detail view
 	 *
+	 * Loads the React submission detail interface with document viewers,
+	 * editable score/feedback, and admin actions.
+	 *
 	 * @since 1.0.0
 	 */
 	private function render_view() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only submission ID for detail display.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only submission ID for display routing.
 		$submission_id = isset( $_GET['submission'] ) ? absint( wp_unslash( $_GET['submission'] ) ) : 0;
-		$submission    = PressPrimer_Assignment_Submission::get( $submission_id );
+
+		if ( ! $submission_id ) {
+			wp_die( esc_html__( 'Invalid submission.', 'pressprimer-assignment' ) );
+		}
+
+		$submission = PressPrimer_Assignment_Submission::get( $submission_id );
 
 		if ( ! $submission ) {
 			wp_die( esc_html__( 'Submission not found.', 'pressprimer-assignment' ) );
 		}
 
-		$assignment = $submission->get_assignment();
-		$user       = get_userdata( $submission->user_id );
-		$files      = $submission->get_files();
+		// Enqueue the React submission detail bundle.
+		$this->enqueue_submission_detail( $submission_id );
 
-		$statuses = [
-			'draft'     => __( 'Draft', 'pressprimer-assignment' ),
-			'submitted' => __( 'Submitted', 'pressprimer-assignment' ),
-			'grading'   => __( 'Grading', 'pressprimer-assignment' ),
-			'graded'    => __( 'Graded', 'pressprimer-assignment' ),
-			'returned'  => __( 'Returned', 'pressprimer-assignment' ),
-		];
-
-		$back_url = admin_url( 'admin.php?page=pressprimer-assignment-submissions' );
 		?>
+		<!-- React Submission Detail Root -->
 		<div class="wrap">
-			<h1>
-				<a href="<?php echo esc_url( $back_url ); ?>" class="page-title-action" style="margin-right: 10px;">
-					&larr; <?php esc_html_e( 'Back to Submissions', 'pressprimer-assignment' ); ?>
-				</a>
-				<?php esc_html_e( 'Submission Details', 'pressprimer-assignment' ); ?>
-			</h1>
-
-			<div id="poststuff">
-				<div id="post-body" class="metabox-holder columns-2">
-					<div id="post-body-content">
-						<div class="postbox">
-							<h2 class="hndle"><?php esc_html_e( 'Submission Information', 'pressprimer-assignment' ); ?></h2>
-							<div class="inside">
-								<table class="form-table">
-									<tr>
-										<th scope="row"><?php esc_html_e( 'ID', 'pressprimer-assignment' ); ?></th>
-										<td><?php echo esc_html( $submission->id ); ?></td>
-									</tr>
-									<tr>
-										<th scope="row"><?php esc_html_e( 'Assignment', 'pressprimer-assignment' ); ?></th>
-										<td>
-											<?php if ( $assignment ) : ?>
-												<a href="<?php echo esc_url( admin_url( 'admin.php?page=pressprimer-assignment-assignments&action=edit&assignment=' . $assignment->id ) ); ?>">
-													<?php echo esc_html( $assignment->title ); ?>
-												</a>
-											<?php else : ?>
-												&#8212;
-											<?php endif; ?>
-										</td>
-									</tr>
-									<tr>
-										<th scope="row"><?php esc_html_e( 'Student', 'pressprimer-assignment' ); ?></th>
-										<td>
-											<?php if ( $user ) : ?>
-												<?php echo esc_html( $user->display_name ); ?>
-												(<?php echo esc_html( $user->user_email ); ?>)
-											<?php else : ?>
-												<?php esc_html_e( 'Unknown User', 'pressprimer-assignment' ); ?>
-											<?php endif; ?>
-										</td>
-									</tr>
-									<tr>
-										<th scope="row"><?php esc_html_e( 'Status', 'pressprimer-assignment' ); ?></th>
-										<td><?php echo isset( $statuses[ $submission->status ] ) ? esc_html( $statuses[ $submission->status ] ) : esc_html( $submission->status ); ?></td>
-									</tr>
-									<tr>
-										<th scope="row"><?php esc_html_e( 'Submitted', 'pressprimer-assignment' ); ?></th>
-										<td>
-											<?php
-											if ( $submission->submitted_at ) {
-												echo esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission->submitted_at ) ) );
-											} else {
-												echo '&#8212;';
-											}
-											?>
-										</td>
-									</tr>
-									<?php if ( null !== $submission->score ) : ?>
-									<tr>
-										<th scope="row"><?php esc_html_e( 'Score', 'pressprimer-assignment' ); ?></th>
-										<td>
-											<?php
-											echo esc_html( $submission->score );
-											if ( $assignment ) {
-												echo ' / ' . esc_html( $assignment->max_points );
-											}
-											?>
-										</td>
-									</tr>
-									<?php endif; ?>
-								</table>
-							</div>
-						</div>
-
-						<?php if ( $submission->student_notes ) : ?>
-						<div class="postbox">
-							<h2 class="hndle"><?php esc_html_e( 'Student Notes', 'pressprimer-assignment' ); ?></h2>
-							<div class="inside">
-								<?php echo wp_kses_post( wpautop( $submission->student_notes ) ); ?>
-							</div>
-						</div>
-						<?php endif; ?>
-
-						<?php if ( ! empty( $files ) ) : ?>
-						<div class="postbox">
-							<h2 class="hndle"><?php esc_html_e( 'Files', 'pressprimer-assignment' ); ?></h2>
-							<div class="inside">
-								<table class="widefat fixed striped">
-									<thead>
-										<tr>
-											<th><?php esc_html_e( 'File Name', 'pressprimer-assignment' ); ?></th>
-											<th><?php esc_html_e( 'Size', 'pressprimer-assignment' ); ?></th>
-											<th><?php esc_html_e( 'Type', 'pressprimer-assignment' ); ?></th>
-										</tr>
-									</thead>
-									<tbody>
-										<?php foreach ( $files as $file ) : ?>
-										<tr>
-											<td><?php echo esc_html( $file->original_filename ); ?></td>
-											<td><?php echo esc_html( size_format( $file->file_size ) ); ?></td>
-											<td><?php echo esc_html( $file->file_extension ); ?></td>
-										</tr>
-										<?php endforeach; ?>
-									</tbody>
-								</table>
-							</div>
-						</div>
-						<?php endif; ?>
-
-						<?php if ( $submission->feedback ) : ?>
-						<div class="postbox">
-							<h2 class="hndle"><?php esc_html_e( 'Grader Feedback', 'pressprimer-assignment' ); ?></h2>
-							<div class="inside">
-								<?php echo wp_kses_post( wpautop( $submission->feedback ) ); ?>
-							</div>
-						</div>
-						<?php endif; ?>
-					</div>
-				</div>
-			</div>
+			<div id="ppa-submission-detail-root"></div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Enqueue React submission detail assets
+	 *
+	 * Loads the compiled submission-detail bundle and passes
+	 * the submission ID to JavaScript via wp_localize_script.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $submission_id Submission ID.
+	 */
+	private function enqueue_submission_detail( int $submission_id ) {
+		// Enqueue Ant Design CSS.
+		$antd_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'assets/css/vendor/antd-reset.css';
+		if ( file_exists( $antd_css ) ) {
+			wp_enqueue_style(
+				'antd',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/vendor/antd-reset.css',
+				[],
+				'5.12.0'
+			);
+		}
+
+		// Enqueue the built React bundle.
+		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/submission-detail.asset.php';
+		if ( file_exists( $asset_file ) ) {
+			$asset = require $asset_file;
+
+			wp_enqueue_script(
+				'ppa-submission-detail',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/submission-detail.js',
+				$asset['dependencies'],
+				$asset['version'],
+				true
+			);
+
+			$style_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/style-submission-detail.css';
+			if ( file_exists( $style_file ) ) {
+				wp_enqueue_style(
+					'ppa-submission-detail',
+					PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/style-submission-detail.css',
+					[],
+					$asset['version']
+				);
+			}
+		} else {
+			// Fallback: use wp-element, wp-i18n, wp-api-fetch as dependencies.
+			wp_enqueue_script(
+				'ppa-submission-detail',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/submission-detail.js',
+				[ 'wp-element', 'wp-i18n', 'wp-api-fetch' ],
+				PRESSPRIMER_ASSIGNMENT_VERSION,
+				true
+			);
+		}
+
+		// Localize script with submission data.
+		wp_localize_script(
+			'ppa-submission-detail',
+			'ppaSubmissionDetailData',
+			[
+				'submissionId' => $submission_id,
+				'adminUrl'     => admin_url(),
+				'buildUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/',
+				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'deleteNonce'  => wp_create_nonce( 'delete-submission_' . $submission_id ),
+			]
+		);
 	}
 
 	/**

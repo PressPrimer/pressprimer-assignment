@@ -25,6 +25,7 @@ import DocxViewer from './DocxViewer';
 import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import TextContentViewer from './TextContentViewer';
+import { appendNonce } from '../../utils/nonce';
 
 /**
  * File extension to icon mapping.
@@ -137,7 +138,7 @@ const DocumentPanel = ( {
 				<Button
 					type="primary"
 					icon={ <DownloadOutlined /> }
-					href={ file.download_url }
+					href={ appendNonce( file.download_url ) }
 				>
 					{ __( 'Download File', 'pressprimer-assignment' ) }
 				</Button>
@@ -176,6 +177,7 @@ const DocumentPanel = ( {
 					items={ tabItems }
 					size="small"
 					style={ { marginBottom: 0 } }
+					tabBarStyle={ { paddingLeft: 12, paddingRight: 12 } }
 				/>
 			) }
 
@@ -206,7 +208,7 @@ const DocumentPanel = ( {
 					</span>
 					<Button
 						icon={ <DownloadOutlined /> }
-						href={ currentFile.download_url }
+						href={ appendNonce( currentFile.download_url ) }
 						size="small"
 					>
 						{ __( 'Download', 'pressprimer-assignment' ) }
