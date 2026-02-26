@@ -16,10 +16,12 @@ import {
 	MailOutlined,
 	ToolOutlined,
 	SaveOutlined,
+	ApiOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
 import EmailTab from './EmailTab';
+import IntegrationsTab from './IntegrationsTab';
 import AdvancedTab from './AdvancedTab';
 
 /**
@@ -40,6 +42,13 @@ const CORE_TABS = [
 		icon: <MailOutlined />,
 		component: EmailTab,
 		order: 30,
+	},
+	{
+		id: 'integration',
+		label: __( 'Integrations', 'pressprimer-assignment' ),
+		icon: <ApiOutlined />,
+		component: IntegrationsTab,
+		order: 50,
 	},
 	{
 		id: 'advanced',

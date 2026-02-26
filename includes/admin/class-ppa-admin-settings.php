@@ -156,15 +156,19 @@ class PressPrimer_Assignment_Admin_Settings {
 		$settings_tabs = apply_filters(
 			'pressprimer_assignment_settings_tabs',
 			[
-				'general'  => [
+				'general'     => [
 					'label' => __( 'General', 'pressprimer-assignment' ),
 					'order' => 10,
 				],
-				'email'    => [
+				'email'       => [
 					'label' => __( 'Email', 'pressprimer-assignment' ),
 					'order' => 30,
 				],
-				'advanced' => [
+				'integration' => [
+					'label' => __( 'Integrations', 'pressprimer-assignment' ),
+					'order' => 50,
+				],
+				'advanced'    => [
 					'label' => __( 'Advanced', 'pressprimer-assignment' ),
 					'order' => 100,
 				],
@@ -201,7 +205,36 @@ class PressPrimer_Assignment_Admin_Settings {
 				'wpVersion'     => get_bloginfo( 'version' ),
 				'phpVersion'    => PHP_VERSION,
 			],
+			'lmsStatus'      => $this->get_lms_status(),
 		];
+	}
+
+	/**
+	 * Get LMS detection status for React
+	 *
+	 * Checks which LMS plugins are active to pre-populate the
+	 * Integrations tab before async REST calls complete.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array LMS status data.
+	 */
+	private function get_lms_status() {
+		$status = [];
+
+		// LearnDash.
+		$status['learndash'] = [
+			'active'  => defined( 'LEARNDASH_VERSION' ),
+			'version' => defined( 'LEARNDASH_VERSION' ) ? LEARNDASH_VERSION : null,
+		];
+
+		// Tutor LMS.
+		$status['tutorlms'] = [
+			'active'  => defined( 'TUTOR_VERSION' ),
+			'version' => defined( 'TUTOR_VERSION' ) ? TUTOR_VERSION : null,
+		];
+
+		return $status;
 	}
 
 	/**
