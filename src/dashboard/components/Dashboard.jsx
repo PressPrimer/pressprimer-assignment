@@ -86,7 +86,7 @@ const Dashboard = ( { initialData = {} } ) => {
 				'action',
 				'pressprimer_assignment_onboarding_progress'
 			);
-			formData.append( 'onboarding_action', 'reset' );
+			formData.append( 'action_type', 'reset' );
 			formData.append( 'nonce', onboardingData.nonce || '' );
 
 			await fetch( onboardingData.ajaxUrl || '/wp-admin/admin-ajax.php', {

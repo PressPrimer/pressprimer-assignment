@@ -1,0 +1,477 @@
+/**
+ * Reports Styles
+ *
+ * Mirrors Quiz reports styling with ppa- prefix.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Container
+   ========================================================================== */
+
+.ppa-reports-container {
+	background: #f0f2f5;
+	min-height: calc(100vh - 32px);
+	padding: 24px;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.ppa-reports-header {
+	background: #334155;
+	padding: 12px;
+	padding-left: 32px;
+	border-radius: 12px;
+	margin-bottom: 24px;
+	color: #fff;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.ppa-reports-header-content {
+	flex: 1;
+	padding: 20px 0;
+}
+
+.ppa-reports-header h1 {
+	margin: 0 0 8px 0;
+	font-size: 28px;
+	font-weight: 600;
+	color: #fff;
+	display: flex;
+	align-items: center;
+}
+
+.ppa-reports-header p {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.75);
+	font-size: 15px;
+}
+
+.ppa-reports-header-mascot {
+	height: 130px;
+	width: auto;
+	flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Overview Cards
+   ========================================================================== */
+
+.ppa-overview-cards {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.ppa-overview-card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 20px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ppa-overview-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ppa-overview-card-icon {
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	flex-shrink: 0;
+}
+
+.ppa-overview-card-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.ppa-overview-card-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: #1d2327;
+	line-height: 1.2;
+}
+
+.ppa-overview-card-label {
+	font-size: 13px;
+	color: #646970;
+	margin-top: 4px;
+}
+
+/* ==========================================================================
+   Activity Chart Card
+   ========================================================================== */
+
+.ppa-reports-chart-card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ppa-reports-chart-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.ppa-reports-chart-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0;
+}
+
+.ppa-reports-chart-select {
+	min-width: 160px;
+}
+
+.ppa-reports-chart-container {
+	min-height: 280px;
+}
+
+/* Chart tooltip (shared with dashboard) */
+.ppa-chart-tooltip {
+	background: #fff;
+	border: 1px solid #f0f0f0;
+	border-radius: 8px;
+	padding: 12px 16px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	font-size: 13px;
+}
+
+.ppa-chart-tooltip p {
+	margin: 0 0 4px 0;
+}
+
+.ppa-chart-tooltip p:last-child {
+	margin-bottom: 0;
+}
+
+.ppa-chart-tooltip-date {
+	font-weight: 600;
+	color: #1d2327;
+	margin-bottom: 8px !important;
+}
+
+/* ==========================================================================
+   Reports Section
+   ========================================================================== */
+
+.ppa-reports-section {
+	margin-top: 32px;
+}
+
+.ppa-reports-section-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 16px 0;
+}
+
+/* ==========================================================================
+   Report Cards
+   ========================================================================== */
+
+.ppa-report-card {
+	height: 100%;
+	border-radius: 12px;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ppa-report-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ppa-report-card .ant-card-body {
+	display: flex;
+	gap: 16px;
+	padding: 20px;
+}
+
+.ppa-report-card-icon {
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.ppa-report-card-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.ppa-report-card-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 8px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ppa-report-card-description {
+	font-size: 13px;
+	color: #646970;
+	margin: 0;
+	line-height: 1.5;
+}
+
+.ppa-report-card--coming-soon {
+	opacity: 0.85;
+	cursor: default !important;
+}
+
+.ppa-report-card--coming-soon:hover {
+	transform: none;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   Reports Content
+   ========================================================================== */
+
+.ppa-reports-content {
+	/* Container */
+}
+
+/* ==========================================================================
+   Back Link
+   ========================================================================== */
+
+.ppa-reports-back-link {
+	color: rgba(255, 255, 255, 0.85) !important;
+	padding: 0;
+	font-size: 13px;
+	margin-bottom: 8px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.ppa-reports-back-link:hover {
+	color: #fff !important;
+}
+
+/* ==========================================================================
+   Date Range Picker
+   ========================================================================== */
+
+.ppa-date-range-picker {
+	background: #fff;
+	padding: 16px 24px;
+	border-radius: 12px;
+	margin-bottom: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.ppa-date-range-label {
+	font-weight: 500;
+	color: #1d2327;
+	display: flex;
+	align-items: center;
+}
+
+/* ==========================================================================
+   Report Table Card
+   ========================================================================== */
+
+.ppa-reports-card {
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ppa-reports-card .ant-card-head {
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.ppa-reports-card .ant-card-head-title {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.ppa-reports-table-card .ant-card-body {
+	padding: 0;
+}
+
+.ppa-reports-table-header {
+	padding: 16px 24px;
+	border-bottom: 1px solid #f0f0f0;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+/* Search Fields */
+.ppa-reports-search {
+	width: 320px;
+}
+
+.ppa-reports-search .ant-input-wrapper {
+	display: flex;
+	align-items: stretch;
+}
+
+.ppa-reports-search .ant-input-affix-wrapper {
+	height: 32px;
+	padding: 0 11px;
+	display: flex;
+	align-items: center;
+}
+
+.ppa-reports-search .ant-input-affix-wrapper .ant-input {
+	height: auto;
+	line-height: 1.5;
+}
+
+.ppa-reports-search .ant-input-group-addon {
+	display: flex;
+	align-items: stretch;
+}
+
+.ppa-reports-search .ant-input-search-button,
+.ppa-reports-search .ant-input-search-button:hover,
+.ppa-reports-search .ant-input-search-button:focus,
+.ppa-reports-search .ant-input-search-button:active {
+	height: 32px;
+	min-width: 40px !important;
+	width: 40px !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #1890ff !important;
+	border-color: #1890ff !important;
+}
+
+.ppa-reports-search .ant-input-search-button:hover {
+	background: #096dd9 !important;
+	border-color: #096dd9 !important;
+}
+
+.ppa-reports-search .ant-input-search-button .anticon,
+.ppa-reports-search .ant-input-search-button:hover .anticon,
+.ppa-reports-search .ant-input-search-button:focus .anticon,
+.ppa-reports-search .ant-input-search-button:active .anticon {
+	color: #fff !important;
+	font-size: 16px;
+}
+
+/* Tables */
+.ppa-reports-table .ant-table-thead > tr > th {
+	background: #fafafa;
+	font-weight: 600;
+	color: #1d2327;
+	border-radius: 0 !important;
+}
+
+.ppa-reports-table .ant-table-thead > tr > th:first-child,
+.ppa-reports-table .ant-table-thead > tr > th:last-child {
+	border-radius: 0 !important;
+}
+
+.ppa-reports-table .ant-table-tbody > tr:hover > td {
+	background: #f6f7f7;
+}
+
+/* Pagination */
+.ppa-reports-table .ant-table-pagination {
+	padding: 16px 24px;
+	margin: 0;
+}
+
+.ppa-reports-table .ant-table-pagination.ant-pagination {
+	padding-right: 19px;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media screen and (max-width: 1200px) {
+	.ppa-overview-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media screen and (max-width: 768px) {
+	.ppa-reports-container {
+		padding: 12px;
+	}
+
+	.ppa-reports-header {
+		padding: 20px;
+	}
+
+	.ppa-reports-header h1 {
+		font-size: 22px;
+	}
+
+	.ppa-reports-header-mascot {
+		display: none;
+	}
+
+	.ppa-overview-cards {
+		grid-template-columns: 1fr;
+	}
+
+	.ppa-overview-card {
+		padding: 16px;
+	}
+
+	.ppa-overview-card-value {
+		font-size: 24px;
+	}
+
+	.ppa-reports-chart-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.ppa-reports-chart-select {
+		width: 100%;
+	}
+
+	.ppa-date-range-picker {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.ppa-reports-table-header {
+		padding: 12px 16px;
+	}
+
+	.ppa-reports-search {
+		width: 100%;
+	}
+}

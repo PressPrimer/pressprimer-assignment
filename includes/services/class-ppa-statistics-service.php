@@ -41,6 +41,14 @@ class PressPrimer_Assignment_Statistics_Service {
 	const CHART_CACHE_DURATION = 900; // 15 minutes.
 
 	/**
+	 * Cache duration for overview stats (in seconds)
+	 *
+	 * @since 1.0.0
+	 * @var int
+	 */
+	const OVERVIEW_CACHE_DURATION = 3600; // 1 hour.
+
+	/**
 	 * Clear dashboard statistics cache
 	 *
 	 * Call this method when assignments or submissions change
@@ -91,6 +99,313 @@ class PressPrimer_Assignment_Statistics_Service {
 	public static function clear_all_caches( $author_id = null ) {
 		self::clear_dashboard_cache( $author_id );
 		self::clear_activity_chart_cache();
+		self::clear_overview_cache();
+	}
+
+	/**
+	 * Clear overview statistics cache
+	 *
+	 * Deletes overview stats transients so the next request
+	 * fetches fresh data from the database.
+	 *
+	 * @since 1.0.0
+	 */
+	public static function clear_overview_cache() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Deleting transients by prefix.
+		$wpdb->query(
+			"DELETE FROM {$wpdb->options}
+			WHERE option_name LIKE '_transient_ppa\_overview\_%'
+				OR option_name LIKE '_transient_timeout_ppa\_overview\_%'"
+		);
+	}
+
+	/**
+	 * Get overview statistics for reports page
+	 *
+	 * Returns all-time aggregate metrics for the reports overview cards.
+	 * Results are cached with a 1-hour transient.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int|null $author_id Filter by assignment author (null for all).
+	 * @return array Overview statistics.
+	 */
+	public function get_overview_stats( $author_id = null ) {
+		$cache_key = 'ppa_overview_' . ( $author_id ? absint( $author_id ) : 'all' );
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+		$submissions_table = $wpdb->prefix . 'ppa_submissions';
+
+		// Build assignment filter.
+		$assignment_filter = '';
+		$assignment_params = [];
+
+		if ( $author_id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$assignment_ids = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT id FROM {$assignments_table} WHERE author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
+					$author_id
+				)
+			);
+
+			if ( empty( $assignment_ids ) ) {
+				$stats = [
+					'total_submissions'      => 0,
+					'avg_score'              => 0,
+					'pass_rate'              => 0,
+					'avg_grading_time_hours' => 0,
+				];
+
+				set_transient( $cache_key, $stats, self::OVERVIEW_CACHE_DURATION );
+				return $stats;
+			}
+
+			$id_placeholders   = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
+			$assignment_filter = " AND s.assignment_id IN ({$id_placeholders})";
+			$assignment_params = array_map( 'absint', $assignment_ids );
+		}
+
+		// Total submissions (non-draft).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$total_submissions = (int) $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from assignment IDs.
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$submissions_table} s WHERE s.status != 'draft'{$assignment_filter}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table from $wpdb->prefix, filter built with placeholders.
+				$assignment_params
+			)
+		);
+
+		// Average score and pass rate (graded/returned submissions only).
+		$score_params = $assignment_params;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$score_row = $wpdb->get_row(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from assignment IDs.
+			$wpdb->prepare(
+				"SELECT
+					ROUND(AVG( (s.score / a.max_points) * 100 ), 1) AS avg_score,
+					ROUND( (SUM(CASE WHEN s.passed = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0)) * 100, 1 ) AS pass_rate
+				FROM {$submissions_table} s
+				INNER JOIN {$assignments_table} a ON s.assignment_id = a.id
+				WHERE s.status IN ('graded', 'returned')
+					AND s.score IS NOT NULL
+					AND a.max_points > 0
+					{$assignment_filter}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table from $wpdb->prefix, filter built with placeholders.
+				$score_params
+			)
+		);
+
+		$avg_score = 0;
+		$pass_rate = 0;
+
+		if ( $score_row ) {
+			$avg_score = $score_row->avg_score ? (float) $score_row->avg_score : 0;
+			$pass_rate = $score_row->pass_rate ? (float) $score_row->pass_rate : 0;
+		}
+
+		// Average grading turnaround time (submitted_at to graded_at, in hours).
+		$time_params = $assignment_params;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$avg_grading_seconds = $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from assignment IDs.
+			$wpdb->prepare(
+				"SELECT ROUND(AVG(TIMESTAMPDIFF(SECOND, s.submitted_at, s.graded_at)))
+				FROM {$submissions_table} s
+				WHERE s.status IN ('graded', 'returned')
+					AND s.submitted_at IS NOT NULL
+					AND s.graded_at IS NOT NULL
+					AND s.graded_at > s.submitted_at
+					{$assignment_filter}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table from $wpdb->prefix, filter built with placeholders.
+				$time_params
+			)
+		);
+
+		$avg_grading_hours = $avg_grading_seconds ? round( (float) $avg_grading_seconds / 3600, 1 ) : 0;
+
+		$stats = [
+			'total_submissions'      => $total_submissions,
+			'avg_score'              => $avg_score,
+			'pass_rate'              => $pass_rate,
+			'avg_grading_time_hours' => $avg_grading_hours,
+		];
+
+		set_transient( $cache_key, $stats, self::OVERVIEW_CACHE_DURATION );
+
+		return $stats;
+	}
+
+	/**
+	 * Get assignment performance report data
+	 *
+	 * Returns per-assignment performance metrics with date range filtering,
+	 * search, server-side sorting, and pagination. Mirrors Quiz's
+	 * get_quiz_performance() method adapted for assignment data.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $args {
+	 *     Query arguments.
+	 *
+	 *     @type string   $date_from Date range start (YYYY-MM-DD).
+	 *     @type string   $date_to   Date range end (YYYY-MM-DD).
+	 *     @type string   $search    Search term for assignment title.
+	 *     @type string   $orderby   Sort column key.
+	 *     @type string   $order     Sort direction (ASC/DESC).
+	 *     @type int      $per_page  Items per page.
+	 *     @type int      $page      Current page number.
+	 *     @type int|null $author_id Filter by assignment author.
+	 * }
+	 * @return array {
+	 *     Report data.
+	 *
+	 *     @type array $items       Array of assignment performance rows.
+	 *     @type int   $total       Total matching assignments.
+	 *     @type int   $total_pages Total pages.
+	 *     @type int   $page        Current page.
+	 * }
+	 */
+	public function get_assignment_performance( $args = [] ) {
+		global $wpdb;
+
+		$defaults = [
+			'date_from' => null,
+			'date_to'   => null,
+			'search'    => '',
+			'orderby'   => 'submissions',
+			'order'     => 'DESC',
+			'per_page'  => 20,
+			'page'      => 1,
+			'author_id' => null,
+		];
+
+		$args = wp_parse_args( $args, $defaults );
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+		$submissions_table = $wpdb->prefix . 'ppa_submissions';
+
+		$where = [ "a.status = 'published'" ];
+
+		// Author filtering (teacher sees own assignments only).
+		if ( $args['author_id'] ) {
+			$where[] = $wpdb->prepare( 'a.author_id = %d', $args['author_id'] );
+		}
+
+		// Search by title.
+		if ( ! empty( $args['search'] ) ) {
+			$where[] = $wpdb->prepare( 'a.title LIKE %s', '%' . $wpdb->esc_like( $args['search'] ) . '%' );
+		}
+
+		$where_sql = implode( ' AND ', $where );
+
+		// Build date filtering for submissions (non-draft only).
+		$date_where = "s.status != 'draft'";
+		if ( $args['date_from'] ) {
+			$date_where .= $wpdb->prepare( ' AND s.submitted_at >= %s', sanitize_text_field( $args['date_from'] ) );
+		}
+		if ( $args['date_to'] ) {
+			$date_where .= $wpdb->prepare( ' AND s.submitted_at <= %s', sanitize_text_field( $args['date_to'] ) . ' 23:59:59' );
+		}
+
+		// Build graded-only date filter for score/pass calculations.
+		$graded_where = "s.status IN ('graded', 'returned') AND s.score IS NOT NULL AND a.max_points > 0";
+		if ( $args['date_from'] ) {
+			$graded_where .= $wpdb->prepare( ' AND s.submitted_at >= %s', sanitize_text_field( $args['date_from'] ) );
+		}
+		if ( $args['date_to'] ) {
+			$graded_where .= $wpdb->prepare( ' AND s.submitted_at <= %s', sanitize_text_field( $args['date_to'] ) . ' 23:59:59' );
+		}
+
+		// Validate orderby against whitelist.
+		$allowed_orderby = [
+			'title'            => 'a.title',
+			'submissions'      => 'submissions',
+			'avg_score'        => 'avg_score',
+			'pass_rate'        => 'pass_rate',
+			'awaiting_grading' => 'awaiting_grading',
+			'avg_grading_time' => 'avg_grading_time',
+		];
+
+		$orderby_column = isset( $allowed_orderby[ $args['orderby'] ] ) ? $allowed_orderby[ $args['orderby'] ] : 'submissions';
+		$order          = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
+
+		// Build ORDER BY with sanitize_sql_orderby.
+		$order_sql = sanitize_sql_orderby( "{$orderby_column} {$order}" );
+		$order_sql = $order_sql ? "ORDER BY {$order_sql}" : 'ORDER BY submissions DESC';
+
+		$offset = ( $args['page'] - 1 ) * $args['per_page'];
+
+		// Main query: LEFT JOIN to include assignments with zero submissions.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic report queries with pagination not suitable for caching.
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT
+					a.id,
+					a.title,
+					COUNT(CASE WHEN {$date_where} THEN s.id END) AS submissions,
+					ROUND(AVG(CASE WHEN {$graded_where} THEN (s.score / a.max_points) * 100 END), 1) AS avg_score,
+					ROUND(
+						(SUM(CASE WHEN {$graded_where} AND s.passed = 1 THEN 1 ELSE 0 END) /
+						NULLIF(COUNT(CASE WHEN {$graded_where} THEN s.id END), 0)) * 100,
+					1) AS pass_rate,
+					COUNT(CASE WHEN s.status IN ('submitted', 'grading') THEN s.id END) AS awaiting_grading,
+					ROUND(AVG(
+						CASE WHEN {$graded_where}
+							AND s.submitted_at IS NOT NULL
+							AND s.graded_at IS NOT NULL
+							AND s.graded_at > s.submitted_at
+							THEN TIMESTAMPDIFF(SECOND, s.submitted_at, s.graded_at)
+						END
+					)) AS avg_grading_time
+				FROM {$assignments_table} a
+				LEFT JOIN {$submissions_table} s ON a.id = s.assignment_id
+				WHERE {$where_sql}
+				GROUP BY a.id
+				{$order_sql}
+				LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names and validated clauses safely constructed.
+				$args['per_page'],
+				$offset
+			)
+		);
+
+		// Get total count of matching assignments.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic report queries.
+		$total = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$assignments_table} a WHERE {$where_sql}" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name and validated where clause.
+		);
+
+		// Format results.
+		$items = [];
+		if ( $results ) {
+			foreach ( $results as $row ) {
+				$items[] = [
+					'id'               => (int) $row->id,
+					'title'            => $row->title,
+					'submissions'      => (int) $row->submissions,
+					'avg_score'        => null !== $row->avg_score ? (float) $row->avg_score : null,
+					'pass_rate'        => null !== $row->pass_rate ? (float) $row->pass_rate : null,
+					'awaiting_grading' => (int) $row->awaiting_grading,
+					'avg_grading_time' => null !== $row->avg_grading_time ? (int) $row->avg_grading_time : null,
+				];
+			}
+		}
+
+		return [
+			'items'       => $items,
+			'total'       => $total,
+			'total_pages' => (int) ceil( $total / $args['per_page'] ),
+			'page'        => $args['page'],
+		];
 	}
 
 	/**
