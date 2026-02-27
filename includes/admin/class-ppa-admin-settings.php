@@ -144,6 +144,9 @@ class PressPrimer_Assignment_Admin_Settings {
 		}
 		$settings['remove_data_on_uninstall'] = $remove_data_value ? 1 : 0;
 
+		// Include appearance theme from its separate option.
+		$settings['appearance_theme'] = get_option( 'ppa_frontend_theme', 'default' );
+
 		/**
 		 * Filter the settings tabs displayed on the settings page.
 		 *
@@ -159,6 +162,10 @@ class PressPrimer_Assignment_Admin_Settings {
 				'general'     => [
 					'label' => __( 'General', 'pressprimer-assignment' ),
 					'order' => 10,
+				],
+				'appearance'  => [
+					'label' => __( 'Appearance', 'pressprimer-assignment' ),
+					'order' => 20,
 				],
 				'email'       => [
 					'label' => __( 'Email', 'pressprimer-assignment' ),

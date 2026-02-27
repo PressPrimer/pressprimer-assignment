@@ -1,0 +1,459 @@
+/**
+ * PPA Assignment Theme: Modern
+ *
+ * Bold, contemporary appearance with vibrant indigo accents.
+ * Larger border radius, soft layered shadows, high contrast.
+ * Matches the PressPrimer Quiz modern theme.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Theme Variables
+   ========================================================================== */
+
+.ppa-theme-modern,
+.ppa-assignment.ppa-theme-modern,
+.ppa-my-submissions.ppa-theme-modern {
+	/* Primary Colors - Vibrant Indigo */
+	--ppa-primary: #4f46e5;
+	--ppa-primary-hover: #4338ca;
+	--ppa-primary-dark: #4338ca;
+	--ppa-primary-light: #eef2ff;
+	--ppa-primary-rgb: 79, 70, 229;
+
+	/* Secondary Colors */
+	--ppa-secondary: #6366f1;
+	--ppa-secondary-hover: #4f46e5;
+
+	/* Status Colors - Strong, accessible */
+	--ppa-success: #059669;
+	--ppa-success-light: #d1fae5;
+	--ppa-success-hover: #047857;
+	--ppa-error: #dc2626;
+	--ppa-error-light: #fee2e2;
+	--ppa-error-hover: #b91c1c;
+	--ppa-warning: #d97706;
+	--ppa-warning-light: #fef3c7;
+	--ppa-info: #0284c7;
+	--ppa-info-light: #e0f2fe;
+
+	/* Background Colors - Clean whites and light grays */
+	--ppa-background: #ffffff;
+	--ppa-background-gray: #f8fafc;
+	--ppa-background-hover: #f1f5f9;
+	--ppa-background-active: #e2e8f0;
+
+	/* Text Colors - High contrast */
+	--ppa-text: #1e293b;
+	--ppa-text-secondary: #475569;
+	--ppa-text-light: #64748b;
+	--ppa-text-inverse: #ffffff;
+
+	/* Border Colors */
+	--ppa-border: #e2e8f0;
+	--ppa-border-light: #f1f5f9;
+	--ppa-border-focus: #4f46e5;
+
+	/* Spacing */
+	--ppa-space-xs: 0.25rem;
+	--ppa-space-sm: 0.5rem;
+	--ppa-space-md: 1rem;
+	--ppa-space-lg: 1.5rem;
+	--ppa-space-xl: 2rem;
+	--ppa-space-2xl: 3rem;
+
+	/* Border Radius - More rounded for modern feel */
+	--ppa-radius-sm: 6px;
+	--ppa-radius-md: 10px;
+	--ppa-radius-lg: 14px;
+	--ppa-radius-xl: 18px;
+	--ppa-radius-full: 9999px;
+
+	/* Shadows - Soft, layered */
+	--ppa-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+	--ppa-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	--ppa-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	--ppa-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+	--ppa-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.3);
+
+	/* Typography */
+	--ppa-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	--ppa-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	--ppa-font-size-xs: 0.75rem;
+	--ppa-font-size-sm: 0.875rem;
+	--ppa-font-size-base: 1rem;
+	--ppa-font-size-lg: 1.125rem;
+	--ppa-font-size-xl: 1.375rem;
+	--ppa-font-size-2xl: 1.75rem;
+	--ppa-font-size-3xl: 2.25rem;
+	--ppa-line-height: 1.5;
+	--ppa-line-height-tight: 1.3;
+
+	/* Layout */
+	--ppa-max-width: 800px;
+
+	/* Transitions */
+	--ppa-transition-fast: 0.15s ease;
+	--ppa-transition: 0.2s ease;
+	--ppa-transition-slow: 0.3s ease;
+
+	/* Apply base font */
+	font-family: var(--ppa-font-sans);
+}
+
+/* ==========================================================================
+   Assignment Container
+   ========================================================================== */
+
+.ppa-theme-modern.ppa-assignment {
+	background: transparent;
+}
+
+.ppa-theme-modern .ppa-assignment-content {
+	background: var(--ppa-background);
+	border: 1px solid var(--ppa-border-light);
+	border-radius: var(--ppa-radius-xl);
+	box-shadow: var(--ppa-shadow-lg);
+	padding: var(--ppa-space-2xl);
+}
+
+.ppa-theme-modern .ppa-assignment-header {
+	margin-bottom: var(--ppa-space-xl);
+	padding-bottom: var(--ppa-space-lg);
+	border-bottom: 1px solid var(--ppa-border-light);
+}
+
+.ppa-theme-modern .ppa-assignment-title {
+	font-size: 2rem;
+	font-weight: 700;
+	color: var(--ppa-text);
+	letter-spacing: -0.02em;
+	line-height: 1.3;
+}
+
+.ppa-theme-modern .ppa-assignment-description-text {
+	font-size: 1.125rem;
+	color: var(--ppa-text-secondary);
+}
+
+/* ==========================================================================
+   Assignment Meta
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-assignment-meta {
+	background: var(--ppa-background-gray);
+	border: 1px solid var(--ppa-border-light);
+	border-radius: var(--ppa-radius-lg);
+}
+
+.ppa-theme-modern .ppa-meta-item {
+	background: var(--ppa-background);
+	border: 1px solid var(--ppa-border-light);
+	border-radius: var(--ppa-radius-md);
+	transition: var(--ppa-transition);
+}
+
+.ppa-theme-modern .ppa-meta-item:hover {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-sm);
+}
+
+.ppa-theme-modern .ppa-meta-label {
+	color: var(--ppa-text-light);
+}
+
+.ppa-theme-modern .ppa-meta-value {
+	color: var(--ppa-text);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-button {
+	font-family: var(--ppa-font-sans);
+	border-radius: var(--ppa-radius-md);
+	transition: var(--ppa-transition);
+	min-height: 44px;
+}
+
+.ppa-theme-modern .ppa-button:focus {
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+.ppa-theme-modern .ppa-button-primary {
+	background: var(--ppa-primary);
+	color: #ffffff;
+}
+
+.ppa-theme-modern .ppa-button-primary:hover:not(:disabled) {
+	background: var(--ppa-primary-hover);
+	transform: translateY(-1px);
+	box-shadow: var(--ppa-shadow-md);
+}
+
+.ppa-theme-modern .ppa-button-secondary {
+	background: var(--ppa-background);
+	color: var(--ppa-text);
+	border: 2px solid var(--ppa-border);
+}
+
+.ppa-theme-modern .ppa-button-secondary:hover:not(:disabled) {
+	border-color: var(--ppa-primary);
+	color: var(--ppa-primary);
+	background: var(--ppa-primary-light);
+}
+
+/* Submit button */
+.ppa-theme-modern .ppa-submit-button {
+	box-shadow: var(--ppa-shadow-md);
+}
+
+.ppa-theme-modern .ppa-submit-button:hover:not(:disabled) {
+	box-shadow: var(--ppa-shadow-lg);
+}
+
+/* ==========================================================================
+   Upload Zone
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-upload-zone {
+	border-color: var(--ppa-border-light);
+	background: var(--ppa-background-gray);
+}
+
+.ppa-theme-modern .ppa-upload-zone:hover,
+.ppa-theme-modern .ppa-upload-zone:focus-within {
+	border-color: var(--ppa-primary);
+	background: var(--ppa-primary-light);
+}
+
+.ppa-theme-modern .ppa-upload-zone.ppa-upload-active {
+	border-color: var(--ppa-primary);
+	background: var(--ppa-primary-light);
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* ==========================================================================
+   File List
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-file-item {
+	border-color: var(--ppa-border-light);
+	background: var(--ppa-background);
+}
+
+.ppa-theme-modern .ppa-file-item:hover {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-sm);
+}
+
+.ppa-theme-modern .ppa-file-icon {
+	background: var(--ppa-primary-light);
+	color: var(--ppa-primary);
+}
+
+.ppa-theme-modern .ppa-file-progress-bar {
+	background: var(--ppa-primary);
+}
+
+/* ==========================================================================
+   Notes Textarea
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-student-notes textarea {
+	border-color: var(--ppa-border);
+	font-family: var(--ppa-font-sans);
+}
+
+.ppa-theme-modern .ppa-student-notes textarea:focus {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* ==========================================================================
+   Status Badges
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-status-draft {
+	background: var(--ppa-background-gray);
+	color: var(--ppa-text-secondary);
+}
+
+.ppa-theme-modern .ppa-status-submitted {
+	background: var(--ppa-info-light);
+	color: #1e40af;
+}
+
+.ppa-theme-modern .ppa-status-grading {
+	background: var(--ppa-warning-light);
+	color: #92400e;
+}
+
+.ppa-theme-modern .ppa-status-graded {
+	background: var(--ppa-success-light);
+	color: #065f46;
+}
+
+.ppa-theme-modern .ppa-status-returned {
+	background: var(--ppa-success-light);
+	color: #065f46;
+}
+
+/* ==========================================================================
+   Grade Display
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-grade-display {
+	background: var(--ppa-background);
+	border: 1px solid var(--ppa-border-light);
+	box-shadow: var(--ppa-shadow-lg);
+}
+
+.ppa-theme-modern .ppa-grade-passed {
+	border-color: var(--ppa-success);
+	border-width: 2px;
+}
+
+.ppa-theme-modern .ppa-grade-failed {
+	border-color: var(--ppa-error);
+	border-width: 2px;
+}
+
+.ppa-theme-modern .ppa-pass-badge.ppa-passed {
+	background: var(--ppa-success);
+}
+
+.ppa-theme-modern .ppa-pass-badge.ppa-failed {
+	background: var(--ppa-error);
+}
+
+/* ==========================================================================
+   Notices
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-notice {
+	border-radius: var(--ppa-radius-md);
+}
+
+.ppa-theme-modern .ppa-notice-info {
+	background: var(--ppa-info-light);
+	border-color: var(--ppa-info);
+	color: #1e40af;
+}
+
+.ppa-theme-modern .ppa-notice-warning {
+	background: var(--ppa-warning-light);
+	border-color: var(--ppa-warning);
+	color: #92400e;
+}
+
+.ppa-theme-modern .ppa-notice-error {
+	background: var(--ppa-error-light);
+	border-color: var(--ppa-error);
+	color: #991b1b;
+}
+
+.ppa-theme-modern .ppa-notice-success {
+	background: var(--ppa-success-light);
+	border-color: var(--ppa-success);
+	color: #065f46;
+}
+
+/* ==========================================================================
+   Form Elements
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-student-notes textarea,
+.ppa-theme-modern .ppa-input {
+	border: 2px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-md);
+	font-family: var(--ppa-font-sans);
+	color: var(--ppa-text);
+}
+
+.ppa-theme-modern .ppa-student-notes textarea:focus,
+.ppa-theme-modern .ppa-input:focus {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* ==========================================================================
+   Feedback
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-feedback {
+	background: var(--ppa-background-gray);
+	border: 1px solid var(--ppa-border-light);
+	border-radius: var(--ppa-radius-lg);
+}
+
+.ppa-theme-modern .ppa-feedback-heading {
+	color: var(--ppa-text);
+}
+
+.ppa-theme-modern .ppa-feedback-content {
+	color: var(--ppa-text-secondary);
+}
+
+/* ==========================================================================
+   My Submissions
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-submission-item {
+	border-color: var(--ppa-border-light);
+	background: var(--ppa-background);
+}
+
+.ppa-theme-modern .ppa-submission-item:hover {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-sm);
+}
+
+.ppa-theme-modern .ppa-submission-score {
+	font-family: var(--ppa-font-mono);
+}
+
+/* ==========================================================================
+   Login Link
+   ========================================================================== */
+
+.ppa-theme-modern .ppa-login-link {
+	color: var(--ppa-primary);
+}
+
+.ppa-theme-modern .ppa-login-link:hover {
+	color: var(--ppa-primary-hover);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+	.ppa-theme-modern .ppa-assignment-content {
+		padding: var(--ppa-space-lg);
+		border-radius: var(--ppa-radius-lg);
+	}
+
+	.ppa-theme-modern .ppa-assignment-title {
+		font-size: 1.5rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.ppa-theme-modern .ppa-assignment-content {
+		padding: var(--ppa-space-md);
+		border-radius: var(--ppa-radius-md);
+	}
+
+	.ppa-theme-modern .ppa-assignment-title {
+		font-size: 1.25rem;
+	}
+
+	.ppa-theme-modern .ppa-button {
+		width: 100%;
+	}
+}

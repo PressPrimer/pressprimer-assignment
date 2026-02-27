@@ -136,7 +136,8 @@ class PressPrimer_Assignment_Frontend {
 	/**
 	 * Enqueue frontend styles
 	 *
-	 * Loads the base submission stylesheet and the active theme stylesheet.
+	 * Loads the base submission stylesheet, the active theme stylesheet,
+	 * and any appearance setting overrides as inline CSS.
 	 *
 	 * @since 1.0.0
 	 */
@@ -155,12 +156,210 @@ class PressPrimer_Assignment_Frontend {
 		// Load active theme CSS.
 		$theme = $this->get_active_theme();
 
+		$theme_handle = 'ppa-theme-' . $theme;
+
 		wp_enqueue_style(
-			'ppa-theme-' . $theme,
+			$theme_handle,
 			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/themes/' . $theme . '.css',
 			[ 'ppa-submission' ],
 			$version
 		);
+
+		// Apply appearance setting overrides as inline CSS.
+		$inline_css = $this->generate_appearance_overrides( $theme );
+		if ( $inline_css ) {
+			wp_add_inline_style( $theme_handle, $inline_css );
+		}
+	}
+
+	/**
+	 * Generate inline CSS from appearance settings
+	 *
+	 * Reads customization values from plugin settings and produces
+	 * CSS variable overrides scoped to the active theme selector.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $theme Active theme slug.
+	 * @return string Inline CSS string, or empty string if no overrides.
+	 */
+	private function generate_appearance_overrides( $theme ) {
+		$settings = get_option( 'pressprimer_assignment_settings', [] );
+
+		$overrides = [];
+
+		// Color overrides.
+		$color_keys = [
+			'appearance_primary_color'    => '--ppa-primary',
+			'appearance_text_color'       => '--ppa-text',
+			'appearance_background_color' => '--ppa-background',
+			'appearance_success_color'    => '--ppa-success',
+			'appearance_error_color'      => '--ppa-error',
+		];
+
+		foreach ( $color_keys as $setting_key => $css_var ) {
+			if ( ! empty( $settings[ $setting_key ] ) ) {
+				$color = sanitize_hex_color( $settings[ $setting_key ] );
+				if ( $color ) {
+					$overrides[ $css_var ] = $color;
+
+					// Generate derived variants for primary color.
+					if ( '--ppa-primary' === $css_var ) {
+						$overrides['--ppa-primary-hover'] = $this->adjust_brightness( $color, -20 );
+						$overrides['--ppa-primary-dark']  = $this->adjust_brightness( $color, -20 );
+						$overrides['--ppa-primary-light'] = $this->hex_to_rgba( $color, 0.1 );
+						$overrides['--ppa-primary-rgb']   = $this->hex_to_rgb_values( $color );
+						$overrides['--ppa-border-focus']  = $color;
+						$overrides['--ppa-shadow-focus']  = '0 0 0 3px ' . $this->hex_to_rgba( $color, 0.25 );
+					}
+
+					// Generate derived variants for success color.
+					if ( '--ppa-success' === $css_var ) {
+						$overrides['--ppa-success-hover'] = $this->adjust_brightness( $color, -15 );
+						$overrides['--ppa-success-light'] = $this->hex_to_rgba( $color, 0.1 );
+					}
+
+					// Generate derived variants for error color.
+					if ( '--ppa-error' === $css_var ) {
+						$overrides['--ppa-error-hover'] = $this->adjust_brightness( $color, -15 );
+						$overrides['--ppa-error-light'] = $this->hex_to_rgba( $color, 0.1 );
+					}
+
+					// Generate derived variants for text color.
+					if ( '--ppa-text' === $css_var ) {
+						$overrides['--ppa-text-secondary'] = $this->adjust_brightness( $color, 40 );
+						$overrides['--ppa-text-light']     = $this->adjust_brightness( $color, 80 );
+					}
+
+					// Generate derived variants for background color.
+					if ( '--ppa-background' === $css_var ) {
+						$overrides['--ppa-background-gray']  = $this->adjust_brightness( $color, -3 );
+						$overrides['--ppa-background-hover'] = $this->adjust_brightness( $color, -6 );
+					}
+				}
+			}
+		}
+
+		// Typography overrides.
+		// Font family is stored as a full CSS font-family string (e.g., 'Georgia, "Times New Roman", Times, serif').
+		if ( ! empty( $settings['appearance_font_family'] ) ) {
+			$overrides['--ppa-font-sans'] = sanitize_text_field( $settings['appearance_font_family'] );
+		}
+
+		// Font size is stored as a pixel string (e.g., '18px').
+		if ( ! empty( $settings['appearance_font_size'] ) ) {
+			$base = (int) $settings['appearance_font_size'];
+			if ( $base >= 12 && $base <= 24 ) {
+				$overrides['--ppa-font-size-base'] = $base . 'px';
+				$overrides['--ppa-font-size-xs']   = round( $base * 0.75 ) . 'px';
+				$overrides['--ppa-font-size-sm']   = round( $base * 0.875 ) . 'px';
+				$overrides['--ppa-font-size-lg']   = round( $base * 1.125 ) . 'px';
+				$overrides['--ppa-font-size-xl']   = round( $base * 1.25 ) . 'px';
+				$overrides['--ppa-font-size-2xl']  = round( $base * 1.5 ) . 'px';
+				$overrides['--ppa-font-size-3xl']  = round( $base * 2.0 ) . 'px';
+			}
+		}
+
+		// Layout overrides.
+		if ( ! empty( $settings['appearance_border_radius'] ) || 0 === ( $settings['appearance_border_radius'] ?? '' ) ) {
+			$radius = (int) $settings['appearance_border_radius'];
+			if ( $radius >= 0 && $radius <= 24 ) {
+				$sm                           = max( 0, $radius - 2 );
+				$overrides['--ppa-radius-sm'] = $sm . 'px';
+				$overrides['--ppa-radius-md'] = $radius . 'px';
+				$overrides['--ppa-radius-lg'] = round( $radius * 1.33 ) . 'px';
+				$overrides['--ppa-radius-xl'] = ( $radius * 2 ) . 'px';
+			}
+		}
+
+		if ( ! empty( $settings['appearance_max_width'] ) ) {
+			$max_width = (int) $settings['appearance_max_width'];
+			if ( $max_width >= 400 && $max_width <= 1200 ) {
+				$overrides['--ppa-max-width'] = $max_width . 'px';
+			}
+		}
+
+		// Spacing overrides.
+		if ( ! empty( $settings['appearance_line_height'] ) ) {
+			$line_height = (float) $settings['appearance_line_height'];
+			if ( $line_height >= 1.2 && $line_height <= 1.8 ) {
+				$overrides['--ppa-line-height'] = number_format( $line_height, 2 );
+			}
+		}
+
+		if ( empty( $overrides ) ) {
+			return '';
+		}
+
+		// Build CSS string scoped to the active theme.
+		$selector = '.ppa-theme-' . $theme;
+		$css      = $selector . ",\n";
+		$css     .= '.ppa-assignment' . $selector . ",\n";
+		$css     .= '.ppa-my-submissions' . $selector . " {\n";
+
+		foreach ( $overrides as $property => $value ) {
+			$css .= "\t" . $property . ': ' . $value . ";\n";
+		}
+
+		$css .= "}\n";
+
+		return $css;
+	}
+
+	/**
+	 * Adjust hex color brightness
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $hex    Hex color value.
+	 * @param int    $amount Amount to adjust (-255 to 255).
+	 * @return string Adjusted hex color.
+	 */
+	private function adjust_brightness( $hex, $amount ) {
+		$hex = ltrim( $hex, '#' );
+
+		$r = max( 0, min( 255, hexdec( substr( $hex, 0, 2 ) ) + $amount ) );
+		$g = max( 0, min( 255, hexdec( substr( $hex, 2, 2 ) ) + $amount ) );
+		$b = max( 0, min( 255, hexdec( substr( $hex, 4, 2 ) ) + $amount ) );
+
+		return sprintf( '#%02x%02x%02x', $r, $g, $b );
+	}
+
+	/**
+	 * Convert hex color to RGBA string
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $hex   Hex color value.
+	 * @param float  $alpha Alpha transparency (0-1).
+	 * @return string RGBA CSS value.
+	 */
+	private function hex_to_rgba( $hex, $alpha ) {
+		$hex = ltrim( $hex, '#' );
+
+		$r = hexdec( substr( $hex, 0, 2 ) );
+		$g = hexdec( substr( $hex, 2, 2 ) );
+		$b = hexdec( substr( $hex, 4, 2 ) );
+
+		return 'rgba(' . $r . ', ' . $g . ', ' . $b . ', ' . $alpha . ')';
+	}
+
+	/**
+	 * Convert hex color to comma-separated RGB values
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $hex Hex color value.
+	 * @return string Comma-separated RGB values (e.g., "0, 115, 170").
+	 */
+	private function hex_to_rgb_values( $hex ) {
+		$hex = ltrim( $hex, '#' );
+
+		$r = hexdec( substr( $hex, 0, 2 ) );
+		$g = hexdec( substr( $hex, 2, 2 ) );
+		$b = hexdec( substr( $hex, 4, 2 ) );
+
+		return $r . ', ' . $g . ', ' . $b;
 	}
 
 	/**

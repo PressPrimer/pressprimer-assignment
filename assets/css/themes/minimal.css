@@ -1,0 +1,453 @@
+/**
+ * PPA Assignment Theme: Minimal
+ *
+ * Clean, stripped-back appearance with monochromatic palette.
+ * Tight border radius, no shadows, generous whitespace.
+ * Matches the PressPrimer Quiz minimal theme.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Theme Variables
+   ========================================================================== */
+
+.ppa-theme-minimal,
+.ppa-assignment.ppa-theme-minimal,
+.ppa-my-submissions.ppa-theme-minimal {
+	/* Primary Colors - Monochromatic base */
+	--ppa-primary: #111827;
+	--ppa-primary-hover: #1f2937;
+	--ppa-primary-dark: #030712;
+	--ppa-primary-light: #f3f4f6;
+	--ppa-primary-rgb: 17, 24, 39;
+
+	/* Secondary Colors */
+	--ppa-secondary: #6b7280;
+	--ppa-secondary-hover: #4b5563;
+
+	/* Status Colors */
+	--ppa-success: #059669;
+	--ppa-success-light: #ecfdf5;
+	--ppa-success-hover: #047857;
+	--ppa-error: #dc2626;
+	--ppa-error-light: #fef2f2;
+	--ppa-error-hover: #b91c1c;
+	--ppa-warning: #d97706;
+	--ppa-warning-light: #fffbeb;
+	--ppa-info: #2563eb;
+	--ppa-info-light: #eff6ff;
+
+	/* Background Colors */
+	--ppa-background: #ffffff;
+	--ppa-background-gray: #fafafa;
+	--ppa-background-hover: #f5f5f5;
+	--ppa-background-active: #f0f0f0;
+
+	/* Text Colors */
+	--ppa-text: #111827;
+	--ppa-text-secondary: #6b7280;
+	--ppa-text-light: #9ca3af;
+	--ppa-text-inverse: #ffffff;
+
+	/* Border Colors */
+	--ppa-border: #e5e7eb;
+	--ppa-border-light: #f3f4f6;
+	--ppa-border-focus: #111827;
+
+	/* Spacing - More generous for minimal feel */
+	--ppa-space-xs: 0.25rem;
+	--ppa-space-sm: 0.5rem;
+	--ppa-space-md: 1rem;
+	--ppa-space-lg: 1.5rem;
+	--ppa-space-xl: 2.5rem;
+	--ppa-space-2xl: 4rem;
+
+	/* Border Radius - Very subtle */
+	--ppa-radius-sm: 2px;
+	--ppa-radius-md: 3px;
+	--ppa-radius-lg: 4px;
+	--ppa-radius-xl: 6px;
+	--ppa-radius-full: 9999px;
+
+	/* Shadows - Minimal to none */
+	--ppa-shadow-sm: none;
+	--ppa-shadow-md: none;
+	--ppa-shadow-lg: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--ppa-shadow-xl: 0 2px 4px rgba(0, 0, 0, 0.06);
+	--ppa-shadow-focus: 0 0 0 2px #111827;
+
+	/* Typography */
+	--ppa-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	--ppa-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	--ppa-font-size-xs: 0.75rem;
+	--ppa-font-size-sm: 0.875rem;
+	--ppa-font-size-base: 1rem;
+	--ppa-font-size-lg: 1.125rem;
+	--ppa-font-size-xl: 1.25rem;
+	--ppa-font-size-2xl: 1.5rem;
+	--ppa-font-size-3xl: 1.875rem;
+	--ppa-line-height: 1.5;
+	--ppa-line-height-tight: 1.4;
+
+	/* Layout */
+	--ppa-max-width: 800px;
+
+	/* Transitions - Subtle */
+	--ppa-transition-fast: 0.1s ease;
+	--ppa-transition: 0.15s ease;
+	--ppa-transition-slow: 0.2s ease;
+
+	/* Apply base font */
+	font-family: var(--ppa-font-sans);
+}
+
+/* ==========================================================================
+   Assignment Container
+   ========================================================================== */
+
+.ppa-theme-minimal.ppa-assignment {
+	background: transparent;
+}
+
+.ppa-theme-minimal .ppa-assignment-content {
+	background: var(--ppa-background);
+	border: 1px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-xl);
+	box-shadow: none;
+	padding: var(--ppa-space-2xl);
+}
+
+.ppa-theme-minimal .ppa-assignment-header {
+	margin-bottom: var(--ppa-space-xl);
+	padding-bottom: var(--ppa-space-lg);
+	border-bottom: 1px solid var(--ppa-border);
+}
+
+.ppa-theme-minimal .ppa-assignment-title {
+	font-size: 2rem;
+	font-weight: 600;
+	color: var(--ppa-text);
+	letter-spacing: -0.01em;
+	line-height: 1.3;
+}
+
+.ppa-theme-minimal .ppa-assignment-description-text {
+	font-size: 1.125rem;
+	color: var(--ppa-text-secondary);
+}
+
+/* ==========================================================================
+   Assignment Meta
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-assignment-meta {
+	background: var(--ppa-background-gray);
+	border: 1px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-lg);
+}
+
+.ppa-theme-minimal .ppa-meta-item {
+	background: var(--ppa-background);
+	border: 1px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-md);
+	transition: var(--ppa-transition);
+}
+
+.ppa-theme-minimal .ppa-meta-item:hover {
+	border-color: var(--ppa-primary);
+}
+
+.ppa-theme-minimal .ppa-meta-label {
+	color: var(--ppa-text-light);
+}
+
+.ppa-theme-minimal .ppa-meta-value {
+	color: var(--ppa-text);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-button {
+	font-family: var(--ppa-font-sans);
+	border-radius: var(--ppa-radius-md);
+	transition: var(--ppa-transition);
+	min-height: 44px;
+}
+
+.ppa-theme-minimal .ppa-button:focus {
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+.ppa-theme-minimal .ppa-button-primary {
+	background: var(--ppa-primary);
+	color: #ffffff;
+}
+
+.ppa-theme-minimal .ppa-button-primary:hover:not(:disabled) {
+	background: var(--ppa-primary-hover);
+}
+
+.ppa-theme-minimal .ppa-button-secondary {
+	background: var(--ppa-background);
+	color: var(--ppa-text);
+	border: 1px solid var(--ppa-border);
+}
+
+.ppa-theme-minimal .ppa-button-secondary:hover:not(:disabled) {
+	border-color: var(--ppa-primary);
+	color: var(--ppa-primary);
+}
+
+/* Submit button */
+.ppa-theme-minimal .ppa-submit-button {
+	box-shadow: none;
+}
+
+.ppa-theme-minimal .ppa-submit-button:hover:not(:disabled) {
+	box-shadow: none;
+}
+
+/* ==========================================================================
+   Upload Zone
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-upload-zone {
+	border-color: var(--ppa-border);
+	background: var(--ppa-background-gray);
+}
+
+.ppa-theme-minimal .ppa-upload-zone:hover,
+.ppa-theme-minimal .ppa-upload-zone:focus-within {
+	border-color: var(--ppa-primary);
+	background: var(--ppa-primary-light);
+}
+
+.ppa-theme-minimal .ppa-upload-zone.ppa-upload-active {
+	border-color: var(--ppa-primary);
+	background: var(--ppa-primary-light);
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* ==========================================================================
+   File List
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-file-item {
+	border-color: var(--ppa-border);
+	background: var(--ppa-background);
+}
+
+.ppa-theme-minimal .ppa-file-item:hover {
+	border-color: var(--ppa-primary);
+}
+
+.ppa-theme-minimal .ppa-file-icon {
+	background: var(--ppa-primary-light);
+	color: var(--ppa-primary);
+}
+
+.ppa-theme-minimal .ppa-file-progress-bar {
+	background: var(--ppa-primary);
+}
+
+/* ==========================================================================
+   Notes Textarea
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-student-notes textarea {
+	border-color: var(--ppa-border);
+	font-family: var(--ppa-font-sans);
+}
+
+.ppa-theme-minimal .ppa-student-notes textarea:focus {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* ==========================================================================
+   Status Badges
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-status-draft {
+	background: var(--ppa-background-gray);
+	color: var(--ppa-text-secondary);
+}
+
+.ppa-theme-minimal .ppa-status-submitted {
+	background: var(--ppa-info-light);
+	color: #1e40af;
+}
+
+.ppa-theme-minimal .ppa-status-grading {
+	background: var(--ppa-warning-light);
+	color: #92400e;
+}
+
+.ppa-theme-minimal .ppa-status-graded {
+	background: var(--ppa-success-light);
+	color: #065f46;
+}
+
+.ppa-theme-minimal .ppa-status-returned {
+	background: var(--ppa-success-light);
+	color: #065f46;
+}
+
+/* ==========================================================================
+   Grade Display
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-grade-display {
+	background: var(--ppa-background);
+	border: 1px solid var(--ppa-border);
+	box-shadow: none;
+}
+
+.ppa-theme-minimal .ppa-grade-passed {
+	border-color: var(--ppa-success);
+	border-width: 2px;
+}
+
+.ppa-theme-minimal .ppa-grade-failed {
+	border-color: var(--ppa-error);
+	border-width: 2px;
+}
+
+.ppa-theme-minimal .ppa-pass-badge.ppa-passed {
+	background: var(--ppa-success);
+}
+
+.ppa-theme-minimal .ppa-pass-badge.ppa-failed {
+	background: var(--ppa-error);
+}
+
+/* ==========================================================================
+   Notices
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-notice {
+	border-radius: var(--ppa-radius-md);
+}
+
+.ppa-theme-minimal .ppa-notice-info {
+	background: var(--ppa-info-light);
+	border-color: var(--ppa-info);
+	color: #1e40af;
+}
+
+.ppa-theme-minimal .ppa-notice-warning {
+	background: var(--ppa-warning-light);
+	border-color: var(--ppa-warning);
+	color: #92400e;
+}
+
+.ppa-theme-minimal .ppa-notice-error {
+	background: var(--ppa-error-light);
+	border-color: var(--ppa-error);
+	color: #991b1b;
+}
+
+.ppa-theme-minimal .ppa-notice-success {
+	background: var(--ppa-success-light);
+	border-color: var(--ppa-success);
+	color: #065f46;
+}
+
+/* ==========================================================================
+   Form Elements
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-student-notes textarea,
+.ppa-theme-minimal .ppa-input {
+	border: 1px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-md);
+	font-family: var(--ppa-font-sans);
+	color: var(--ppa-text);
+}
+
+.ppa-theme-minimal .ppa-student-notes textarea:focus,
+.ppa-theme-minimal .ppa-input:focus {
+	border-color: var(--ppa-primary);
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* ==========================================================================
+   Feedback
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-feedback {
+	background: var(--ppa-background-gray);
+	border: 1px solid var(--ppa-border);
+	border-radius: var(--ppa-radius-lg);
+}
+
+.ppa-theme-minimal .ppa-feedback-heading {
+	color: var(--ppa-text);
+}
+
+.ppa-theme-minimal .ppa-feedback-content {
+	color: var(--ppa-text-secondary);
+}
+
+/* ==========================================================================
+   My Submissions
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-submission-item {
+	border-color: var(--ppa-border);
+	background: var(--ppa-background);
+}
+
+.ppa-theme-minimal .ppa-submission-item:hover {
+	border-color: var(--ppa-primary);
+}
+
+.ppa-theme-minimal .ppa-submission-score {
+	font-family: var(--ppa-font-mono);
+}
+
+/* ==========================================================================
+   Login Link
+   ========================================================================== */
+
+.ppa-theme-minimal .ppa-login-link {
+	color: var(--ppa-primary);
+}
+
+.ppa-theme-minimal .ppa-login-link:hover {
+	color: var(--ppa-primary-hover);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+	.ppa-theme-minimal .ppa-assignment-content {
+		padding: var(--ppa-space-lg);
+		border-radius: var(--ppa-radius-lg);
+	}
+
+	.ppa-theme-minimal .ppa-assignment-title {
+		font-size: 1.5rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.ppa-theme-minimal .ppa-assignment-content {
+		padding: var(--ppa-space-md);
+		border-radius: var(--ppa-radius-md);
+	}
+
+	.ppa-theme-minimal .ppa-assignment-title {
+		font-size: 1.25rem;
+	}
+
+	.ppa-theme-minimal .ppa-button {
+		width: 100%;
+	}
+}

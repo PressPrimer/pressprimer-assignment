@@ -305,6 +305,8 @@ class PressPrimer_Assignment_Admin {
 		// Localize bundle-specific data.
 		if ( 'dashboard' === $bundle_name ) {
 			$this->localize_dashboard_data();
+		} elseif ( 'reports' === $bundle_name ) {
+			$this->localize_reports_data();
 		}
 	}
 
@@ -380,6 +382,39 @@ class PressPrimer_Assignment_Admin {
 					'grading'           => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
 					'reports'           => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
 				],
+			]
+		);
+	}
+
+	/**
+	 * Localize reports data for the React app
+	 *
+	 * Passes PHP-derived metadata to the reports React bundle
+	 * via wp_localize_script(). Mirrors the Quiz reports pattern.
+	 *
+	 * @since 1.0.0
+	 */
+	private function localize_reports_data() {
+		/**
+		 * Filters the reports mascot image URL.
+		 *
+		 * Used by Enterprise addon for white-label branding.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $mascot_url Default mascot URL.
+		 */
+		$reports_mascot = apply_filters(
+			'pressprimer_assignment_reports_mascot',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/presspilot-mascot.svg'
+		);
+
+		wp_localize_script(
+			'ppa-reports',
+			'pressprimerAssignmentReportsData',
+			[
+				'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
+				'reportsMascot' => $reports_mascot,
 			]
 		);
 	}

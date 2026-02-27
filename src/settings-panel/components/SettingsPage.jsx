@@ -17,9 +17,11 @@ import {
 	ToolOutlined,
 	SaveOutlined,
 	ApiOutlined,
+	BgColorsOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
+import AppearanceTab from './AppearanceTab';
 import EmailTab from './EmailTab';
 import IntegrationsTab from './IntegrationsTab';
 import AdvancedTab from './AdvancedTab';
@@ -35,6 +37,13 @@ const CORE_TABS = [
 		icon: <SettingOutlined />,
 		component: GeneralTab,
 		order: 10,
+	},
+	{
+		id: 'appearance',
+		label: __( 'Appearance', 'pressprimer-assignment' ),
+		icon: <BgColorsOutlined />,
+		component: AppearanceTab,
+		order: 20,
 	},
 	{
 		id: 'email',

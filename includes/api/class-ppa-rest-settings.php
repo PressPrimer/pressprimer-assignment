@@ -91,6 +91,9 @@ class PressPrimer_Assignment_REST_Settings {
 	public function get_settings( $request ) {
 		$settings = get_option( PressPrimer_Assignment_Admin_Settings::OPTION_NAME, [] );
 
+		// Include the active theme from its separate option.
+		$settings['appearance_theme'] = get_option( 'ppa_frontend_theme', 'default' );
+
 		return new WP_REST_Response(
 			[
 				'success'  => true,
@@ -194,6 +197,82 @@ class PressPrimer_Assignment_REST_Settings {
 		foreach ( $body_fields as $field ) {
 			if ( isset( $data[ $field ] ) ) {
 				$sanitized[ $field ] = wp_kses_post( $data[ $field ] );
+			}
+		}
+
+		// =====================================================================
+		// Appearance settings.
+		// =====================================================================
+
+		// Theme selection (stored in separate option for frontend use).
+		if ( isset( $data['appearance_theme'] ) ) {
+			$valid_themes = [ 'default', 'modern', 'minimal' ];
+			$theme_value  = sanitize_text_field( $data['appearance_theme'] );
+			if ( in_array( $theme_value, $valid_themes, true ) ) {
+				update_option( 'ppa_frontend_theme', $theme_value );
+				$sanitized['appearance_theme'] = $theme_value;
+			}
+		}
+
+		// Color settings.
+		$color_fields = [
+			'appearance_primary_color',
+			'appearance_text_color',
+			'appearance_background_color',
+			'appearance_success_color',
+			'appearance_error_color',
+		];
+		foreach ( $color_fields as $field ) {
+			if ( isset( $data[ $field ] ) ) {
+				if ( '' === $data[ $field ] ) {
+					$sanitized[ $field ] = '';
+				} else {
+					$color = sanitize_hex_color( $data[ $field ] );
+					if ( $color ) {
+						$sanitized[ $field ] = $color;
+					}
+				}
+			}
+		}
+
+		// Typography settings.
+		// Font family stores the full CSS font-family value (e.g., 'Georgia, "Times New Roman", Times, serif').
+		if ( isset( $data['appearance_font_family'] ) ) {
+			$sanitized['appearance_font_family'] = sanitize_text_field( $data['appearance_font_family'] );
+		}
+
+		// Font size stores a pixel string (e.g., '18px') or empty for default.
+		if ( isset( $data['appearance_font_size'] ) ) {
+			$font_size = sanitize_text_field( $data['appearance_font_size'] );
+			if ( '' === $font_size || preg_match( '/^\d{2}px$/', $font_size ) ) {
+				$sanitized['appearance_font_size'] = $font_size;
+			}
+		}
+
+		// Layout settings.
+		if ( isset( $data['appearance_border_radius'] ) ) {
+			if ( null === $data['appearance_border_radius'] || '' === $data['appearance_border_radius'] ) {
+				$sanitized['appearance_border_radius'] = '';
+			} else {
+				$sanitized['appearance_border_radius'] = min( 24, max( 0, absint( $data['appearance_border_radius'] ) ) );
+			}
+		}
+
+		if ( isset( $data['appearance_max_width'] ) ) {
+			if ( '' === $data['appearance_max_width'] ) {
+				$sanitized['appearance_max_width'] = '';
+			} else {
+				$sanitized['appearance_max_width'] = min( 1200, max( 400, absint( $data['appearance_max_width'] ) ) );
+			}
+		}
+
+		// Spacing settings.
+		if ( isset( $data['appearance_line_height'] ) ) {
+			if ( '' === $data['appearance_line_height'] ) {
+				$sanitized['appearance_line_height'] = '';
+			} else {
+				$value                               = floatval( $data['appearance_line_height'] );
+				$sanitized['appearance_line_height'] = min( 1.8, max( 1.2, round( $value, 2 ) ) );
 			}
 		}
 
