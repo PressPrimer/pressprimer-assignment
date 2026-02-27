@@ -46,6 +46,17 @@ class PressPrimer_Assignment_Capabilities {
 	const PPA_CAP_MANAGE_SETTINGS = 'ppa_manage_settings';
 
 	/**
+	 * Own content management capability
+	 *
+	 * Allows managing own assignments and viewing own submissions.
+	 * Granted to teachers by default; used as baseline access level.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	const PPA_CAP_MANAGE_OWN = 'ppa_manage_own';
+
+	/**
 	 * Reports viewing capability
 	 *
 	 * @since 1.0.0
@@ -80,6 +91,7 @@ class PressPrimer_Assignment_Capabilities {
 			return;
 		}
 
+		$admin->add_cap( self::PPA_CAP_MANAGE_OWN );
 		$admin->add_cap( self::PPA_CAP_MANAGE_ALL );
 		$admin->add_cap( self::PPA_CAP_MANAGE_SETTINGS );
 		$admin->add_cap( self::PPA_CAP_VIEW_REPORTS );
@@ -107,11 +119,15 @@ class PressPrimer_Assignment_Capabilities {
 			return;
 		}
 
+		// Base capabilities for teachers (free plugin).
+		$teacher->add_cap( self::PPA_CAP_MANAGE_OWN );
+		$teacher->add_cap( self::PPA_CAP_VIEW_REPORTS );
+
 		/**
 		 * Filter the capabilities assigned to the teacher role.
 		 *
 		 * Addons can use this filter to add premium capabilities
-		 * such as manage_own and view_submissions_own.
+		 * such as manage_all and view_submissions_all.
 		 *
 		 * @since 1.0.0
 		 *
@@ -161,6 +177,7 @@ class PressPrimer_Assignment_Capabilities {
 	 */
 	public static function get_all_capabilities() {
 		$capabilities = [
+			self::PPA_CAP_MANAGE_OWN,
 			self::PPA_CAP_MANAGE_ALL,
 			self::PPA_CAP_MANAGE_SETTINGS,
 			self::PPA_CAP_VIEW_REPORTS,

@@ -86,6 +86,9 @@ class PressPrimer_Assignment_Plugin {
 		// Register email notification hooks.
 		$this->register_email_hooks();
 
+		// Register statistics cache invalidation hooks.
+		$this->register_statistics_hooks();
+
 		// Initialize components.
 		$this->init_admin();
 		$this->init_frontend();
@@ -155,6 +158,45 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_Email_Service' ) ) {
 			PressPrimer_Assignment_Email_Service::register_hooks();
 		}
+	}
+
+	/**
+	 * Register statistics cache invalidation hooks
+	 *
+	 * Clears dashboard and activity chart caches when submissions
+	 * are created, graded, returned, or deleted. Matches the Quiz
+	 * pattern of proactive cache invalidation on data changes.
+	 *
+	 * @since 1.0.0
+	 */
+	private function register_statistics_hooks() {
+		if ( ! class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
+			return;
+		}
+
+		// Clear caches when a submission is submitted.
+		add_action(
+			'pressprimer_assignment_submission_submitted',
+			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
+		);
+
+		// Clear caches when a submission is graded.
+		add_action(
+			'pressprimer_assignment_submission_graded',
+			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
+		);
+
+		// Clear caches when a submission is returned.
+		add_action(
+			'pressprimer_assignment_submission_returned',
+			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
+		);
+
+		// Clear caches when a submission is deleted.
+		add_action(
+			'pressprimer_assignment_submission_deleted',
+			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
+		);
 	}
 
 	/**
@@ -270,6 +312,12 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_REST_Settings' ) ) {
 			$settings_api = new PressPrimer_Assignment_REST_Settings();
 			$settings_api->init();
+		}
+
+		// Statistics REST API (dashboard).
+		if ( class_exists( 'PressPrimer_Assignment_REST_Statistics' ) ) {
+			$statistics_api = new PressPrimer_Assignment_REST_Statistics();
+			$statistics_api->init();
 		}
 	}
 

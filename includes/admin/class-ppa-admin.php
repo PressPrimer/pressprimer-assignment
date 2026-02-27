@@ -291,15 +291,97 @@ class PressPrimer_Assignment_Admin {
 		);
 
 		// Enqueue the CSS if it exists.
-		$css_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/' . $bundle_name . '.css';
+		// @wordpress/scripts outputs CSS as style-{name}.css, not {name}.css.
+		$css_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/style-' . $bundle_name . '.css';
 		if ( file_exists( $css_file ) ) {
 			wp_enqueue_style(
 				'ppa-' . $bundle_name,
-				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/' . $bundle_name . '.css',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/style-' . $bundle_name . '.css',
 				[ 'ppa-admin' ],
 				$asset['version']
 			);
 		}
+
+		// Localize bundle-specific data.
+		if ( 'dashboard' === $bundle_name ) {
+			$this->localize_dashboard_data();
+		}
+	}
+
+	/**
+	 * Localize dashboard data for the React app
+	 *
+	 * Passes PHP-derived metadata to the dashboard React bundle
+	 * via wp_localize_script(). Mirrors the Quiz dashboard pattern.
+	 *
+	 * @since 1.0.0
+	 */
+	private function localize_dashboard_data() {
+		// Determine if user is a teacher (not a full admin).
+		$is_teacher = ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+
+		/**
+		 * Filters the plugin name displayed in the dashboard.
+		 *
+		 * Used by Enterprise addon for white-label branding.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $name Default plugin name.
+		 */
+		$plugin_name = apply_filters(
+			'pressprimer_assignment_plugin_name',
+			__( 'PressPrimer Assignment', 'pressprimer-assignment' )
+		);
+
+		/**
+		 * Filters the dashboard logo URL.
+		 *
+		 * Used by Enterprise addon for white-label branding.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $logo_url Default logo URL.
+		 */
+		$dashboard_logo = apply_filters(
+			'pressprimer_assignment_dashboard_logo',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/PressPrimer-Logo-White.svg'
+		);
+
+		/**
+		 * Filters the dashboard welcome text.
+		 *
+		 * Used by Enterprise addon for white-label branding.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string $text Default welcome text.
+		 * @param string $name The plugin name (filtered).
+		 */
+		$welcome_text = apply_filters(
+			'pressprimer_assignment_dashboard_welcome_text',
+			/* translators: %s: plugin name */
+			sprintf( __( 'Welcome to %s! Here\'s an overview of recent assignment activity.', 'pressprimer-assignment' ), $plugin_name ),
+			$plugin_name
+		);
+
+		wp_localize_script(
+			'ppa-dashboard',
+			'pressprimerAssignmentDashboardData',
+			[
+				'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
+				'isTeacher'     => $is_teacher,
+				'pluginName'    => $plugin_name,
+				'dashboardLogo' => $dashboard_logo,
+				'welcomeText'   => $welcome_text,
+				'urls'          => [
+					'create_assignment' => admin_url( 'admin.php?page=pressprimer-assignment-assignments&action=new' ),
+					'submissions'       => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
+					'grading'           => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
+					'reports'           => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
+				],
+			]
+		);
 	}
 
 	/**

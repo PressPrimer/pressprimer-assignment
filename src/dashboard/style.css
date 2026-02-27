@@ -1,0 +1,454 @@
+/**
+ * Dashboard Styles
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Container
+   ========================================================================== */
+
+.ppa-dashboard-container {
+	background: #f0f2f5;
+	min-height: calc(100vh - 32px);
+	padding: 24px;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.ppa-dashboard-header {
+	background: #334155;
+	padding: 32px;
+	border-radius: 12px;
+	margin-bottom: 24px;
+	color: #fff;
+}
+
+.ppa-dashboard-header-content {
+	text-align: center;
+}
+
+.ppa-dashboard-logo {
+	max-width: 500px;
+	width: 100%;
+	height: auto;
+	margin-bottom: 12px;
+}
+
+.ppa-dashboard-header h1 {
+	margin: 0 0 8px 0;
+	font-size: 28px;
+	font-weight: 600;
+	color: #fff;
+}
+
+.ppa-dashboard-header p {
+	margin: 0;
+	color: #eee;
+	font-size: 18px;
+}
+
+/* ==========================================================================
+   Content Layout
+   ========================================================================== */
+
+.ppa-dashboard-content {
+	/* Container for dashboard content */
+}
+
+.ppa-dashboard-top-row {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 16px;
+	align-items: start;
+}
+
+.ppa-dashboard-grid {
+	display: grid;
+	grid-template-columns: 1fr 350px;
+	gap: 24px;
+	margin-top: 24px;
+}
+
+.ppa-dashboard-main {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.ppa-dashboard-sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+/* ==========================================================================
+   Stats Cards
+   ========================================================================== */
+
+.ppa-stats-cards {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 16px;
+}
+
+.ppa-stats-card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 20px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ppa-stats-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ppa-stats-card-icon {
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	flex-shrink: 0;
+}
+
+.ppa-stats-card-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.ppa-stats-card-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: #1d2327;
+	line-height: 1.2;
+}
+
+.ppa-stats-card-label {
+	font-size: 13px;
+	color: #646970;
+	margin-top: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Activity Chart
+   ========================================================================== */
+
+.ppa-activity-chart-card {
+	margin-top: 24px;
+}
+
+.ppa-activity-chart-container {
+	min-height: 225px;
+}
+
+.ppa-chart-range-select {
+	min-width: 140px;
+}
+
+.ppa-chart-tooltip {
+	background: #fff;
+	border: 1px solid #d9d9d9;
+	border-radius: 6px;
+	padding: 10px 14px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ppa-chart-tooltip-date {
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 6px 0;
+	padding-bottom: 6px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.ppa-chart-tooltip p {
+	margin: 4px 0;
+	font-size: 13px;
+}
+
+/* ==========================================================================
+   Dashboard Cards
+   ========================================================================== */
+
+.ppa-dashboard-card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ppa-dashboard-card--large {
+	/* For larger cards like Recent Activity */
+}
+
+.ppa-dashboard-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.ppa-dashboard-card-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 16px 0;
+	display: flex;
+	align-items: center;
+}
+
+.ppa-dashboard-card-header .ppa-dashboard-card-title {
+	margin-bottom: 0;
+}
+
+.ppa-dashboard-card-subtitle {
+	font-size: 12px;
+	font-weight: 400;
+	color: #646970;
+	margin-left: 8px;
+}
+
+.ppa-dashboard-card-action {
+	padding: 0;
+}
+
+/* ==========================================================================
+   Quick Actions
+   ========================================================================== */
+
+.ppa-quick-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+}
+
+.ppa-quick-action-button {
+	text-align: left;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	font-weight: 500;
+}
+
+.ppa-quick-action-button .anticon {
+	font-size: 16px;
+}
+
+.ppa-quick-action-button--tour {
+	color: #8c8c8c;
+}
+
+.ppa-quick-action-button--tour:hover {
+	color: #1890ff;
+	background: rgba(24, 144, 255, 0.06);
+}
+
+/* ==========================================================================
+   Popular Assignments
+   ========================================================================== */
+
+.ppa-popular-assignments-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.ppa-popular-assignment-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	background: #fafafa;
+	border-radius: 8px;
+	transition: background-color 0.2s ease;
+}
+
+.ppa-popular-assignment-item:hover {
+	background: #f0f0f0;
+}
+
+.ppa-popular-assignment-rank {
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.ppa-popular-assignment-rank-number {
+	font-size: 14px;
+	font-weight: 600;
+	color: #8c8c8c;
+}
+
+.ppa-popular-assignment-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.ppa-popular-assignment-title {
+	display: block;
+	font-size: 14px;
+	font-weight: 500;
+	color: #1d2327;
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ppa-popular-assignment-title:hover {
+	color: #2271b1;
+}
+
+.ppa-popular-assignment-submissions {
+	font-size: 12px;
+	color: #646970;
+}
+
+.ppa-popular-assignments-loading {
+	padding: 8px 0;
+}
+
+/* ==========================================================================
+   Recent Activity Table
+   ========================================================================== */
+
+.ppa-activity-table {
+	margin-top: 0;
+}
+
+.ppa-activity-table .ant-table-thead > tr > th {
+	background: #fafafa;
+	font-weight: 600;
+	color: #1d2327;
+	padding: 12px 16px;
+}
+
+.ppa-activity-table .ant-table-tbody > tr > td {
+	padding: 14px 16px;
+}
+
+.ppa-activity-table .ant-table-tbody > tr:hover > td {
+	background: #f6f7f7;
+}
+
+.ppa-activity-student {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ppa-activity-student-icon {
+	color: #8c8c8c;
+}
+
+.ppa-activity-score {
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.ppa-activity-date {
+	color: #8c8c8c;
+	font-size: 13px;
+}
+
+/* ==========================================================================
+   Empty States
+   ========================================================================== */
+
+.ppa-dashboard-card .ant-empty {
+	padding: 24px 0;
+}
+
+.ppa-dashboard-card .ant-empty-description {
+	color: #8c8c8c;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media screen and (max-width: 1200px) {
+	.ppa-dashboard-top-row {
+		grid-template-columns: 1fr;
+	}
+
+	.ppa-stats-cards {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.ppa-dashboard-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.ppa-dashboard-sidebar {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media screen and (max-width: 900px) {
+	.ppa-stats-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.ppa-dashboard-sidebar {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.ppa-dashboard-container {
+		padding: 12px;
+	}
+
+	.ppa-dashboard-header {
+		padding: 20px;
+	}
+
+	.ppa-dashboard-header h1 {
+		font-size: 22px;
+	}
+
+	.ppa-stats-cards {
+		grid-template-columns: 1fr;
+	}
+
+	.ppa-stats-card {
+		padding: 16px;
+	}
+
+	.ppa-stats-card-value {
+		font-size: 24px;
+	}
+
+	.ppa-dashboard-card {
+		padding: 16px;
+	}
+
+	/* Make table scroll horizontally on mobile */
+	.ppa-activity-table {
+		overflow-x: auto;
+	}
+
+	.ppa-activity-table .ant-table {
+		min-width: 600px;
+	}
+}
