@@ -1,0 +1,40 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressprimer-assignment/assignment",
+	"version": "1.0.0",
+	"title": "PPA Assignment",
+	"category": "pressprimer-assignment",
+	"icon": "media-document",
+	"description": "Display an assignment for users to submit.",
+	"supports": {
+		"html": false,
+		"align": ["wide", "full"]
+	},
+	"attributes": {
+		"assignmentId": {
+			"type": "number",
+			"default": 0
+		},
+		"showDescription": {
+			"type": "boolean",
+			"default": true
+		},
+		"showInstructions": {
+			"type": "boolean",
+			"default": true
+		},
+		"showMaxPoints": {
+			"type": "boolean",
+			"default": true
+		},
+		"showFileInfo": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"textdomain": "pressprimer-assignment",
+	"editorScript": "file:../../build/blocks/assignment/index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style.css"
+}

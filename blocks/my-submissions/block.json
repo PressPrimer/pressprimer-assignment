@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pressprimer-assignment/my-submissions",
+	"version": "1.0.0",
+	"title": "PPA My Submissions",
+	"category": "pressprimer-assignment",
+	"icon": "list-view",
+	"description": "Display a list of the current user's assignment submissions.",
+	"supports": {
+		"html": false,
+		"align": true
+	},
+	"attributes": {
+		"perPage": {
+			"type": "number",
+			"default": 10
+		},
+		"showStatus": {
+			"type": "boolean",
+			"default": true
+		},
+		"showScore": {
+			"type": "boolean",
+			"default": true
+		},
+		"showDate": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"textdomain": "pressprimer-assignment",
+	"editorScript": "file:../../build/blocks/my-submissions/index.js",
+	"editorStyle": "file:./editor.css",
+	"style": "file:./style.css"
+}

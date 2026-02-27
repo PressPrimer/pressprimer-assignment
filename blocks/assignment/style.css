@@ -1,0 +1,29 @@
+/**
+ * Assignment Block - Frontend Styles
+ *
+ * Note: Most assignment styling is handled by the assignment themes.
+ * This file only contains block-specific wrapper styles.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+.wp-block-pressprimer-assignment-assignment {
+	/* Allow the assignment to take full width of content area */
+	max-width: 100%;
+}
+
+/* Wide alignment support */
+.wp-block-pressprimer-assignment-assignment.alignwide {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: var(--wp--style--global--wide-size, 1200px);
+}
+
+/* Full alignment support */
+.wp-block-pressprimer-assignment-assignment.alignfull {
+	margin-left: calc(-1 * var(--wp--style--root--padding-left, 0px));
+	margin-right: calc(-1 * var(--wp--style--root--padding-right, 0px));
+	max-width: none;
+	width: auto;
+}

@@ -1,0 +1,13 @@
+/**
+ * Frontend styles for My Submissions block
+ *
+ * The main styles are loaded from assets/css/my-submissions.css
+ * This file is for any block-specific overrides.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+.wp-block-pressprimer-assignment-my-submissions {
+	margin: 2em 0;
+}
