@@ -1,0 +1,564 @@
+/**
+ * Onboarding Tour Styles
+ *
+ * Follows the same pattern as PressPrimer Quiz onboarding styles,
+ * using the ppa- prefix instead of ppq-.
+ *
+ * @package PressPrimer_Assignment
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Overlay (for modals)
+   ========================================================================== */
+
+.ppa-onboarding-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.75);
+	animation: ppa-fade-in 0.3s ease-out;
+}
+
+/* ==========================================================================
+   Modal (Welcome & Completion)
+   ========================================================================== */
+
+.ppa-onboarding-modal {
+	background: #fff;
+	border-radius: 16px;
+	padding: 48px;
+	max-width: 520px;
+	width: calc(100% - 32px);
+	text-align: center;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+	animation: ppa-scale-in 0.3s ease-out;
+}
+
+.ppa-onboarding-modal--complete {
+	max-width: 580px;
+}
+
+.ppa-onboarding-modal__icon {
+	width: 80px;
+	height: 80px;
+	margin: 0 auto 24px;
+	background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+	border-radius: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 40px;
+	color: #fff;
+}
+
+.ppa-onboarding-modal__icon--success {
+	background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+}
+
+/* Logo for welcome modal */
+.ppa-onboarding-modal__logo {
+	margin: 0 auto 32px;
+	text-align: center;
+}
+
+.ppa-onboarding-modal__logo-img {
+	max-height: 75px;
+	width: auto;
+}
+
+.ppa-onboarding-modal__title {
+	font-size: 28px;
+	font-weight: 700;
+	color: #1d2327;
+	margin: 0 0 16px 0;
+}
+
+.ppa-onboarding-modal__content {
+	font-size: 16px;
+	color: #646970;
+	margin: 0 0 32px 0;
+	line-height: 1.6;
+}
+
+.ppa-onboarding-modal__actions {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+}
+
+.ppa-onboarding-modal__start-btn,
+.ppa-onboarding-modal__complete-btn {
+	min-width: 200px;
+	height: 44px;
+	font-size: 16px;
+	font-weight: 500;
+}
+
+/* Welcome modal specific button styles - teal color */
+.ppa-onboarding-modal--welcome .ppa-onboarding-modal__start-btn {
+	background-color: #14b8a6 !important;
+	border-color: #14b8a6 !important;
+}
+
+.ppa-onboarding-modal--welcome .ppa-onboarding-modal__start-btn:hover {
+	background-color: #0d9488 !important;
+	border-color: #0d9488 !important;
+}
+
+.ppa-onboarding-modal--welcome .ppa-onboarding-modal__skip-btn {
+	color: #14b8a6;
+}
+
+.ppa-onboarding-modal--welcome .ppa-onboarding-modal__skip-btn:hover {
+	color: #0d9488;
+}
+
+.ppa-onboarding-modal__skip-btn {
+	color: #646970;
+}
+
+.ppa-onboarding-modal__skip-btn:hover {
+	color: #1d2327;
+}
+
+.ppa-onboarding-modal__checkbox {
+	margin-top: 8px;
+	color: #8c8c8c;
+	font-size: 13px;
+}
+
+/* Quick Actions in Completion Modal */
+.ppa-onboarding-modal__quick-actions {
+	margin-bottom: 24px;
+	padding: 20px;
+	background: #fafafa;
+	border-radius: 12px;
+}
+
+.ppa-onboarding-modal__quick-actions-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 16px 0;
+}
+
+.ppa-onboarding-modal__action-btn {
+	height: 40px;
+}
+
+/* ==========================================================================
+   Spotlight
+   ========================================================================== */
+
+.ppa-spotlight__overlay {
+	pointer-events: none;
+}
+
+.ppa-spotlight__highlight {
+	border: 3px solid #1890ff;
+	box-shadow:
+		0 0 0 4px rgba(24, 144, 255, 0.2),
+		0 0 20px rgba(24, 144, 255, 0.3);
+	transition: all 0.3s ease;
+}
+
+.ppa-spotlight__highlight--pulse {
+	animation: ppa-spotlight-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ppa-spotlight-pulse {
+	0%,
+	100% {
+		box-shadow:
+			0 0 0 4px rgba(24, 144, 255, 0.2),
+			0 0 20px rgba(24, 144, 255, 0.3);
+	}
+	50% {
+		box-shadow:
+			0 0 0 8px rgba(24, 144, 255, 0.1),
+			0 0 30px rgba(24, 144, 255, 0.4);
+	}
+}
+
+/* ==========================================================================
+   Tooltip
+   ========================================================================== */
+
+.ppa-tooltip {
+	position: fixed;
+	background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+	border-radius: 12px;
+	padding: 20px;
+	min-width: 280px;
+	max-width: 360px;
+	box-shadow:
+		0 8px 24px rgba(24, 144, 255, 0.35),
+		0 4px 12px rgba(0, 0, 0, 0.15),
+		0 0 0 1px rgba(24, 144, 255, 0.1);
+	animation: ppa-tooltip-in 0.2s ease-out;
+	transition: opacity 0.2s ease, top 0.2s ease, left 0.2s ease;
+}
+
+@keyframes ppa-tooltip-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Arrow */
+.ppa-tooltip__arrow {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background: #1890ff;
+	transform: rotate(45deg);
+}
+
+.ppa-tooltip__arrow--top {
+	bottom: -6px;
+	left: 50%;
+	margin-left: -6px;
+	background: #096dd9;
+}
+
+.ppa-tooltip__arrow--bottom {
+	top: -6px;
+	left: 50%;
+	margin-left: -6px;
+}
+
+.ppa-tooltip__arrow--left {
+	right: -6px;
+	top: 50%;
+	margin-top: -6px;
+	background: #096dd9;
+}
+
+.ppa-tooltip__arrow--right {
+	left: -6px;
+	top: 50%;
+	margin-top: -6px;
+}
+
+/* Close button */
+.ppa-tooltip__close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: rgba(255, 255, 255, 0.15);
+	color: rgba(255, 255, 255, 0.8);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	font-size: 12px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-tooltip__close:hover {
+	background: rgba(255, 255, 255, 0.25);
+	color: #fff;
+}
+
+/* Content */
+.ppa-tooltip__content {
+	margin-bottom: 16px;
+}
+
+.ppa-tooltip__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #fff;
+	margin: 0 0 8px 0;
+	padding-right: 20px;
+}
+
+.ppa-tooltip__body {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.9);
+	line-height: 1.6;
+}
+
+.ppa-tooltip__body p {
+	margin: 0 0 8px 0;
+}
+
+.ppa-tooltip__body p:last-child {
+	margin-bottom: 0;
+}
+
+/* Navigation */
+.ppa-tooltip__navigation {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	gap: 8px;
+}
+
+.ppa-tooltip__nav-left,
+.ppa-tooltip__nav-center,
+.ppa-tooltip__nav-right {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ppa-tooltip__nav-left {
+	flex: 0 0 auto;
+}
+
+.ppa-tooltip__nav-center {
+	flex: 1;
+	justify-content: center;
+}
+
+.ppa-tooltip__nav-right {
+	flex: 0 0 auto;
+}
+
+.ppa-tooltip__step-indicator {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* Override Ant Design button styles in tooltip */
+.ppa-tooltip .ant-btn-text {
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.ppa-tooltip .ant-btn-text:hover {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.15);
+}
+
+.ppa-tooltip .ant-btn-primary {
+	background: #fff;
+	color: #1890ff;
+	border-color: #fff;
+}
+
+.ppa-tooltip .ant-btn-primary:hover {
+	background: rgba(255, 255, 255, 0.9);
+	color: #096dd9;
+	border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* ==========================================================================
+   Floating Tooltip (when spotlight target not found)
+   ========================================================================== */
+
+.ppa-onboarding-floating {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 100000;
+	animation: ppa-slide-up 0.3s ease-out;
+}
+
+@keyframes ppa-slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.ppa-onboarding-floating__content {
+	background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+	border-radius: 12px;
+	padding: 20px;
+	width: 320px;
+	max-width: calc(100vw - 48px);
+	box-shadow:
+		0 8px 24px rgba(24, 144, 255, 0.35),
+		0 4px 12px rgba(0, 0, 0, 0.15);
+	position: relative;
+}
+
+.ppa-onboarding-floating__close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: rgba(255, 255, 255, 0.15);
+	color: rgba(255, 255, 255, 0.8);
+	cursor: pointer;
+	font-size: 20px;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-onboarding-floating__close:hover {
+	background: rgba(255, 255, 255, 0.25);
+	color: #fff;
+}
+
+.ppa-onboarding-floating__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #fff;
+	margin: 0 0 8px 0;
+	padding-right: 24px;
+}
+
+.ppa-onboarding-floating__text {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.9);
+	line-height: 1.6;
+	margin: 0 0 16px 0;
+}
+
+.ppa-onboarding-floating__nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ppa-onboarding-floating__btn {
+	padding: 6px 16px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.ppa-onboarding-floating__btn--back {
+	background: rgba(255, 255, 255, 0.15);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	color: #fff;
+}
+
+.ppa-onboarding-floating__btn--back:hover {
+	background: rgba(255, 255, 255, 0.25);
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
+.ppa-onboarding-floating__btn--next {
+	background: #fff;
+	border: 1px solid #fff;
+	color: #1890ff;
+}
+
+.ppa-onboarding-floating__btn--next:hover {
+	background: rgba(255, 255, 255, 0.9);
+	border-color: rgba(255, 255, 255, 0.9);
+}
+
+.ppa-onboarding-floating__step {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes ppa-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes ppa-scale-in {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media screen and (max-width: 640px) {
+	.ppa-onboarding-modal {
+		margin: 16px;
+		padding: 32px 24px;
+	}
+
+	.ppa-onboarding-modal__title {
+		font-size: 22px;
+	}
+
+	.ppa-tooltip {
+		min-width: 240px;
+		max-width: calc(100vw - 40px);
+		padding: 16px;
+	}
+
+	.ppa-tooltip__title {
+		font-size: 15px;
+	}
+
+	.ppa-tooltip__body {
+		font-size: 13px;
+	}
+
+	.ppa-onboarding-floating {
+		bottom: 16px;
+		right: 16px;
+		left: 16px;
+	}
+
+	.ppa-onboarding-floating__content {
+		width: 100%;
+	}
+}
+
+/* ==========================================================================
+   Reduced Motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	.ppa-onboarding-overlay,
+	.ppa-onboarding-modal,
+	.ppa-tooltip,
+	.ppa-onboarding-floating {
+		animation: none;
+	}
+
+	.ppa-spotlight__highlight--pulse {
+		animation: none;
+	}
+
+	.ppa-tooltip {
+		transition: none;
+	}
+}
