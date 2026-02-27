@@ -449,13 +449,13 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	public function get_allowed_file_types() {
 		if ( null === $this->allowed_file_types || '' === $this->allowed_file_types ) {
 			// Default allowed types when none specified.
-			return [ 'pdf', 'docx', 'doc', 'txt', 'rtf', 'jpg', 'jpeg', 'png', 'gif' ];
+			return [ 'pdf', 'docx', 'txt', 'rtf', 'jpg', 'jpeg', 'png', 'gif' ];
 		}
 
 		$types = json_decode( $this->allowed_file_types, true );
 
 		if ( ! is_array( $types ) ) {
-			return [ 'pdf', 'docx', 'doc', 'txt', 'rtf', 'jpg', 'jpeg', 'png', 'gif' ];
+			return [ 'pdf', 'docx', 'txt', 'rtf', 'jpg', 'jpeg', 'png', 'gif' ];
 		}
 
 		return $types;

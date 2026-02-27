@@ -64,7 +64,6 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				allowed_file_types: assignmentData.allowed_file_types || [
 					'pdf',
 					'docx',
-					'doc',
 					'txt',
 					'rtf',
 					'odt',
@@ -186,7 +185,6 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						allowed_file_types: [
 							'pdf',
 							'docx',
-							'doc',
 							'txt',
 							'rtf',
 							'odt',

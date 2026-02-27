@@ -33,7 +33,6 @@ import { appendNonce } from '../../utils/nonce';
 const FILE_ICONS = {
 	pdf: <FilePdfOutlined />,
 	docx: <FileWordOutlined />,
-	doc: <FileWordOutlined />,
 	txt: <FileTextOutlined />,
 	rtf: <FileTextOutlined />,
 	odt: <FileTextOutlined />,
@@ -104,7 +103,7 @@ const DocumentPanel = ( {
 			return <PdfViewer url={ file.download_url } />;
 		}
 
-		if ( ext === 'docx' || ext === 'doc' ) {
+		if ( ext === 'docx' ) {
 			return <DocxViewer url={ file.download_url } />;
 		}
 

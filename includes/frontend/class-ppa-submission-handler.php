@@ -471,6 +471,12 @@ class PressPrimer_Assignment_Submission_Handler {
 
 		$submission->student_notes = $student_notes;
 
+		// Capture the page URL where the student submitted from.
+		$page_url = wp_get_referer();
+		if ( $page_url ) {
+			$submission->set_meta( 'assignment_page_url', esc_url_raw( $page_url ) );
+		}
+
 		// Update submission status.
 		$submission->status       = PressPrimer_Assignment_Submission::STATUS_SUBMITTED;
 		$submission->submitted_at = current_time( 'mysql', true );

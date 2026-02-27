@@ -33,7 +33,6 @@ const { Title } = Typography;
 const FILE_TYPE_OPTIONS = [
 	{ value: 'pdf', label: 'PDF (.pdf)' },
 	{ value: 'docx', label: 'Word (.docx)' },
-	{ value: 'doc', label: 'Word (.doc)' },
 	{ value: 'txt', label: 'Text (.txt)' },
 	{ value: 'rtf', label: 'Rich Text (.rtf)' },
 	{ value: 'odt', label: 'OpenDocument (.odt)' },

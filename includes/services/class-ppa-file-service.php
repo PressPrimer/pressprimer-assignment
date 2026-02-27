@@ -50,7 +50,6 @@ class PressPrimer_Assignment_File_Service {
 	const DEFAULT_ALLOWED_EXTENSIONS = [
 		'pdf',
 		'docx',
-		'doc',
 		'txt',
 		'rtf',
 		'odt',
@@ -69,7 +68,6 @@ class PressPrimer_Assignment_File_Service {
 	const ALLOWED_MIME_TYPES = [
 		'application/pdf'                         => [ 'pdf' ],
 		'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => [ 'docx' ],
-		'application/msword'                      => [ 'doc' ],
 		'text/plain'                              => [ 'txt' ],
 		'text/x-c'                                => [ 'txt' ],
 		'application/rtf'                         => [ 'rtf' ],
