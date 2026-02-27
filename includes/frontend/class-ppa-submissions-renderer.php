@@ -52,7 +52,7 @@ class PressPrimer_Assignment_Submissions_Renderer {
 		$theme       = get_option( 'ppa_frontend_theme', 'default' );
 		$theme_class = 'ppa-theme-' . sanitize_html_class( $theme );
 
-		// Get the latest non-draft submission per assignment.
+		// Get all non-draft submissions for this user.
 		$submissions = $this->get_user_submissions( $user_id );
 
 		// Build template data for each submission.
@@ -72,20 +72,24 @@ class PressPrimer_Assignment_Submissions_Renderer {
 				);
 			}
 
-			// Find the page URL for this assignment.
+			// Find the page URL for this assignment, linking to the specific submission.
 			$view_url = '';
 			if ( $assignment && 'published' === $assignment->status ) {
-				$view_url = $this->get_assignment_url( $assignment );
+				$base_url = $this->get_assignment_url( $assignment );
+				if ( $base_url ) {
+					$view_url = add_query_arg( 'ppa_submission', absint( $submission->id ), $base_url );
+				}
 			}
 
 			$items[] = (object) [
-				'submission'     => $submission,
-				'assignment'     => $assignment,
-				'title'          => $title,
-				'formatted_date' => $formatted_date,
-				'date_value'     => $date_value,
-				'status_label'   => $this->get_status_label( $submission->status ),
-				'view_url'       => $view_url,
+				'submission'        => $submission,
+				'assignment'        => $assignment,
+				'title'             => $title,
+				'submission_number' => (int) $submission->submission_number,
+				'formatted_date'    => $formatted_date,
+				'date_value'        => $date_value,
+				'status_label'      => $this->get_status_label( $submission->status ),
+				'view_url'          => $view_url,
 			];
 		}
 
@@ -118,16 +122,19 @@ class PressPrimer_Assignment_Submissions_Renderer {
 	}
 
 	/**
-	 * Get user submissions grouped by assignment
+	 * Get user submissions
 	 *
-	 * Fetches the latest non-draft submission for each assignment
-	 * the user has submitted to. Uses a custom query because the
-	 * Model::find() method does not support != comparisons.
+	 * Fetches all non-draft submissions for the user, newest first.
+	 * All submissions are returned so students can see their full
+	 * history across resubmissions and compare feedback.
+	 *
+	 * Uses a custom query because the Model::find() method does
+	 * not support != comparisons.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param int $user_id User ID.
-	 * @return array Array of Submission instances (latest per assignment).
+	 * @return array Array of Submission instances.
 	 */
 	private function get_user_submissions( $user_id ) {
 		global $wpdb;
@@ -149,19 +156,9 @@ class PressPrimer_Assignment_Submissions_Renderer {
 			return [];
 		}
 
-		// Deduplicate: keep only the latest submission per assignment.
-		$seen    = [];
 		$results = [];
 
 		foreach ( $rows as $row ) {
-			$assignment_id = (int) $row->assignment_id;
-
-			if ( isset( $seen[ $assignment_id ] ) ) {
-				continue;
-			}
-
-			$seen[ $assignment_id ] = true;
-
 			// Hydrate into a Submission model instance.
 			$submission = new PressPrimer_Assignment_Submission();
 			foreach ( $row as $key => $value ) {

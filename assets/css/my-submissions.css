@@ -115,6 +115,13 @@
 	color: var(--ppa-text);
 }
 
+.ppa-attempt-number {
+	font-weight: 400;
+	color: var(--ppa-text-light);
+	font-size: 0.8125rem;
+	margin-left: var(--ppa-space-xs);
+}
+
 /* Date column */
 .ppa-col-date {
 	color: var(--ppa-text-light);
@@ -281,6 +288,11 @@
 
 [dir="rtl"] .ppa-submissions-table th {
 	text-align: right;
+}
+
+[dir="rtl"] .ppa-attempt-number {
+	margin-left: 0;
+	margin-right: var(--ppa-space-xs);
 }
 
 @media (max-width: 900px) {

@@ -195,9 +195,21 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		$can_resubmit    = false;
 
 		if ( $is_logged_in ) {
-			$user_submission = $this->get_user_submission( $assignment->id, $user_id );
-			$can_submit      = $this->can_user_submit( $assignment, $user_id, $user_submission );
-			$can_resubmit    = $this->can_user_resubmit( $assignment, $user_id, $user_submission );
+			// Check if a specific submission was requested (e.g., from My Submissions "View" link).
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only display, no state change.
+			$requested_submission_id = isset( $_GET['ppa_submission'] ) ? absint( $_GET['ppa_submission'] ) : 0;
+
+			if ( $requested_submission_id > 0 ) {
+				$user_submission = $this->get_specific_submission( $requested_submission_id, $assignment->id, $user_id );
+			}
+
+			// Fall back to the latest submission if no specific one was requested or found.
+			if ( null === $user_submission ) {
+				$user_submission = $this->get_user_submission( $assignment->id, $user_id );
+			}
+
+			$can_submit   = $this->can_user_submit( $assignment, $user_id, $user_submission );
+			$can_resubmit = $this->can_user_resubmit( $assignment, $user_id, $user_submission );
 		}
 
 		// Start output buffering.
@@ -526,6 +538,34 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		);
 
 		return ! empty( $submissions ) ? $submissions[0] : null;
+	}
+
+	/**
+	 * Get a specific submission by ID
+	 *
+	 * Validates that the submission belongs to the given assignment and user
+	 * to prevent unauthorized access.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $submission_id Submission ID.
+	 * @param int $assignment_id Assignment ID.
+	 * @param int $user_id       User ID.
+	 * @return PressPrimer_Assignment_Submission|null Submission or null.
+	 */
+	private function get_specific_submission( $submission_id, $assignment_id, $user_id ) {
+		$submission = PressPrimer_Assignment_Submission::get( $submission_id );
+
+		if ( ! $submission ) {
+			return null;
+		}
+
+		// Verify the submission belongs to this assignment and this user.
+		if ( (int) $submission->assignment_id !== (int) $assignment_id || (int) $submission->user_id !== (int) $user_id ) {
+			return null;
+		}
+
+		return $submission;
 	}
 
 	/**

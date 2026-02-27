@@ -16,13 +16,14 @@
  * @var PressPrimer_Assignment_Submissions_Renderer $this Renderer instance.
  *
  * Each item in $submissions has:
- *   ->submission      PressPrimer_Assignment_Submission instance
- *   ->assignment      PressPrimer_Assignment_Assignment instance or null
- *   ->title           string  Assignment title
- *   ->formatted_date  string  Formatted submission date
- *   ->date_value      string  Raw datetime value
- *   ->status_label    string  Human-readable status label
- *   ->view_url        string  URL to view the assignment (empty if unavailable)
+ *   ->submission        PressPrimer_Assignment_Submission instance
+ *   ->assignment        PressPrimer_Assignment_Assignment instance or null
+ *   ->title             string  Assignment title
+ *   ->submission_number int     Attempt number (1, 2, 3, etc.)
+ *   ->formatted_date    string  Formatted submission date
+ *   ->date_value        string  Raw datetime value
+ *   ->status_label      string  Human-readable status label
+ *   ->view_url          string  URL to view the submission (empty if unavailable)
  *
  * @package PressPrimer_Assignment
  * @subpackage Templates
@@ -72,6 +73,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<tr class="ppa-submission-row">
 							<td class="ppa-col-assignment" data-label="<?php esc_attr_e( 'Assignment', 'pressprimer-assignment' ); ?>">
 								<?php echo esc_html( $item->title ); ?>
+								<?php if ( $item->submission_number > 1 ) : ?>
+									<span class="ppa-attempt-number">
+										<?php
+										printf(
+											/* translators: %d: attempt number */
+											esc_html__( '(Attempt #%d)', 'pressprimer-assignment' ),
+											(int) $item->submission_number
+										);
+										?>
+									</span>
+								<?php endif; ?>
 							</td>
 
 							<?php if ( ! empty( $display['show_date'] ) ) : ?>
@@ -107,7 +119,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 												sprintf(
 													/* translators: %1$s: score, %2$s: max points */
 													__( '%1$s / %2$s', 'pressprimer-assignment' ),
-													number_format_i18n( $item->submission->score, 1 ),
+													number_format_i18n( $item->submission->score, 0 ),
 													number_format_i18n( $ppa_max_points, 0 )
 												)
 											);

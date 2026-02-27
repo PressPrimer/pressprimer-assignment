@@ -163,7 +163,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					sprintf(
 						/* translators: %1$s: score, %2$s: max points */
 						__( '%1$s / %2$s', 'pressprimer-assignment' ),
-						number_format_i18n( $submission->score, 1 ),
+						number_format_i18n( $submission->score, 0 ),
 						number_format_i18n( $assignment->max_points, 0 )
 					)
 				);
@@ -278,21 +278,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 										sprintf(
 											/* translators: %1$s: score, %2$s: max points */
 											__( '%1$s / %2$s', 'pressprimer-assignment' ),
-											number_format_i18n( $prev->score, 1 ),
+											number_format_i18n( $prev->score, 0 ),
 											number_format_i18n( $assignment->max_points, 0 )
 										)
 									);
 									?>
-									<?php if ( $prev->passed ) : ?>
-										<span class="ppa-pass-badge" aria-label="<?php esc_attr_e( 'Passed', 'pressprimer-assignment' ); ?>">&#10003;</span>
-									<?php endif; ?>
 								</span>
 							<?php else : ?>
 								<span class="ppa-submission-card-ungraded">
 									<?php esc_html_e( 'Not graded', 'pressprimer-assignment' ); ?>
 								</span>
 							<?php endif; ?>
-							<?php if ( ! $prev_is_graded ) : ?>
+							<?php if ( $prev_is_graded ) : ?>
+								<a href="<?php echo esc_url( add_query_arg( 'ppa_submission', absint( $prev->id ), get_permalink() ) ); ?>"
+									class="ppa-view-submission"
+									aria-label="
+									<?php
+										printf(
+											/* translators: %d: submission number */
+											esc_attr__( 'View details for submission #%d', 'pressprimer-assignment' ),
+											(int) $prev->submission_number
+										);
+									?>
+									">
+									<span class="dashicons dashicons-visibility" aria-hidden="true"></span>
+								</a>
+							<?php else : ?>
 								<button type="button"
 									class="ppa-delete-submission"
 									data-submission-id="<?php echo esc_attr( $prev->id ); ?>"
