@@ -27,7 +27,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const root = document.getElementById( 'ppa-submission-detail-root' );
 
 	if ( root ) {
-		const detailData = window.ppaSubmissionDetailData || {};
+		const detailData = window.pressprimerAssignmentSubmissionDetailData || {};
 		const submissionId = parseInt( detailData.submissionId, 10 );
 
 		if ( submissionId > 0 ) {

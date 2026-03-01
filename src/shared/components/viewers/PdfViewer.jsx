@@ -23,8 +23,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 // The worker file is copied to the build directory by webpack CopyPlugin.
 // buildUrl is passed from PHP via wp_localize_script.
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-	( window.ppaGradingData?.buildUrl ||
-		window.ppaSubmissionDetailData?.buildUrl ||
+	( window.pressprimerAssignmentGradingData?.buildUrl ||
+		window.pressprimerAssignmentSubmissionDetailData?.buildUrl ||
 		'' ) + 'pdf.worker.min.js'; // eslint-disable-line no-undef
 
 /**
@@ -128,8 +128,8 @@ const PdfViewer = ( { url } ) => {
 					credentials: 'same-origin',
 					headers: {
 						'X-WP-Nonce':
-							window.ppaGradingData?.nonce ||
-							window.ppaSubmissionDetailData?.nonce ||
+							window.pressprimerAssignmentGradingData?.nonce ||
+							window.pressprimerAssignmentSubmissionDetailData?.nonce ||
 							'',
 					},
 				} );

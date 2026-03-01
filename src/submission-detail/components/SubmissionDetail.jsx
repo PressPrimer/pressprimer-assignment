@@ -77,7 +77,7 @@ const navigateToSubmission = ( id ) => {
  * Navigate back to the submissions list.
  */
 const navigateToList = () => {
-	const adminUrl = window.ppaSubmissionDetailData?.adminUrl || '';
+	const adminUrl = window.pressprimerAssignmentSubmissionDetailData?.adminUrl || '';
 	window.location.href =
 		adminUrl + 'admin.php?page=pressprimer-assignment-submissions';
 };
@@ -139,7 +139,7 @@ const SubmissionDetail = ( { submissionId } ) => {
 			okType: 'danger',
 			cancelText: __( 'Cancel', 'pressprimer-assignment' ),
 			onOk() {
-				const detailData = window.ppaSubmissionDetailData || {};
+				const detailData = window.pressprimerAssignmentSubmissionDetailData || {};
 				const adminUrl = detailData.adminUrl || '';
 				const deleteNonce = detailData.deleteNonce || '';
 
@@ -198,7 +198,7 @@ const SubmissionDetail = ( { submissionId } ) => {
 			? Math.round( ( score / assignment.max_points ) * 100 )
 			: null;
 
-	const detailData = window.ppaSubmissionDetailData || {};
+	const detailData = window.pressprimerAssignmentSubmissionDetailData || {};
 	const adminUrl = detailData.adminUrl || '';
 	const gradingUrl =
 		adminUrl +

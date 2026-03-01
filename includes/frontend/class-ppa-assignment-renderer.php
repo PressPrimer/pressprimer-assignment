@@ -186,7 +186,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 
 		$user_id      = get_current_user_id();
 		$is_logged_in = $user_id > 0;
-		$theme        = get_option( 'ppa_frontend_theme', 'default' );
+		$theme        = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 		$theme_class  = 'ppa-theme-' . sanitize_html_class( $theme );
 
 		// Get user's current submission for this assignment.

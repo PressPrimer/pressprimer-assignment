@@ -122,12 +122,26 @@ class PressPrimer_Assignment_Plugin {
 	 * @since 1.0.0
 	 */
 	private function ensure_capabilities() {
-		// Check if admin role has our capabilities.
+		// Check if admin role has ALL required capabilities.
 		$admin = get_role( 'administrator' );
-		if ( $admin && ! $admin->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			// Capabilities missing, set them up.
-			if ( class_exists( 'PressPrimer_Assignment_Capabilities' ) ) {
-				PressPrimer_Assignment_Capabilities::setup_capabilities();
+		if ( ! $admin ) {
+			return;
+		}
+
+		$required_caps = [
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_SETTINGS,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS,
+		];
+
+		foreach ( $required_caps as $cap ) {
+			if ( ! $admin->has_cap( $cap ) ) {
+				// At least one capability missing, run full setup.
+				if ( class_exists( 'PressPrimer_Assignment_Capabilities' ) ) {
+					PressPrimer_Assignment_Capabilities::setup_capabilities();
+				}
+				break;
 			}
 		}
 	}

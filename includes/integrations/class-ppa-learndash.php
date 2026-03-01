@@ -904,16 +904,31 @@ class PressPrimer_Assignment_LearnDash {
 			return;
 		}
 
+		$needs_update = false;
+
+		// Check if legacy manage_all needs removing.
+		if ( $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$needs_update = true;
+		}
+
+		// Check if own-tier capabilities need granting.
+		if ( ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS ) ) {
+			$needs_update = true;
+		}
+
+		if ( ! $needs_update ) {
+			return;
+		}
+
 		// Remove legacy manage_all if previously granted (from <= 1.0.0).
 		if ( $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
 			$group_leader->remove_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
 		}
 
 		// Grant own-tier capabilities (matching Quiz's pattern).
-		if ( ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
-			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
-			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
-		}
+		$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
+		$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
 	}
 
 	/**

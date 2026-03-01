@@ -11,7 +11,7 @@
  * @since 1.0.0
  */
 
-/* global jQuery, ppaFrontend, tinymce */
+/* global jQuery, pressprimerAssignmentFrontend, tinymce */
 
 ( function ( $ ) {
 	'use strict';
@@ -222,7 +222,7 @@
 				return;
 			}
 
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 			let html = '';
 
 			switch ( status ) {
@@ -337,11 +337,11 @@
 				.addClass( 'ppa-button-loading' );
 
 			$.ajax( {
-				url: ppaFrontend.ajaxUrl,
+				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
 					action: 'ppa_save_text_draft',
-					nonce: ppaFrontend.textNonce,
+					nonce: pressprimerAssignmentFrontend.textNonce,
 					assignment_id: self.assignmentId,
 					submission_id: self.submissionId,
 					text_content: content,
@@ -470,7 +470,7 @@
 			if ( ! content.trim() ) {
 				// eslint-disable-next-line no-alert -- Intentional user feedback.
 				window.alert(
-					ppaFrontend.i18n.emptyContent ||
+					pressprimerAssignmentFrontend.i18n.emptyContent ||
 						'Please write something before submitting.'
 				);
 				return;
@@ -498,11 +498,11 @@
 			this.updateSaveStatus( 'saving' );
 
 			$.ajax( {
-				url: ppaFrontend.ajaxUrl,
+				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
 					action: 'ppa_save_text_draft',
-					nonce: ppaFrontend.textNonce,
+					nonce: pressprimerAssignmentFrontend.textNonce,
 					assignment_id: self.assignmentId,
 					submission_id: self.submissionId,
 					text_content: content,
@@ -580,17 +580,17 @@
 
 			$( '#ppa-submit-text-btn' )
 				.prop( 'disabled', true )
-				.text( ppaFrontend.i18n.submitting || 'Submitting...' );
+				.text( pressprimerAssignmentFrontend.i18n.submitting || 'Submitting...' );
 
 			// Remove beforeunload warning during submit.
 			$( window ).off( 'beforeunload.ppaTextEditor' );
 
 			$.ajax( {
-				url: ppaFrontend.ajaxUrl,
+				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
 					action: 'ppa_submit_text_assignment',
-					nonce: ppaFrontend.nonce,
+					nonce: pressprimerAssignmentFrontend.nonce,
 					assignment_id: self.assignmentId,
 					submission_id: self.submissionId,
 					text_content: content,
@@ -603,12 +603,12 @@
 						const errorMessage =
 							response.data && response.data.message
 								? response.data.message
-								: ppaFrontend.i18n.networkError;
+								: pressprimerAssignmentFrontend.i18n.networkError;
 						self.handleSubmitError( errorMessage );
 					}
 				},
 				error( jqXHR ) {
-					let errorMessage = ppaFrontend.i18n.networkError;
+					let errorMessage = pressprimerAssignmentFrontend.i18n.networkError;
 					try {
 						const errorResponse =
 							typeof jqXHR.responseJSON !== 'undefined'
@@ -663,7 +663,7 @@
 			$( '#ppa-submit-text-btn' )
 				.prop( 'disabled', false )
 				.text(
-					ppaFrontend.i18n.submitAssignment || 'Submit Assignment'
+					pressprimerAssignmentFrontend.i18n.submitAssignment || 'Submit Assignment'
 				);
 
 			// Re-bind beforeunload warning.

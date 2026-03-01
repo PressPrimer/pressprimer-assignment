@@ -469,7 +469,7 @@ class PressPrimer_Assignment_Frontend {
 		 */
 		$data = apply_filters( 'pressprimer_assignment_frontend_script_data', $data );
 
-		wp_localize_script( 'ppa-submission', 'ppaFrontend', $data );
+		wp_localize_script( 'ppa-submission', 'pressprimerAssignmentFrontend', $data );
 	}
 
 	/**
@@ -482,7 +482,7 @@ class PressPrimer_Assignment_Frontend {
 	 * @return string Theme slug.
 	 */
 	private function get_active_theme() {
-		$theme = get_option( 'ppa_frontend_theme', 'default' );
+		$theme = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 
 		$valid_themes = [ 'default', 'modern', 'minimal' ];
 

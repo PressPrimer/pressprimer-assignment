@@ -343,7 +343,7 @@ class PressPrimer_Assignment_Shortcodes {
 	 * @return string HTML output.
 	 */
 	private function render_assignment_fallback( $assignment, $display ) {
-		$theme = get_option( 'ppa_frontend_theme', 'default' );
+		$theme = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 
 		$allowed_html = [
 			'div'  => [
@@ -400,7 +400,7 @@ class PressPrimer_Assignment_Shortcodes {
 		$user_id     = get_current_user_id();
 		$submissions = PressPrimer_Assignment_Submission::get_for_user( $user_id );
 
-		$theme = get_option( 'ppa_frontend_theme', 'default' );
+		$theme = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 
 		$allowed_html = [
 			'div'  => [

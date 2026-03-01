@@ -304,7 +304,7 @@ class PressPrimer_Assignment_Admin_Grading {
 		// Localize script with grading data.
 		wp_localize_script(
 			'ppa-grading-interface',
-			'ppaGradingData',
+			'pressprimerAssignmentGradingData',
 			[
 				'submissionId' => $submission_id,
 				'adminUrl'     => admin_url(),

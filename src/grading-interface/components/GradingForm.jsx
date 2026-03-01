@@ -57,7 +57,7 @@ const navigateToSubmission = ( id ) => {
  * Navigate back to the grading queue list.
  */
 const navigateToList = () => {
-	const adminUrl = window.ppaGradingData?.adminUrl || '';
+	const adminUrl = window.pressprimerAssignmentGradingData?.adminUrl || '';
 	window.location.href =
 		adminUrl + 'admin.php?page=pressprimer-assignment-grading';
 };

@@ -42,8 +42,8 @@ const DocxViewer = ( { url } ) => {
 					credentials: 'same-origin',
 					headers: {
 						'X-WP-Nonce':
-							window.ppaGradingData?.nonce ||
-							window.ppaSubmissionDetailData?.nonce ||
+							window.pressprimerAssignmentGradingData?.nonce ||
+							window.pressprimerAssignmentSubmissionDetailData?.nonce ||
 							'',
 					},
 				} );

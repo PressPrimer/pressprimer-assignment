@@ -26,7 +26,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const root = document.getElementById( 'ppa-grading-interface-root' );
 
 	if ( root ) {
-		const gradingData = window.ppaGradingData || {};
+		const gradingData = window.pressprimerAssignmentGradingData || {};
 		const submissionId = parseInt( gradingData.submissionId, 10 );
 
 		if ( submissionId > 0 ) {

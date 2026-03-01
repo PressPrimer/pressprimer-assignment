@@ -92,7 +92,7 @@ class PressPrimer_Assignment_REST_Settings {
 		$settings = get_option( PressPrimer_Assignment_Admin_Settings::OPTION_NAME, [] );
 
 		// Include the active theme from its separate option.
-		$settings['appearance_theme'] = get_option( 'ppa_frontend_theme', 'default' );
+		$settings['appearance_theme'] = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 
 		return new WP_REST_Response(
 			[
@@ -209,7 +209,7 @@ class PressPrimer_Assignment_REST_Settings {
 			$valid_themes = [ 'default', 'modern', 'minimal' ];
 			$theme_value  = sanitize_text_field( $data['appearance_theme'] );
 			if ( in_array( $theme_value, $valid_themes, true ) ) {
-				update_option( 'ppa_frontend_theme', $theme_value );
+				update_option( 'pressprimer_assignment_frontend_theme', $theme_value );
 				$sanitized['appearance_theme'] = $theme_value;
 			}
 		}

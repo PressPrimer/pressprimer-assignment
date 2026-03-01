@@ -119,7 +119,7 @@ class PressPrimer_Assignment_Admin_Settings {
 
 		wp_localize_script(
 			'ppa-settings-panel',
-			'ppaSettingsData',
+			'pressprimerAssignmentSettingsData',
 			$settings_data
 		);
 	}
@@ -146,7 +146,7 @@ class PressPrimer_Assignment_Admin_Settings {
 		$settings['remove_data_on_uninstall'] = $remove_data_value ? 1 : 0;
 
 		// Include appearance theme from its separate option.
-		$settings['appearance_theme'] = get_option( 'ppa_frontend_theme', 'default' );
+		$settings['appearance_theme'] = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 
 		/**
 		 * Filter the settings tabs displayed on the settings page.

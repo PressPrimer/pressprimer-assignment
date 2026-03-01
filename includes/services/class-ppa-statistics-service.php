@@ -60,11 +60,11 @@ class PressPrimer_Assignment_Statistics_Service {
 	 */
 	public static function clear_dashboard_cache( $author_id = null ) {
 		if ( $author_id ) {
-			delete_transient( 'ppa_dashboard_stats_' . absint( $author_id ) );
+			delete_transient( 'pressprimer_assignment_dashboard_stats_' . absint( $author_id ) );
 		}
 
 		// Always clear the global cache.
-		delete_transient( 'ppa_dashboard_stats_all' );
+		delete_transient( 'pressprimer_assignment_dashboard_stats_all' );
 	}
 
 	/**
@@ -82,8 +82,8 @@ class PressPrimer_Assignment_Statistics_Service {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Deleting transients by prefix.
 		$wpdb->query(
 			"DELETE FROM {$wpdb->options}
-			WHERE option_name LIKE '_transient_ppa\_chart\_%'
-				OR option_name LIKE '_transient_timeout_ppa\_chart\_%'"
+			WHERE option_name LIKE '_transient_pressprimer\_assignment\_chart\_%'
+				OR option_name LIKE '_transient_timeout_pressprimer\_assignment\_chart\_%'"
 		);
 	}
 
@@ -116,8 +116,8 @@ class PressPrimer_Assignment_Statistics_Service {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Deleting transients by prefix.
 		$wpdb->query(
 			"DELETE FROM {$wpdb->options}
-			WHERE option_name LIKE '_transient_ppa\_overview\_%'
-				OR option_name LIKE '_transient_timeout_ppa\_overview\_%'"
+			WHERE option_name LIKE '_transient_pressprimer\_assignment\_overview\_%'
+				OR option_name LIKE '_transient_timeout_pressprimer\_assignment\_overview\_%'"
 		);
 	}
 
@@ -133,7 +133,7 @@ class PressPrimer_Assignment_Statistics_Service {
 	 * @return array Overview statistics.
 	 */
 	public function get_overview_stats( $author_id = null ) {
-		$cache_key = 'ppa_overview_' . ( $author_id ? absint( $author_id ) : 'all' );
+		$cache_key = 'pressprimer_assignment_overview_' . ( $author_id ? absint( $author_id ) : 'all' );
 		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {
@@ -420,7 +420,7 @@ class PressPrimer_Assignment_Statistics_Service {
 	 * @return array Dashboard statistics.
 	 */
 	public function get_dashboard_stats( $author_id = null ) {
-		$cache_key = 'ppa_dashboard_stats_' . ( $author_id ? absint( $author_id ) : 'all' );
+		$cache_key = 'pressprimer_assignment_dashboard_stats_' . ( $author_id ? absint( $author_id ) : 'all' );
 		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {
@@ -671,7 +671,7 @@ class PressPrimer_Assignment_Statistics_Service {
 		$days      = isset( $args['days'] ) ? min( absint( $args['days'] ), 730 ) : 90;
 		$author_id = isset( $args['author_id'] ) ? $args['author_id'] : null;
 
-		$cache_key = 'ppa_chart_' . $days . '_' . ( $author_id ? absint( $author_id ) : 'all' );
+		$cache_key = 'pressprimer_assignment_chart_' . $days . '_' . ( $author_id ? absint( $author_id ) : 'all' );
 		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {

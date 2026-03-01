@@ -49,7 +49,7 @@ class PressPrimer_Assignment_Submissions_Renderer {
 		$display = wp_parse_args( $display, $defaults );
 		$user_id = absint( $user_id );
 
-		$theme       = get_option( 'ppa_frontend_theme', 'default' );
+		$theme       = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 		$theme_class = 'ppa-theme-' . sanitize_html_class( $theme );
 
 		// Get all non-draft submissions for this user.

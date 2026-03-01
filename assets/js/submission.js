@@ -10,7 +10,7 @@
  * @since 1.0.0
  */
 
-/* global jQuery, ppaFrontend, XMLHttpRequest */
+/* global jQuery, pressprimerAssignmentFrontend, XMLHttpRequest */
 
 ( function ( $ ) {
 	'use strict';
@@ -279,7 +279,7 @@
 
 			// Check file count limit.
 			if ( totalFiles >= this.maxFiles ) {
-				this.showError( ppaFrontend.i18n.maxFilesReached );
+				this.showError( pressprimerAssignmentFrontend.i18n.maxFilesReached );
 				return false;
 			}
 
@@ -293,7 +293,7 @@
 				this.showError(
 					this.escapeHtml( file.name ) +
 						': ' +
-						ppaFrontend.i18n.invalidFileType
+						pressprimerAssignmentFrontend.i18n.invalidFileType
 				);
 				return false;
 			}
@@ -303,7 +303,7 @@
 				this.showError(
 					this.escapeHtml( file.name ) +
 						': ' +
-						ppaFrontend.i18n.fileTooLarge
+						pressprimerAssignmentFrontend.i18n.fileTooLarge
 				);
 				return false;
 			}
@@ -313,7 +313,7 @@
 				this.showError(
 					this.escapeHtml( file.name ) +
 						': ' +
-						ppaFrontend.i18n.uploadFailed
+						pressprimerAssignmentFrontend.i18n.uploadFailed
 				);
 				return false;
 			}
@@ -346,7 +346,7 @@
 			formData.append( 'action', 'ppa_upload_file' );
 			formData.append( 'file', file );
 			formData.append( 'assignment_id', this.assignmentId );
-			formData.append( 'nonce', ppaFrontend.nonce );
+			formData.append( 'nonce', pressprimerAssignmentFrontend.nonce );
 
 			// Send known file IDs so the server can sync stale drafts.
 			const knownIds = $.map( this.files, function ( f ) {
@@ -395,12 +395,12 @@
 						const message =
 							response.data && response.data.message
 								? response.data.message
-								: ppaFrontend.i18n.uploadFailed;
+								: pressprimerAssignmentFrontend.i18n.uploadFailed;
 						self.handleUploadError( $item, file.name, message );
 					}
 				} else {
 					// Parse error message from non-200 responses.
-					let errorMessage = ppaFrontend.i18n.uploadFailed;
+					let errorMessage = pressprimerAssignmentFrontend.i18n.uploadFailed;
 					try {
 						const errorResponse = JSON.parse( xhr.responseText );
 						if (
@@ -424,7 +424,7 @@
 				self.handleUploadError(
 					$item,
 					file.name,
-					ppaFrontend.i18n.networkError
+					pressprimerAssignmentFrontend.i18n.networkError
 				);
 				window.PPA.SubmissionForm.updateSubmitButton();
 			} );
@@ -439,7 +439,7 @@
 			// Store XHR reference for potential cancellation.
 			$item.data( 'xhr', xhr );
 
-			xhr.open( 'POST', ppaFrontend.ajaxUrl );
+			xhr.open( 'POST', pressprimerAssignmentFrontend.ajaxUrl );
 			xhr.send( formData );
 		},
 
@@ -477,7 +477,7 @@
 			this.announceToScreenReader(
 				this.escapeHtml( fileName ) +
 					' — ' +
-					ppaFrontend.i18n.uploadComplete
+					pressprimerAssignmentFrontend.i18n.uploadComplete
 			);
 		},
 
@@ -489,7 +489,7 @@
 		 * @param {string} message  Optional error message.
 		 */
 		handleUploadError( $item, fileName, message ) {
-			message = message || ppaFrontend.i18n.uploadFailed;
+			message = message || pressprimerAssignmentFrontend.i18n.uploadFailed;
 
 			$item
 				.removeClass( 'ppa-file-uploading' )
@@ -522,7 +522,7 @@
 		 * @param {string} previewText The extracted text to display.
 		 */
 		showTextPreview( $item, previewText ) {
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 			const label = i18n.textPreviewLabel || 'Extracted Text Preview';
 			const toggleShow = i18n.textPreviewShow || 'Show preview';
 			const toggleHide = i18n.textPreviewHide || 'Hide preview';
@@ -608,7 +608,7 @@
 		 * @param {jQuery} $item The file item element.
 		 */
 		showExtractionNotice( $item ) {
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 			const $notice = $( '<div>' )
 				.addClass( 'ppa-file-text-preview ppa-extraction-notice' )
 				.append(
@@ -641,7 +641,7 @@
 		createFileItem( file ) {
 			const extension = file.name.split( '.' ).pop().toUpperCase();
 			const removeLabel =
-				ppaFrontend.i18n.removeFile +
+				pressprimerAssignmentFrontend.i18n.removeFile +
 				' ' +
 				this.escapeHtml( file.name );
 
@@ -716,12 +716,12 @@
 			// Remove from server if uploaded.
 			if ( fileId ) {
 				$.ajax( {
-					url: ppaFrontend.ajaxUrl,
+					url: pressprimerAssignmentFrontend.ajaxUrl,
 					type: 'POST',
 					data: {
 						action: 'ppa_remove_file',
 						file_id: parseInt( fileId, 10 ),
-						nonce: ppaFrontend.nonce,
+						nonce: pressprimerAssignmentFrontend.nonce,
 					},
 				} );
 
@@ -737,7 +737,7 @@
 			// Animate removal.
 			$item.fadeOut( 200, function () {
 				$( this ).remove();
-				self.announceToScreenReader( ppaFrontend.i18n.removeFile );
+				self.announceToScreenReader( pressprimerAssignmentFrontend.i18n.removeFile );
 				window.PPA.SubmissionForm.updateSubmitButton();
 			} );
 		},
@@ -935,7 +935,7 @@
 			// Add a back button if not already present.
 			if ( ! $panel.find( '.ppa-type-back-btn' ).length ) {
 				const changeLabel =
-					ppaFrontend.i18n.changeType || 'Change submission type';
+					pressprimerAssignmentFrontend.i18n.changeType || 'Change submission type';
 				const $icon = $( '<span>' )
 					.addClass( 'dashicons dashicons-arrow-left-alt2' )
 					.attr( 'aria-hidden', 'true' );
@@ -1159,7 +1159,7 @@
 			// Show tooltip on disabled button (matches Quiz pattern).
 			if ( ! shouldEnable && ! uploading && ! this.isSubmitting ) {
 				const hint =
-					ppaFrontend.i18n.uploadHint ||
+					pressprimerAssignmentFrontend.i18n.uploadHint ||
 					'Upload at least one file to enable submission.';
 				this.$submitBtn.attr( 'title', hint );
 			} else {
@@ -1224,10 +1224,10 @@
 			this.isSubmitting = true;
 			this.$submitBtn
 				.prop( 'disabled', true )
-				.text( ppaFrontend.i18n.submitting );
+				.text( pressprimerAssignmentFrontend.i18n.submitting );
 
 			window.PPA.Upload.announceToScreenReader(
-				ppaFrontend.i18n.submitting
+				pressprimerAssignmentFrontend.i18n.submitting
 			);
 
 			// Collect uploaded file IDs.
@@ -1236,14 +1236,14 @@
 			} );
 
 			$.ajax( {
-				url: ppaFrontend.ajaxUrl,
+				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
 					action: 'ppa_submit_assignment',
 					assignment_id: window.PPA.Upload.assignmentId,
 					file_ids: fileIds,
 					student_notes: self.$notesField.val(),
-					nonce: ppaFrontend.nonce,
+					nonce: pressprimerAssignmentFrontend.nonce,
 				},
 				success( response ) {
 					if ( response.success ) {
@@ -1252,13 +1252,13 @@
 						const message =
 							response.data && response.data.message
 								? response.data.message
-								: ppaFrontend.i18n.uploadFailed;
+								: pressprimerAssignmentFrontend.i18n.uploadFailed;
 						self.handleSubmitError( message );
 					}
 				},
 				error( jqXHR ) {
 					// Extract server error message from response if available.
-					let errorMessage = ppaFrontend.i18n.networkError;
+					let errorMessage = pressprimerAssignmentFrontend.i18n.networkError;
 					try {
 						const errorResponse =
 							typeof jqXHR.responseJSON !== 'undefined'
@@ -1290,7 +1290,7 @@
 			window.PPA.SubmissionPreview.hide();
 
 			window.PPA.Upload.announceToScreenReader(
-				ppaFrontend.i18n.submitted
+				pressprimerAssignmentFrontend.i18n.submitted
 			);
 
 			// If the server provides a redirect URL, navigate there.
@@ -1317,7 +1317,7 @@
 			this.$submitBtn
 				.prop( 'disabled', false )
 				.text(
-					ppaFrontend.i18n.submitAssignment || 'Submit Assignment'
+					pressprimerAssignmentFrontend.i18n.submitAssignment || 'Submit Assignment'
 				);
 
 			window.PPA.Upload.showError( message );
@@ -1337,7 +1337,7 @@
 		 * @param {jQuery} $button The delete button that was clicked.
 		 */
 		deleteSubmission( $button ) {
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 
 			window.PPA.SubmissionPreview.showConfirm( {
 				title: i18n.confirmDeleteTitle || 'Delete Submission',
@@ -1357,12 +1357,12 @@
 					$button.prop( 'disabled', true );
 
 					$.ajax( {
-						url: ppaFrontend.ajaxUrl,
+						url: pressprimerAssignmentFrontend.ajaxUrl,
 						type: 'POST',
 						data: {
 							action: 'ppa_delete_submission',
 							submission_id: submissionId,
-							nonce: ppaFrontend.nonce,
+							nonce: pressprimerAssignmentFrontend.nonce,
 						},
 						success( response ) {
 							if ( response.success ) {
@@ -1456,7 +1456,7 @@
 				}
 
 				window.PPA.Upload.announceToScreenReader(
-					ppaFrontend.i18n.dragDropHere
+					pressprimerAssignmentFrontend.i18n.dragDropHere
 				);
 			}
 		},
@@ -1505,7 +1505,7 @@
 		showFilePreview( options ) {
 			this.onConfirm = options.onConfirm;
 
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 			const esc = this.escapeHtml;
 
 			// Build file list HTML.
@@ -1647,7 +1647,7 @@
 		showTextPreview( options ) {
 			this.onConfirm = options.onConfirm;
 
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 			const esc = this.escapeHtml;
 			const maxWords = 500;
 
@@ -1704,7 +1704,7 @@
 		 */
 		showModal( bodyHtml, options ) {
 			const self = this;
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 			const esc = this.escapeHtml;
 
 			// Build contextual resubmission message.
@@ -1843,7 +1843,7 @@
 		 */
 		showConfirm( options ) {
 			const esc = this.escapeHtml;
-			const i18n = ppaFrontend.i18n || {};
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
 
 			const titleLabel = esc( options.title || '' );
 			const messageText = esc( options.message || '' );

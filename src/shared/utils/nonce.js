@@ -15,7 +15,7 @@
  * @return {string} The nonce string, or empty string if unavailable.
  */
 export const getNonce = () =>
-	window.ppaGradingData?.nonce || window.ppaSubmissionDetailData?.nonce || '';
+	window.pressprimerAssignmentGradingData?.nonce || window.pressprimerAssignmentSubmissionDetailData?.nonce || '';
 
 /**
  * Append the WP REST nonce to a URL as a query parameter.

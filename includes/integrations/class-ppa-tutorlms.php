@@ -1086,16 +1086,31 @@ class PressPrimer_Assignment_TutorLMS {
 			return;
 		}
 
+		$needs_update = false;
+
+		// Check if legacy manage_all needs removing.
+		if ( $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$needs_update = true;
+		}
+
+		// Check if own-tier capabilities need granting.
+		if ( ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS ) ) {
+			$needs_update = true;
+		}
+
+		if ( ! $needs_update ) {
+			return;
+		}
+
 		// Remove legacy manage_all if previously granted (from <= 1.0.0).
 		if ( $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
 			$instructor->remove_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
 		}
 
 		// Grant own-tier capabilities (matching Quiz's pattern).
-		if ( ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
-			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
-			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
-		}
+		$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
+		$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
 	}
 
 	/**

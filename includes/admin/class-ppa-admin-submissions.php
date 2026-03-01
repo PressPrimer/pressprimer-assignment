@@ -320,7 +320,7 @@ class PressPrimer_Assignment_Admin_Submissions {
 		// Localize script with submission data.
 		wp_localize_script(
 			'ppa-submission-detail',
-			'ppaSubmissionDetailData',
+			'pressprimerAssignmentSubmissionDetailData',
 			[
 				'submissionId' => $submission_id,
 				'adminUrl'     => admin_url(),

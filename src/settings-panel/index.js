@@ -22,7 +22,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const root = document.getElementById( 'ppa-settings-root' );
 
 	if ( root ) {
-		const settingsData = window.ppaSettingsData || {};
+		const settingsData = window.pressprimerAssignmentSettingsData || {};
 
 		render( <SettingsPage settingsData={ settingsData } />, root );
 	}
