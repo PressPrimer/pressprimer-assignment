@@ -27,6 +27,7 @@ import {
 
 import SettingsPanel from './SettingsPanel';
 import FileSettingsPanel from './FileSettingsPanel';
+import CategoriesPanel from './CategoriesPanel';
 
 const { Title, Paragraph } = Typography;
 
@@ -41,6 +42,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ saving, setSaving ] = useState( false );
 	const [ currentId, setCurrentId ] = useState( assignmentData.id || null );
 	const [ activeTab, setActiveTab ] = useState( 'settings' );
+	const [ selectedCategories, setSelectedCategories ] = useState(
+		assignmentData.categories || []
+	);
 
 	const isNew = ! currentId;
 
@@ -91,6 +95,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			const payload = {
 				...values,
 				allow_resubmission: values.allow_resubmission ? 1 : 0,
+				categories: selectedCategories,
 			};
 
 			// Submit via REST API.
@@ -156,6 +161,20 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			key: 'file-settings',
 			label: __( 'File Settings', 'pressprimer-assignment' ),
 			children: <FileSettingsPanel form={ form } />,
+		},
+		{
+			key: 'categories',
+			label: __( 'Categories', 'pressprimer-assignment' ),
+			children: (
+				<CategoriesPanel
+					categories={ selectedCategories }
+					onCategoriesChange={ setSelectedCategories }
+					availableCategories={
+						assignmentData.availableCategories || []
+					}
+					availableTags={ assignmentData.availableTags || [] }
+				/>
+			),
 		},
 	];
 

@@ -326,6 +326,12 @@ class PressPrimer_Assignment_Plugin {
 			$statistics_api = new PressPrimer_Assignment_REST_Statistics();
 			$statistics_api->init();
 		}
+
+		// Categories REST API.
+		if ( class_exists( 'PressPrimer_Assignment_REST_Categories' ) ) {
+			$categories_api = new PressPrimer_Assignment_REST_Categories();
+			$categories_api->init();
+		}
 	}
 
 	/**

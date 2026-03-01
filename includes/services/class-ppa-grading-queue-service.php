@@ -318,8 +318,9 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 	 * Get accessible assignment IDs for current user
 	 *
 	 * Returns IDs of all published assignments the current user
-	 * can access. Teachers (via Educator addon) see only their
-	 * own assignments through the filter hook.
+	 * can access. Users with manage_all see all assignments.
+	 * Users with only manage_own see their own assignments.
+	 * The filter hook allows addons to further customize access.
 	 *
 	 * @since 1.0.0
 	 *
@@ -330,11 +331,38 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 
 		$table = $wpdb->prefix . 'ppa_assignments';
 
+		// Built-in ownership scoping: manage_own users see only their own.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$user_id = get_current_user_id();
+
+			/**
+			 * Filters the WHERE clause for accessible assignments.
+			 *
+			 * The Educator addon uses this to further restrict teachers
+			 * by appending additional conditions.
+			 *
+			 * @since 1.0.0
+			 *
+			 * @param string $where   SQL WHERE clause (starts with "WHERE").
+			 * @param int    $user_id Current user ID.
+			 */
+			$where = apply_filters(
+				'pressprimer_assignment_accessible_assignments_where',
+				$wpdb->prepare( "WHERE status = 'published' AND author_id = %d", $user_id ),
+				$user_id
+			);
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$ids = $wpdb->get_col(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $where from prepare() + trusted filter.
+				"SELECT id FROM {$table} {$where}"
+			);
+
+			return array_map( 'intval', $ids );
+		}
+
 		/**
 		 * Filters the WHERE clause for accessible assignments.
-		 *
-		 * The Educator addon uses this to restrict teachers to
-		 * only their own assignments by appending an author_id condition.
 		 *
 		 * @since 1.0.0
 		 *
@@ -371,16 +399,28 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 
 		$table = $wpdb->prefix . 'ppa_assignments';
 
-		/** This filter is documented in self::get_accessible_assignment_ids() */
-		$where = apply_filters(
-			'pressprimer_assignment_accessible_assignments_where',
-			"WHERE status = 'published'",
-			get_current_user_id()
-		);
+		// Built-in ownership scoping: manage_own users see only their own.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$user_id = get_current_user_id();
+
+			/** This filter is documented in self::get_accessible_assignment_ids() */
+			$where = apply_filters(
+				'pressprimer_assignment_accessible_assignments_where',
+				$wpdb->prepare( "WHERE status = 'published' AND author_id = %d", $user_id ),
+				$user_id
+			);
+		} else {
+			/** This filter is documented in self::get_accessible_assignment_ids() */
+			$where = apply_filters(
+				'pressprimer_assignment_accessible_assignments_where',
+				"WHERE status = 'published'",
+				get_current_user_id()
+			);
+		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $where from trusted filter.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $where from prepare() + trusted filter.
 			"SELECT id, title FROM {$table} {$where} ORDER BY title ASC"
 		);
 	}

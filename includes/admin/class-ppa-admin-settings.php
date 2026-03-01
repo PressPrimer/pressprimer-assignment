@@ -48,7 +48,8 @@ class PressPrimer_Assignment_Admin_Settings {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		// REST endpoint handles save/load. No admin_init hooks needed.
+		// AJAX handler for database table repair.
+		add_action( 'wp_ajax_pressprimer_assignment_repair_database_tables', [ $this, 'ajax_repair_database_tables' ] );
 	}
 
 	/**
@@ -175,9 +176,13 @@ class PressPrimer_Assignment_Admin_Settings {
 					'label' => __( 'Integrations', 'pressprimer-assignment' ),
 					'order' => 50,
 				],
+				'status'      => [
+					'label' => __( 'Status', 'pressprimer-assignment' ),
+					'order' => 100,
+				],
 				'advanced'    => [
 					'label' => __( 'Advanced', 'pressprimer-assignment' ),
-					'order' => 100,
+					'order' => 110,
 				],
 			]
 		);
@@ -196,6 +201,16 @@ class PressPrimer_Assignment_Admin_Settings {
 			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/construction-mascot.png'
 		);
 
+		// Collect database table status.
+		$table_status = [];
+		if ( class_exists( 'PressPrimer_Assignment_Migrator' ) ) {
+			$table_status = PressPrimer_Assignment_Migrator::get_table_status();
+		}
+
+		// Get active theme info.
+		$theme        = wp_get_theme();
+		$active_theme = $theme->get( 'Name' ) . ' ' . $theme->get( 'Version' );
+
 		return [
 			'pluginUrl'      => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 			'settingsMascot' => $settings_mascot,
@@ -207,12 +222,30 @@ class PressPrimer_Assignment_Admin_Settings {
 			],
 			'pages'          => $this->get_pages_list(),
 			'systemInfo'     => [
-				'pluginVersion' => PRESSPRIMER_ASSIGNMENT_VERSION,
-				'dbVersion'     => get_option( 'pressprimer_assignment_db_version', 'Not set' ),
-				'wpVersion'     => get_bloginfo( 'version' ),
-				'phpVersion'    => PHP_VERSION,
+				'pluginVersion'            => PRESSPRIMER_ASSIGNMENT_VERSION,
+				'dbVersion'                => get_option( 'pressprimer_assignment_db_version', 'Not set' ),
+				'wpVersion'                => get_bloginfo( 'version' ),
+				'siteUrl'                  => get_site_url(),
+				'memoryLimit'              => ini_get( 'memory_limit' ),
+				'phpVersion'               => PHP_VERSION,
+				'postMaxSize'              => ini_get( 'post_max_size' ),
+				'uploadMaxFilesize'        => ini_get( 'upload_max_filesize' ),
+				'maxExecutionTime'         => ini_get( 'max_execution_time' ),
+				'mysqlVersion'             => $this->get_mysql_version(),
+				'isMultisite'              => is_multisite(),
+				'activeTheme'              => $active_theme,
+				'totalAssignments'         => $this->get_count( 'ppa_assignments' ),
+				'totalSubmissions'         => $this->get_count( 'ppa_submissions', "status != 'draft'" ),
+				'totalFiles'               => $this->get_count( 'ppa_submission_files' ),
+				'totalCategories'          => $this->get_count( 'ppa_categories' ),
+				'fileHandlingCapabilities' => $this->get_file_handling_capabilities(),
+				'activePlugins'            => $this->get_active_plugins_list(),
 			],
 			'lmsStatus'      => $this->get_lms_status(),
+			'databaseTables' => $table_status,
+			'nonces'         => [
+				'repairTables' => wp_create_nonce( 'pressprimer_assignment_repair_tables_nonce' ),
+			],
 		];
 	}
 
@@ -269,5 +302,176 @@ class PressPrimer_Assignment_Admin_Settings {
 		}
 
 		return $list;
+	}
+
+	/**
+	 * Get MySQL version
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string MySQL version string.
+	 */
+	private function get_mysql_version() {
+		global $wpdb;
+
+		return $wpdb->db_version();
+	}
+
+	/**
+	 * Get row count for a plugin table
+	 *
+	 * Returns the count of rows in a plugin table, optionally filtered.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $table_name Table name without prefix (e.g., 'ppa_assignments').
+	 * @param string $where      Optional WHERE clause (without 'WHERE' keyword).
+	 * @return int Row count.
+	 */
+	private function get_count( $table_name, $where = '' ) {
+		global $wpdb;
+
+		$table = $wpdb->prefix . $table_name;
+
+		// Verify table exists before querying.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+
+		if ( $table !== $exists ) {
+			return 0;
+		}
+
+		if ( ! empty( $where ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$where}" );
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $table ) );
+	}
+
+	/**
+	 * Get file handling capabilities
+	 *
+	 * Reports on the server's ability to handle file uploads, previews,
+	 * and text extraction for assignment submissions.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array File handling capabilities.
+	 */
+	private function get_file_handling_capabilities() {
+		$capabilities = [];
+
+		// File upload security: finfo extension for MIME detection.
+		$capabilities['finfo'] = function_exists( 'finfo_open' );
+
+		// PDF text extraction: Smalot PDF Parser library.
+		$capabilities['pdfParserLibrary'] = class_exists( '\\Smalot\\PdfParser\\Parser' );
+
+		// PDF text extraction: pdftotext command-line tool.
+		$pdftotext_available = false;
+		if ( function_exists( 'exec' ) && ! in_array( 'exec', array_map( 'trim', explode( ',', (string) ini_get( 'disable_functions' ) ) ), true ) ) {
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Checking pdftotext availability.
+			$which_result = @exec( 'which pdftotext 2>/dev/null' );
+			if ( ! empty( $which_result ) && file_exists( $which_result ) ) {
+				$pdftotext_available = true;
+			}
+		}
+		$capabilities['pdftotext'] = $pdftotext_available;
+
+		// DOCX preview: ZipArchive for reading .docx files.
+		$capabilities['zipArchive'] = class_exists( 'ZipArchive' );
+
+		// Image handling: GD library for image processing.
+		$capabilities['gd'] = extension_loaded( 'gd' );
+
+		return $capabilities;
+	}
+
+	/**
+	 * Get list of active plugins
+	 *
+	 * Returns a simplified list of active plugin names and versions.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array List of "Plugin Name Version" strings.
+	 */
+	private function get_active_plugins_list() {
+		$active_plugins = get_option( 'active_plugins', [] );
+		$list           = [];
+
+		foreach ( $active_plugins as $plugin_path ) {
+			$plugin_file = WP_PLUGIN_DIR . '/' . $plugin_path;
+
+			if ( ! file_exists( $plugin_file ) ) {
+				continue;
+			}
+
+			$plugin_data = get_plugin_data( $plugin_file, false, false );
+
+			if ( ! empty( $plugin_data['Name'] ) ) {
+				$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';
+				$list[]  = trim( $plugin_data['Name'] . ' ' . $version );
+			}
+		}
+
+		return $list;
+	}
+
+	/**
+	 * AJAX handler: Repair database tables
+	 *
+	 * Recreates missing database tables and returns the updated status.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_repair_database_tables() {
+		// Verify nonce.
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'pressprimer_assignment_repair_tables_nonce' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Security check failed.', 'pressprimer-assignment' ) ] );
+		}
+
+		// Verify capability.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'pressprimer-assignment' ) ] );
+		}
+
+		// Attempt repair.
+		if ( ! class_exists( 'PressPrimer_Assignment_Migrator' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Migrator class not available.', 'pressprimer-assignment' ) ] );
+		}
+
+		$result = PressPrimer_Assignment_Migrator::repair_tables();
+
+		if ( $result['success'] ) {
+			$repaired_names = array_map(
+				function ( $name ) {
+					global $wpdb;
+					return str_replace( $wpdb->prefix, '', $name );
+				},
+				$result['repaired']
+			);
+
+			wp_send_json_success(
+				[
+					'message'     => sprintf(
+						/* translators: %d: number of tables repaired */
+						__( '%d table(s) repaired successfully.', 'pressprimer-assignment' ),
+						count( $result['repaired'] )
+					),
+					'repaired'    => $repaired_names,
+					'tableStatus' => PressPrimer_Assignment_Migrator::get_table_status(),
+				]
+			);
+		} else {
+			wp_send_json_error(
+				[
+					'message'     => __( 'Some tables could not be repaired.', 'pressprimer-assignment' ),
+					'tableStatus' => PressPrimer_Assignment_Migrator::get_table_status(),
+				]
+			);
+		}
 	}
 }

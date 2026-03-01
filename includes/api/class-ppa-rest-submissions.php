@@ -127,13 +127,59 @@ class PressPrimer_Assignment_REST_Submissions {
 	/**
 	 * Check if current user has permission
 	 *
+	 * Allows access for users with manage_own (teachers/instructors) or
+	 * manage_all (admins) capability. Data scoping happens in callbacks.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return bool True if user has permission.
 	 */
 	public function check_permission( $request ) {
-		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+	}
+
+	/**
+	 * Get the author ID filter for the current user
+	 *
+	 * Returns null for admins (see all data) or the current
+	 * user's ID for teachers (see only their own assignments' submissions).
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return int|null Author ID or null for unrestricted access.
+	 */
+	private function get_author_id() {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return null;
+		}
+		return get_current_user_id();
+	}
+
+	/**
+	 * Check if the current user can access a submission
+	 *
+	 * For manage_own users, the submission's assignment must be
+	 * authored by the current user.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param PressPrimer_Assignment_Submission $submission Submission instance.
+	 * @return bool True if user can access.
+	 */
+	private function can_access_submission( $submission ) {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return true;
+		}
+
+		$assignment = $submission->get_assignment();
+
+		if ( ! $assignment ) {
+			return false;
+		}
+
+		return (int) $assignment->author_id === get_current_user_id();
 	}
 
 	/**
@@ -215,9 +261,17 @@ class PressPrimer_Assignment_REST_Submissions {
 		$page          = max( 1, absint( $request->get_param( 'page' ) ) ?: 1 );
 		$offset        = ( $page - 1 ) * $per_page;
 
+		// Scope to current user's assignments for manage_own users.
+		$author_id = $this->get_author_id();
+
 		// Build WHERE.
 		$where_clauses = [ 's.status != %s' ];
 		$where_params  = [ 'draft' ];
+
+		if ( null !== $author_id ) {
+			$where_clauses[] = 'a.author_id = %d';
+			$where_params[]  = $author_id;
+		}
 
 		if ( $assignment_id > 0 ) {
 			$where_clauses[] = 's.assignment_id = %d';
@@ -326,7 +380,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		);
 
 		// Summary stats (calculated from full result set, not just current page).
-		$stats = $this->get_summary_stats( $assignment_id );
+		$stats = $this->get_summary_stats( $assignment_id, $author_id );
 
 		return rest_ensure_response(
 			[
@@ -359,6 +413,14 @@ class PressPrimer_Assignment_REST_Submissions {
 				'ppa_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
+			);
+		}
+
+		if ( ! $this->can_access_submission( $submission ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to view this submission.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
 			);
 		}
 
@@ -450,6 +512,14 @@ class PressPrimer_Assignment_REST_Submissions {
 				'ppa_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
+			);
+		}
+
+		if ( ! $this->can_access_submission( $submission ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to grade this submission.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
 			);
 		}
 
@@ -572,6 +642,24 @@ class PressPrimer_Assignment_REST_Submissions {
 		$errors          = [];
 
 		foreach ( $ids as $submission_id ) {
+			$submission = PressPrimer_Assignment_Submission::get( $submission_id );
+
+			if ( ! $submission ) {
+				$errors[] = [
+					'id'      => $submission_id,
+					'message' => __( 'Submission not found.', 'pressprimer-assignment' ),
+				];
+				continue;
+			}
+
+			if ( ! $this->can_access_submission( $submission ) ) {
+				$errors[] = [
+					'id'      => $submission_id,
+					'message' => __( 'You do not have permission to return this submission.', 'pressprimer-assignment' ),
+				];
+				continue;
+			}
+
 			$result = $grading_service->return_submission( $submission_id );
 
 			if ( is_wp_error( $result ) ) {
@@ -599,32 +687,40 @@ class PressPrimer_Assignment_REST_Submissions {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int $assignment_id Assignment ID (0 for all).
+	 * @param int      $assignment_id Assignment ID (0 for all).
+	 * @param int|null $author_id    Author ID for ownership scoping, or null for all.
 	 * @return array Stats array with total, pending, grading, graded, returned counts.
 	 */
-	private function get_summary_stats( $assignment_id ) {
+	private function get_summary_stats( $assignment_id, $author_id = null ) {
 		global $wpdb;
 
-		$table = $wpdb->prefix . 'ppa_submissions';
+		$table     = $wpdb->prefix . 'ppa_submissions';
+		$asg_table = $wpdb->prefix . 'ppa_assignments';
+
+		// Build WHERE with params array.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$where  = 'WHERE s.status != %s';
+		$params = [ 'draft' ];
 
 		if ( $assignment_id > 0 ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT status, COUNT(*) AS cnt FROM {$table} WHERE assignment_id = %d AND status != %s GROUP BY status", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					$assignment_id,
-					'draft'
-				)
-			);
-		} else {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT status, COUNT(*) AS cnt FROM {$table} WHERE status != %s GROUP BY status", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					'draft'
-				)
-			);
+			$where   .= ' AND s.assignment_id = %d';
+			$params[] = $assignment_id;
 		}
+
+		if ( null !== $author_id ) {
+			$where   .= ' AND a.author_id = %d';
+			$params[] = $author_id;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic.
+			$wpdb->prepare(
+				"SELECT s.status, COUNT(*) AS cnt FROM {$table} s JOIN {$asg_table} a ON s.assignment_id = a.id {$where} GROUP BY s.status", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$params
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$stats = [
 			'total'     => 0,
@@ -712,6 +808,16 @@ class PressPrimer_Assignment_REST_Submissions {
 				'ppa_file_not_found',
 				__( 'File not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
+			);
+		}
+
+		// Verify the file's submission belongs to a user-accessible assignment.
+		$submission = PressPrimer_Assignment_Submission::get( $file->submission_id );
+		if ( ! $submission || ! $this->can_access_submission( $submission ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to view this file.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
 			);
 		}
 

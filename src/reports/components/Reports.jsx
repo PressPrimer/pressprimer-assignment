@@ -216,7 +216,7 @@ const Reports = () => {
 	const pluginUrl = window.pressprimerAssignmentReportsData?.pluginUrl || '';
 	const reportsMascot =
 		window.pressprimerAssignmentReportsData?.reportsMascot ||
-		`${ pluginUrl }assets/images/presspilot-mascot.svg`;
+		`${ pluginUrl }assets/images/reports-mascot.png`;
 
 	return (
 		<div className="ppa-reports-container">

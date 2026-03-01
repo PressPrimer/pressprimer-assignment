@@ -18,6 +18,7 @@ import {
 	SaveOutlined,
 	ApiOutlined,
 	BgColorsOutlined,
+	InfoCircleOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
@@ -25,6 +26,7 @@ import AppearanceTab from './AppearanceTab';
 import EmailTab from './EmailTab';
 import IntegrationsTab from './IntegrationsTab';
 import AdvancedTab from './AdvancedTab';
+import StatusTab from './StatusTab';
 
 /**
  * Core tab configuration (built into free plugin).
@@ -60,13 +62,26 @@ const CORE_TABS = [
 		order: 50,
 	},
 	{
+		id: 'status',
+		label: __( 'Status', 'pressprimer-assignment' ),
+		icon: <InfoCircleOutlined />,
+		component: StatusTab,
+		order: 100,
+	},
+	{
 		id: 'advanced',
 		label: __( 'Advanced', 'pressprimer-assignment' ),
 		icon: <ToolOutlined />,
 		component: AdvancedTab,
-		order: 100,
+		order: 110,
 	},
 ];
+
+/**
+ * Read-only tabs that don't show the Save button.
+ * These tabs display information only and have no editable settings.
+ */
+const READ_ONLY_TABS = [ 'status' ];
 
 /**
  * Settings Page Component
@@ -128,10 +143,11 @@ const SettingsPage = ( { settingsData = {} } ) => {
 	}, [ settingsData.settingsTabs ] );
 
 	/**
-	 * Check if active tab is an addon tab.
+	 * Check if active tab is an addon tab or read-only tab.
 	 */
 	const activeTabConfig = allTabs.find( ( tab ) => tab.id === activeTab );
 	const isAddonTab = activeTabConfig?.isAddon ?? false;
+	const isReadOnly = READ_ONLY_TABS.includes( activeTab );
 
 	/**
 	 * Update a setting value.
@@ -243,8 +259,17 @@ const SettingsPage = ( { settingsData = {} } ) => {
 
 				{ /* Tab Content */ }
 				<div className="ppa-settings-content">
-					{ /* Core tab content */ }
-					{ ! isAddonTab && ActiveTabComponent && (
+					{ /* Read-only tab content (no save button) */ }
+					{ ! isAddonTab && isReadOnly && ActiveTabComponent && (
+						<ActiveTabComponent
+							settings={ settings }
+							updateSetting={ updateSetting }
+							settingsData={ settingsData }
+						/>
+					) }
+
+					{ /* Editable tab content */ }
+					{ ! isAddonTab && ! isReadOnly && ActiveTabComponent && (
 						<Spin
 							spinning={ saving }
 							tip={ __(

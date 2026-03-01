@@ -1073,8 +1073,9 @@ class PressPrimer_Assignment_TutorLMS {
 	/**
 	 * Map TutorLMS Instructor role to PPA teacher capabilities
 	 *
-	 * Grants assignment management capabilities to the tutor_instructor role
-	 * so instructors can create and manage their own assignments.
+	 * Grants own-tier assignment management capabilities to the tutor_instructor
+	 * role so instructors can create and manage their own assignments.
+	 * Matches the Quiz pattern of granting _own capabilities, not _all.
 	 *
 	 * @since 1.0.0
 	 */
@@ -1085,9 +1086,14 @@ class PressPrimer_Assignment_TutorLMS {
 			return;
 		}
 
-		// Only add capabilities if the role doesn't already have them.
-		if ( ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		// Remove legacy manage_all if previously granted (from <= 1.0.0).
+		if ( $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$instructor->remove_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		}
+
+		// Grant own-tier capabilities (matching Quiz's pattern).
+		if ( ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
 			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
 		}
 	}

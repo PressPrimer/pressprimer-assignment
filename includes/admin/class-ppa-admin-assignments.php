@@ -374,6 +374,15 @@ class PressPrimer_Assignment_Admin_Assignments {
 			$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
 			if ( $assignment ) {
+				// Get assigned category IDs.
+				$category_ids = [];
+				if ( class_exists( 'PressPrimer_Assignment_Category' ) ) {
+					$assigned_cats = $assignment->get_categories();
+					foreach ( $assigned_cats as $cat ) {
+						$category_ids[] = (int) $cat->id;
+					}
+				}
+
 				$assignment_data = [
 					'id'                 => (int) $assignment->id,
 					'title'              => $assignment->title,
@@ -389,9 +398,37 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'max_files'          => (int) $assignment->max_files,
 					'submission_type'    => $assignment->submission_type,
 					'status'             => $assignment->status,
+					'categories'         => $category_ids,
 				];
 			}
 		}
+
+		// Get all available categories and tags for the picker.
+		$available_categories = [];
+		$available_tags       = [];
+		if ( class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			$all_categories = PressPrimer_Assignment_Category::get_categories();
+			foreach ( $all_categories as $cat ) {
+				$available_categories[] = [
+					'id'        => (int) $cat->id,
+					'name'      => $cat->name,
+					'slug'      => $cat->slug,
+					'parent_id' => $cat->parent_id ? (int) $cat->parent_id : null,
+				];
+			}
+
+			$all_tags = PressPrimer_Assignment_Category::get_tags();
+			foreach ( $all_tags as $tag ) {
+				$available_tags[] = [
+					'id'   => (int) $tag->id,
+					'name' => $tag->name,
+					'slug' => $tag->slug,
+				];
+			}
+		}
+
+		$assignment_data['availableCategories'] = $available_categories;
+		$assignment_data['availableTags']       = $available_tags;
 
 		/**
 		 * Filters assignment editor data before passing to React.

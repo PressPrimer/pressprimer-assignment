@@ -891,8 +891,9 @@ class PressPrimer_Assignment_LearnDash {
 	/**
 	 * Map LearnDash Group Leader role to PPA teacher capabilities
 	 *
-	 * Grants assignment management capabilities to the group_leader role
-	 * so instructors can create and manage their own assignments.
+	 * Grants own-tier assignment management capabilities to the group_leader
+	 * role so instructors can create and manage their own assignments.
+	 * Matches the Quiz pattern of granting _own capabilities, not _all.
 	 *
 	 * @since 1.0.0
 	 */
@@ -903,9 +904,14 @@ class PressPrimer_Assignment_LearnDash {
 			return;
 		}
 
-		// Only add capabilities if the role doesn't already have them.
-		if ( ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		// Remove legacy manage_all if previously granted (from <= 1.0.0).
+		if ( $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$group_leader->remove_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		}
+
+		// Grant own-tier capabilities (matching Quiz's pattern).
+		if ( ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
 			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
 		}
 	}

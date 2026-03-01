@@ -101,13 +101,52 @@ class PressPrimer_Assignment_REST_Assignments {
 	/**
 	 * Check if current user has permission
 	 *
+	 * Allows access for users with manage_own (teachers/instructors) or
+	 * manage_all (admins) capability. Data scoping happens in callbacks.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return bool True if user has permission.
 	 */
 	public function check_permission( $request ) {
-		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+	}
+
+	/**
+	 * Get the author ID filter for the current user
+	 *
+	 * Returns null for admins (see all data) or the current
+	 * user's ID for teachers (see only their own assignments).
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return int|null Author ID or null for unrestricted access.
+	 */
+	private function get_author_id() {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return null;
+		}
+		return get_current_user_id();
+	}
+
+	/**
+	 * Check if the current user can access a specific assignment
+	 *
+	 * Returns true for admins. For manage_own users, checks that
+	 * the assignment's author_id matches the current user.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+	 * @return bool True if user can access the assignment.
+	 */
+	private function can_access_assignment( $assignment ) {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return true;
+		}
+		return (int) $assignment->author_id === get_current_user_id();
 	}
 
 	/**
@@ -155,6 +194,11 @@ class PressPrimer_Assignment_REST_Assignments {
 				'default'     => 'DESC',
 				'enum'        => [ 'ASC', 'DESC' ],
 			],
+			'category' => [
+				'description' => __( 'Filter by category ID.', 'pressprimer-assignment' ),
+				'type'        => 'integer',
+				'default'     => 0,
+			],
 		];
 	}
 
@@ -167,13 +211,14 @@ class PressPrimer_Assignment_REST_Assignments {
 	 * @return WP_REST_Response Response object.
 	 */
 	public function get_items( $request ) {
-		$page     = absint( $request->get_param( 'page' ) ) ?: 1;
-		$per_page = absint( $request->get_param( 'per_page' ) ) ?: 20;
-		$per_page = min( $per_page, 100 );
-		$search   = sanitize_text_field( $request->get_param( 'search' ) ?? '' );
-		$status   = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
-		$order_by = sanitize_text_field( $request->get_param( 'order_by' ) ?? 'created_at' );
-		$order    = sanitize_text_field( $request->get_param( 'order' ) ?? 'DESC' );
+		$page        = absint( $request->get_param( 'page' ) ) ?: 1;
+		$per_page    = absint( $request->get_param( 'per_page' ) ) ?: 20;
+		$per_page    = min( $per_page, 100 );
+		$search      = sanitize_text_field( $request->get_param( 'search' ) ?? '' );
+		$status      = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
+		$order_by    = sanitize_text_field( $request->get_param( 'order_by' ) ?? 'created_at' );
+		$order       = sanitize_text_field( $request->get_param( 'order' ) ?? 'DESC' );
+		$category_id = absint( $request->get_param( 'category' ) );
 
 		// Validate order_by against allowed fields.
 		$allowed_order_by = [ 'id', 'title', 'status', 'created_at', 'updated_at' ];
@@ -200,10 +245,20 @@ class PressPrimer_Assignment_REST_Assignments {
 			$args['where']['status'] = $status;
 		}
 
-		// Handle search with direct database query for LIKE support.
-		if ( $search ) {
-			$items = $this->search_assignments( $search, $args );
-			$total = $this->count_search_assignments( $search, $args );
+		// Scope to current user's assignments for manage_own users.
+		$author_id = $this->get_author_id();
+		if ( null !== $author_id ) {
+			$args['where']['author_id'] = $author_id;
+		}
+
+		// Handle category filter with a JOIN query.
+		if ( $category_id > 0 ) {
+			$items = $this->get_assignments_by_category( $category_id, $search, $args, $author_id );
+			$total = $this->count_assignments_by_category( $category_id, $search, $args, $author_id );
+		} elseif ( $search ) {
+			// Handle search with direct database query for LIKE support.
+			$items = $this->search_assignments( $search, $args, $author_id );
+			$total = $this->count_search_assignments( $search, $args, $author_id );
 		} else {
 			$items = PressPrimer_Assignment_Assignment::find( $args );
 			$total = PressPrimer_Assignment_Assignment::count( $args['where'] );
@@ -228,11 +283,12 @@ class PressPrimer_Assignment_REST_Assignments {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $search Search term.
-	 * @param array  $args   Query arguments.
+	 * @param string   $search    Search term.
+	 * @param array    $args      Query arguments.
+	 * @param int|null $author_id Author ID for ownership scoping, or null for all.
 	 * @return array Array of assignment instances.
 	 */
-	private function search_assignments( $search, $args ) {
+	private function search_assignments( $search, $args, $author_id = null ) {
 		global $wpdb;
 
 		$table      = $wpdb->prefix . 'ppa_assignments';
@@ -250,54 +306,40 @@ class PressPrimer_Assignment_REST_Assignments {
 			$order_by_field = 'created_at';
 		}
 
-		// Use explicit query branches to avoid dynamic SQL construction.
-		if ( $has_status && $is_asc ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE title LIKE %s AND status = %s ORDER BY %i ASC LIMIT %d, %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term,
-					$status,
-					$order_by_field,
-					$offset,
-					$limit
-				)
-			);
-		} elseif ( $has_status ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE title LIKE %s AND status = %s ORDER BY %i DESC LIMIT %d, %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term,
-					$status,
-					$order_by_field,
-					$offset,
-					$limit
-				)
-			);
-		} elseif ( $is_asc ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE title LIKE %s ORDER BY %i ASC LIMIT %d, %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term,
-					$order_by_field,
-					$offset,
-					$limit
-				)
-			);
-		} else {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE title LIKE %s ORDER BY %i DESC LIMIT %d, %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term,
-					$order_by_field,
-					$offset,
-					$limit
-				)
-			);
+		// Build dynamic WHERE parts with params array.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$where  = 'WHERE title LIKE %s';
+		$params = [ $like_term ];
+
+		if ( $has_status ) {
+			$where   .= ' AND status = %s';
+			$params[] = $status;
 		}
+
+		if ( null !== $author_id ) {
+			$where   .= ' AND author_id = %d';
+			$params[] = $author_id;
+		}
+
+		if ( $is_asc ) {
+			$where .= ' ORDER BY %i ASC LIMIT %d, %d';
+		} else {
+			$where .= ' ORDER BY %i DESC LIMIT %d, %d';
+		}
+
+		$params[] = $order_by_field;
+		$params[] = $offset;
+		$params[] = $limit;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic.
+			$wpdb->prepare(
+				"SELECT * FROM {$table} {$where}", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$params
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$results = [];
 		if ( $rows ) {
@@ -314,34 +356,41 @@ class PressPrimer_Assignment_REST_Assignments {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $search Search term.
-	 * @param array  $args   Query arguments.
+	 * @param string   $search    Search term.
+	 * @param array    $args      Query arguments.
+	 * @param int|null $author_id Author ID for ownership scoping, or null for all.
 	 * @return int Total count.
 	 */
-	private function count_search_assignments( $search, $args ) {
+	private function count_search_assignments( $search, $args, $author_id = null ) {
 		global $wpdb;
 
 		$table     = $wpdb->prefix . 'ppa_assignments';
 		$like_term = '%' . $wpdb->esc_like( $search ) . '%';
 
+		// Build dynamic WHERE with params array.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$where  = 'WHERE title LIKE %s';
+		$params = [ $like_term ];
+
 		if ( ! empty( $args['where']['status'] ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			return (int) $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$table} WHERE title LIKE %s AND status = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term,
-					$args['where']['status']
-				)
-			);
+			$where   .= ' AND status = %s';
+			$params[] = $args['where']['status'];
+		}
+
+		if ( null !== $author_id ) {
+			$where   .= ' AND author_id = %d';
+			$params[] = $author_id;
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (int) $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic.
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE title LIKE %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$like_term
+				"SELECT COUNT(*) FROM {$table} {$where}", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$params
 			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 
 	/**
@@ -361,6 +410,14 @@ class PressPrimer_Assignment_REST_Assignments {
 				'ppa_not_found',
 				__( 'Assignment not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
+			);
+		}
+
+		if ( ! $this->can_access_assignment( $assignment ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to access this assignment.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
 			);
 		}
 
@@ -422,6 +479,14 @@ class PressPrimer_Assignment_REST_Assignments {
 			);
 		}
 
+		if ( ! $this->can_access_assignment( $assignment ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to edit this assignment.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
+			);
+		}
+
 		$data = $this->sanitize_assignment_data( $request );
 
 		// Update assignment properties.
@@ -467,6 +532,14 @@ class PressPrimer_Assignment_REST_Assignments {
 				'ppa_not_found',
 				__( 'Assignment not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
+			);
+		}
+
+		if ( ! $this->can_access_assignment( $assignment ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to delete this assignment.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
 			);
 		}
 
@@ -619,6 +692,138 @@ class PressPrimer_Assignment_REST_Assignments {
 	}
 
 	/**
+	 * Get assignments filtered by category
+	 *
+	 * Uses a JOIN with the assignment_tax table to filter by category.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int      $category_id Category ID to filter by.
+	 * @param string   $search      Optional search term.
+	 * @param array    $args        Query arguments.
+	 * @param int|null $author_id   Author ID for ownership scoping, or null for all.
+	 * @return array Array of assignment instances.
+	 */
+	private function get_assignments_by_category( $category_id, $search, $args, $author_id = null ) {
+		global $wpdb;
+
+		$table     = $wpdb->prefix . 'ppa_assignments';
+		$tax_table = $wpdb->prefix . 'ppa_assignment_tax';
+		$offset    = absint( $args['offset'] );
+		$limit     = absint( $args['limit'] );
+		$is_asc    = 'ASC' === strtoupper( $args['order'] );
+
+		// Validate order_by field.
+		$order_by_field   = $args['order_by'];
+		$allowed_order_by = [ 'id', 'title', 'status', 'created_at', 'updated_at' ];
+		if ( ! in_array( $order_by_field, $allowed_order_by, true ) ) {
+			$order_by_field = 'created_at';
+		}
+
+		$has_status = ! empty( $args['where']['status'] );
+		$status     = $has_status ? $args['where']['status'] : '';
+		$has_search = ! empty( $search );
+		$like_term  = $has_search ? '%' . $wpdb->esc_like( $search ) . '%' : '';
+
+		// Build the base query parts.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$base_query = "SELECT DISTINCT a.* FROM {$table} a INNER JOIN {$tax_table} t ON a.id = t.assignment_id WHERE t.category_id = %d";
+
+		$params = [ $category_id ];
+
+		if ( $has_search ) {
+			$base_query .= ' AND a.title LIKE %s';
+			$params[]    = $like_term;
+		}
+
+		if ( $has_status ) {
+			$base_query .= ' AND a.status = %s';
+			$params[]    = $status;
+		}
+
+		if ( null !== $author_id ) {
+			$base_query .= ' AND a.author_id = %d';
+			$params[]    = $author_id;
+		}
+
+		if ( $is_asc ) {
+			$base_query .= ' ORDER BY a.%i ASC LIMIT %d, %d';
+		} else {
+			$base_query .= ' ORDER BY a.%i DESC LIMIT %d, %d';
+		}
+
+		$params[] = $order_by_field;
+		$params[] = $offset;
+		$params[] = $limit;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			$wpdb->prepare( $base_query, $params ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$results = [];
+		if ( $rows ) {
+			foreach ( $rows as $row ) {
+				$results[] = PressPrimer_Assignment_Assignment::from_row( $row );
+			}
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Count assignments filtered by category
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int      $category_id Category ID to filter by.
+	 * @param string   $search      Optional search term.
+	 * @param array    $args        Query arguments.
+	 * @param int|null $author_id   Author ID for ownership scoping, or null for all.
+	 * @return int Total count.
+	 */
+	private function count_assignments_by_category( $category_id, $search, $args, $author_id = null ) {
+		global $wpdb;
+
+		$table     = $wpdb->prefix . 'ppa_assignments';
+		$tax_table = $wpdb->prefix . 'ppa_assignment_tax';
+
+		$has_status = ! empty( $args['where']['status'] );
+		$status     = $has_status ? $args['where']['status'] : '';
+		$has_search = ! empty( $search );
+		$like_term  = $has_search ? '%' . $wpdb->esc_like( $search ) . '%' : '';
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$base_query = "SELECT COUNT(DISTINCT a.id) FROM {$table} a INNER JOIN {$tax_table} t ON a.id = t.assignment_id WHERE t.category_id = %d";
+
+		$params = [ $category_id ];
+
+		if ( $has_search ) {
+			$base_query .= ' AND a.title LIKE %s';
+			$params[]    = $like_term;
+		}
+
+		if ( $has_status ) {
+			$base_query .= ' AND a.status = %s';
+			$params[]    = $status;
+		}
+
+		if ( null !== $author_id ) {
+			$base_query .= ' AND a.author_id = %d';
+			$params[]    = $author_id;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$count = $wpdb->get_var(
+			$wpdb->prepare( $base_query, $params ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		return (int) $count;
+	}
+
+	/**
 	 * Prepare assignment for REST response
 	 *
 	 * Formats assignment data for the API response.
@@ -629,6 +834,19 @@ class PressPrimer_Assignment_REST_Assignments {
 	 * @return array Formatted assignment data.
 	 */
 	private function prepare_item_for_response( $assignment ) {
+		// Get assigned categories.
+		$categories    = $assignment->get_categories();
+		$category_ids  = [];
+		$category_data = [];
+		foreach ( $categories as $cat ) {
+			$category_ids[]  = (int) $cat->id;
+			$category_data[] = [
+				'id'       => (int) $cat->id,
+				'name'     => $cat->name,
+				'taxonomy' => $cat->taxonomy,
+			];
+		}
+
 		$data = [
 			'id'                 => (int) $assignment->id,
 			'uuid'               => $assignment->uuid,
@@ -649,6 +867,8 @@ class PressPrimer_Assignment_REST_Assignments {
 			'notification_email' => $assignment->notification_email ?? '',
 			'submission_count'   => (int) $assignment->submission_count,
 			'graded_count'       => (int) $assignment->graded_count,
+			'categories'         => $category_ids,
+			'category_details'   => $category_data,
 			'created_at'         => $assignment->created_at,
 			'updated_at'         => $assignment->updated_at,
 		];

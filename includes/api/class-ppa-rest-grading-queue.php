@@ -103,13 +103,18 @@ class PressPrimer_Assignment_REST_Grading_Queue {
 	/**
 	 * Check if current user has permission
 	 *
+	 * Allows access for users with manage_own (teachers/instructors) or
+	 * manage_all (admins) capability. Data scoping happens in the service layer
+	 * via get_accessible_assignment_ids().
+	 *
 	 * @since 1.0.0
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return bool True if user has permission.
 	 */
 	public function check_permission( $request ) {
-		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
 	}
 
 	/**

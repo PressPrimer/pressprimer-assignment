@@ -224,6 +224,56 @@
 	color: #1890ff;
 }
 
+/* Status tab: copy-to-clipboard bar */
+.ppa-status-copy-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: #f0f6fc;
+	border: 1px solid #c5d9ed;
+	border-radius: 6px;
+	padding: 12px 16px;
+	margin-bottom: 24px;
+}
+
+.ppa-status-copy-bar-text {
+	color: #2271b1;
+	font-size: 13px;
+}
+
+/* Status tab: two-column grid */
+.ppa-status-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0 32px;
+}
+
+.ppa-status-grid .ppa-settings-section {
+	margin-bottom: 24px;
+}
+
+.ppa-status-grid .ppa-system-info th {
+	width: 140px;
+}
+
+/* Status tab: active plugins list */
+.ppa-status-plugin-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 4px 0;
+}
+
+.ppa-status-plugin-item {
+	background: #fafafa;
+	border: 1px solid #f0f0f0;
+	border-radius: 4px;
+	padding: 4px 10px;
+	font-size: 12px;
+	color: #3c434a;
+	line-height: 1.5;
+}
+
 /* Responsive adjustments */
 @media screen and (max-width: 1024px) {
 	.ppa-settings-layout {
@@ -257,6 +307,10 @@
 	.ppa-settings-tab--active:hover {
 		color: #fff;
 	}
+
+	.ppa-status-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media screen and (max-width: 600px) {
@@ -274,5 +328,15 @@
 
 	.ppa-system-info th {
 		width: 120px;
+	}
+
+	.ppa-status-copy-bar {
+		flex-direction: column;
+		gap: 8px;
+		text-align: center;
+	}
+
+	.ppa-status-grid .ppa-system-info th {
+		width: 100px;
 	}
 }

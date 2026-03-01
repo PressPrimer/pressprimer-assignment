@@ -103,7 +103,7 @@ class PressPrimer_Assignment_Admin {
 		add_menu_page(
 			$plugin_name,
 			$plugin_name,
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment',
 			[ $this, 'render_dashboard' ],
 			$this->get_menu_icon(),
@@ -115,7 +115,7 @@ class PressPrimer_Assignment_Admin {
 			'pressprimer-assignment',
 			__( 'Dashboard', 'pressprimer-assignment' ),
 			__( 'Dashboard', 'pressprimer-assignment' ),
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment',
 			[ $this, 'render_dashboard' ]
 		);
@@ -125,7 +125,7 @@ class PressPrimer_Assignment_Admin {
 			'pressprimer-assignment',
 			__( 'Assignments', 'pressprimer-assignment' ),
 			__( 'Assignments', 'pressprimer-assignment' ),
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment-assignments',
 			[ $this, 'render_assignments' ]
 		);
@@ -135,7 +135,7 @@ class PressPrimer_Assignment_Admin {
 			'pressprimer-assignment',
 			__( 'Submissions', 'pressprimer-assignment' ),
 			__( 'Submissions', 'pressprimer-assignment' ),
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment-submissions',
 			[ $this, 'render_submissions' ]
 		);
@@ -145,7 +145,7 @@ class PressPrimer_Assignment_Admin {
 			'pressprimer-assignment',
 			__( 'Grading', 'pressprimer-assignment' ),
 			__( 'Grading', 'pressprimer-assignment' ),
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment-grading',
 			[ $this, 'render_grading' ]
 		);
@@ -155,7 +155,7 @@ class PressPrimer_Assignment_Admin {
 			'pressprimer-assignment',
 			__( 'Categories', 'pressprimer-assignment' ),
 			__( 'Categories', 'pressprimer-assignment' ),
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL,
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment-categories',
 			[ $this, 'render_categories' ]
 		);
@@ -320,7 +320,8 @@ class PressPrimer_Assignment_Admin {
 	 */
 	private function localize_dashboard_data() {
 		// Determine if user is a teacher (not a full admin).
-		$is_teacher = ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		$is_teacher = ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+			&& current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
 
 		/**
 		 * Filters the plugin name displayed in the dashboard.
@@ -406,7 +407,7 @@ class PressPrimer_Assignment_Admin {
 		 */
 		$reports_mascot = apply_filters(
 			'pressprimer_assignment_reports_mascot',
-			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/presspilot-mascot.svg'
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/reports-mascot.png'
 		);
 
 		wp_localize_script(
@@ -427,7 +428,9 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function render_dashboard() {
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
 			wp_die(
 				esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ),
 				esc_html__( 'Permission Denied', 'pressprimer-assignment' ),
@@ -519,7 +522,9 @@ class PressPrimer_Assignment_Admin {
 	 * @since 1.0.0
 	 */
 	public function add_grading_badge() {
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
 			return;
 		}
 
