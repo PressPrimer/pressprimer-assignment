@@ -75,10 +75,10 @@ class PressPrimer_Assignment_Text_Handler {
 		}
 
 		$user_id       = get_current_user_id();
-		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
-		$submission_id = isset( $_POST['submission_id'] ) ? absint( $_POST['submission_id'] ) : 0;
+		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( wp_unslash( $_POST['assignment_id'] ) ) : 0;
+		$submission_id = isset( $_POST['submission_id'] ) ? absint( wp_unslash( $_POST['submission_id'] ) ) : 0;
 		$text_content  = isset( $_POST['text_content'] ) ? wp_kses_post( wp_unslash( $_POST['text_content'] ) ) : '';
-		$word_count    = isset( $_POST['word_count'] ) ? absint( $_POST['word_count'] ) : 0;
+		$word_count    = isset( $_POST['word_count'] ) ? absint( wp_unslash( $_POST['word_count'] ) ) : 0;
 
 		// Validate assignment.
 		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
@@ -261,7 +261,7 @@ class PressPrimer_Assignment_Text_Handler {
 		}
 
 		// Validate assignment.
-		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
+		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( wp_unslash( $_POST['assignment_id'] ) ) : 0;
 		$assignment    = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
 		// Allow admins to submit for draft assignments (preview/testing).
@@ -289,9 +289,9 @@ class PressPrimer_Assignment_Text_Handler {
 		}
 
 		$user_id       = get_current_user_id();
-		$submission_id = isset( $_POST['submission_id'] ) ? absint( $_POST['submission_id'] ) : 0;
+		$submission_id = isset( $_POST['submission_id'] ) ? absint( wp_unslash( $_POST['submission_id'] ) ) : 0;
 		$text_content  = isset( $_POST['text_content'] ) ? wp_kses_post( wp_unslash( $_POST['text_content'] ) ) : '';
-		$word_count    = isset( $_POST['word_count'] ) ? absint( $_POST['word_count'] ) : 0;
+		$word_count    = isset( $_POST['word_count'] ) ? absint( wp_unslash( $_POST['word_count'] ) ) : 0;
 
 		// Check if user can submit (skip for admin preview of draft assignments).
 		if ( ! $is_admin_preview ) {

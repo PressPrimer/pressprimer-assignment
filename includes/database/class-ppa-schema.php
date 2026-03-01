@@ -114,6 +114,7 @@ class PressPrimer_Assignment_Schema {
 			graded_at DATETIME DEFAULT NULL,
 			returned_at DATETIME DEFAULT NULL,
 			grader_id BIGINT UNSIGNED DEFAULT NULL,
+			grading_time_seconds INT UNSIGNED DEFAULT NULL,
 			score DECIMAL(10,2) DEFAULT NULL,
 			feedback LONGTEXT DEFAULT NULL,
 			passed TINYINT(1) DEFAULT NULL,

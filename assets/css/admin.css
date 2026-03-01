@@ -11,3 +11,13 @@
 .column-id {
 	width: 50px;
 }
+
+/* Utility: hide element */
+.ppa-hidden {
+	display: none;
+}
+
+/* Integration meta box description spacing */
+.ppa-meta-box-description {
+	margin-top: 10px;
+}

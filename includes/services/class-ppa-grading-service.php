@@ -34,12 +34,13 @@ class PressPrimer_Assignment_Grading_Service {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int    $submission_id Submission ID.
-	 * @param float  $score         Score to assign.
-	 * @param string $feedback      Grader feedback text.
+	 * @param int    $submission_id      Submission ID.
+	 * @param float  $score              Score to assign.
+	 * @param string $feedback           Grader feedback text.
+	 * @param int    $grading_time_delta Active grading seconds to add (0 to skip).
 	 * @return array|WP_Error Result array on success, WP_Error on failure.
 	 */
-	public function grade( $submission_id, $score, $feedback ) {
+	public function grade( $submission_id, $score, $feedback, $grading_time_delta = 0 ) {
 		$submission_id = absint( $submission_id );
 
 		// Validate submission exists.
@@ -108,6 +109,13 @@ class PressPrimer_Assignment_Grading_Service {
 		$submission->passed    = $passed ? 1 : 0;
 		$submission->grader_id = get_current_user_id();
 		$submission->graded_at = current_time( 'mysql' );
+
+		// Accumulate active grading time.
+		$grading_time_delta = absint( $grading_time_delta );
+		if ( $grading_time_delta > 0 ) {
+			$existing_time                    = absint( $submission->grading_time_seconds );
+			$submission->grading_time_seconds = $existing_time + $grading_time_delta;
+		}
 
 		$save_result = $submission->save();
 

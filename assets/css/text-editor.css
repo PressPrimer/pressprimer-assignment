@@ -37,7 +37,7 @@
 
 .ppa-editor-container:focus-within {
 	border-color: var(--ppa-primary);
-	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.15);
+	box-shadow: var(--ppa-shadow-focus);
 }
 
 /* TinyMCE toolbar */

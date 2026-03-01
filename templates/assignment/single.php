@@ -31,6 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 
 <div class="ppa-assignment <?php echo esc_attr( $theme_class ); ?>" data-assignment-id="<?php echo esc_attr( $assignment->id ); ?>">
+	<a href="#ppa-submission-area" class="ppa-skip-link"><?php esc_html_e( 'Skip to submission', 'pressprimer-assignment' ); ?></a>
 	<div class="ppa-assignment-content">
 
 		<?php
@@ -44,8 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		do_action( 'pressprimer_assignment_before_info', $assignment );
 
 		// Render assignment info (title, description, meta, instructions).
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_assignment_info().
-		echo $this->render_assignment_info( $assignment, $display );
+		echo wp_kses( $this->render_assignment_info( $assignment, $display ), $this->get_allowed_html() );
 
 		/**
 		 * Fires after assignment info is rendered.
@@ -55,7 +55,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 		 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
 		 */
 		do_action( 'pressprimer_assignment_after_info', $assignment );
+		?>
 
+		<div id="ppa-submission-area">
+		<?php
 		// Check if a draft exists alongside a non-draft submission.
 		// Drafts take priority so the user returns to their in-progress work,
 		// UNLESS a specific submission was requested (e.g., from My Submissions "View" link).
@@ -116,8 +119,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			 */
 			do_action( 'pressprimer_assignment_before_submission_form', $assignment );
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_submission_form().
-			echo $this->render_submission_form( $assignment, true );
+			echo wp_kses( $this->render_submission_form( $assignment, true ), $this->get_allowed_html() );
 
 			/**
 			 * Fires after submission form is rendered (draft resume).
@@ -142,8 +144,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			 */
 			do_action( 'pressprimer_assignment_before_submission_status', $user_submission, $assignment );
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_user_submission().
-			echo $this->render_user_submission( $user_submission, $assignment );
+			echo wp_kses( $this->render_user_submission( $user_submission, $assignment ), $this->get_allowed_html() );
 
 			/**
 			 * Fires after submission status is rendered.
@@ -170,8 +171,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					 */
 					do_action( 'pressprimer_assignment_before_submission_form', $assignment );
 
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_submission_form().
-					echo $this->render_submission_form( $assignment, true );
+					echo wp_kses( $this->render_submission_form( $assignment, true ), $this->get_allowed_html() );
 
 					/**
 					 * Fires after submission form is rendered (resubmission).
@@ -199,8 +199,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			 */
 			do_action( 'pressprimer_assignment_before_submission_form', $assignment );
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped in render_submission_form().
-			echo $this->render_submission_form( $assignment, $can_resubmit );
+			echo wp_kses( $this->render_submission_form( $assignment, $can_resubmit ), $this->get_allowed_html() );
 
 			/**
 			 * Fires after submission form is rendered.
@@ -221,6 +220,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 
 		<?php endif; ?>
+
+		</div><!-- #ppa-submission-area -->
 
 	</div>
 </div>

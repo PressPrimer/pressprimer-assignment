@@ -180,7 +180,7 @@ class PressPrimer_Assignment_TutorLMS {
 					name="ppa_assignment_id"
 					value="<?php echo esc_attr( $assignment_id ); ?>"
 				/>
-				<div id="ppa_assignment_results" class="ppa-assignment-results" style="display: none;"></div>
+				<div id="ppa_assignment_results" class="ppa-assignment-results ppa-hidden"></div>
 				<?php if ( $assignment_id ) : ?>
 					<button type="button" class="ppa-remove-assignment button-link" aria-label="<?php esc_attr_e( 'Remove assignment', 'pressprimer-assignment' ); ?>" title="<?php esc_attr_e( 'Remove assignment', 'pressprimer-assignment' ); ?>">
 						<span class="dashicons dashicons-no-alt"></span>
@@ -188,7 +188,7 @@ class PressPrimer_Assignment_TutorLMS {
 				<?php endif; ?>
 			</div>
 
-			<p style="margin-top: 12px;">
+			<p class="ppa-meta-box-description">
 				<label>
 					<input
 						type="checkbox"

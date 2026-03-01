@@ -102,7 +102,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		}
 
 		// Validate assignment.
-		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
+		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( wp_unslash( $_POST['assignment_id'] ) ) : 0;
 		$assignment    = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
 		// Allow admins to upload to draft assignments for preview/testing.
@@ -284,7 +284,7 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
-		$file_id = isset( $_POST['file_id'] ) ? absint( $_POST['file_id'] ) : 0;
+		$file_id = isset( $_POST['file_id'] ) ? absint( wp_unslash( $_POST['file_id'] ) ) : 0;
 
 		if ( 0 === $file_id ) {
 			wp_send_json_error(
@@ -403,7 +403,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		}
 
 		// Validate assignment.
-		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
+		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( wp_unslash( $_POST['assignment_id'] ) ) : 0;
 		$assignment    = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
 		// Allow admins to submit for draft assignments (preview/testing).
@@ -745,7 +745,7 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
-		$submission_id = isset( $_POST['submission_id'] ) ? absint( $_POST['submission_id'] ) : 0;
+		$submission_id = isset( $_POST['submission_id'] ) ? absint( wp_unslash( $_POST['submission_id'] ) ) : 0;
 
 		if ( 0 === $submission_id ) {
 			wp_send_json_error(

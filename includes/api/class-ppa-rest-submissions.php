@@ -523,9 +523,10 @@ class PressPrimer_Assignment_REST_Submissions {
 			);
 		}
 
-		$new_status = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
-		$score      = $request->get_param( 'score' );
-		$feedback   = $request->get_param( 'feedback' );
+		$new_status         = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
+		$score              = $request->get_param( 'score' );
+		$feedback           = $request->get_param( 'feedback' );
+		$grading_time_delta = absint( $request->get_param( 'grading_time_seconds' ) ?? 0 );
 
 		// Handle status change to 'grading' (admin opened the submission).
 		if ( 'grading' === $new_status && 'submitted' === $submission->status ) {
@@ -548,7 +549,7 @@ class PressPrimer_Assignment_REST_Submissions {
 			$feedback_text = null !== $feedback ? wp_kses_post( $feedback ) : '';
 
 			$grading_service = new PressPrimer_Assignment_Grading_Service();
-			$result          = $grading_service->grade( $id, floatval( $score ), $feedback_text );
+			$result          = $grading_service->grade( $id, floatval( $score ), $feedback_text, $grading_time_delta );
 
 			if ( is_wp_error( $result ) ) {
 				return new WP_Error(
@@ -595,7 +596,14 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Handle feedback-only update (no score change).
 		if ( null !== $feedback ) {
 			$submission->feedback = wp_kses_post( $feedback );
-			$result               = $submission->save();
+
+			// Accumulate active grading time.
+			if ( $grading_time_delta > 0 ) {
+				$existing_time                    = absint( $submission->grading_time_seconds );
+				$submission->grading_time_seconds = $existing_time + $grading_time_delta;
+			}
+
+			$result = $submission->save();
 
 			if ( is_wp_error( $result ) ) {
 				return new WP_Error(

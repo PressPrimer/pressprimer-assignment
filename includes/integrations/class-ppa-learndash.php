@@ -163,7 +163,7 @@ class PressPrimer_Assignment_LearnDash {
 					name="ppa_assignment_id"
 					value="<?php echo esc_attr( $assignment_id ); ?>"
 				/>
-				<div id="ppa_assignment_results" class="ppa-assignment-results" style="display: none;"></div>
+				<div id="ppa_assignment_results" class="ppa-assignment-results ppa-hidden"></div>
 				<?php if ( $assignment_id ) : ?>
 					<button type="button" class="ppa-remove-assignment button-link" aria-label="<?php esc_attr_e( 'Remove assignment', 'pressprimer-assignment' ); ?>" title="<?php esc_attr_e( 'Remove assignment', 'pressprimer-assignment' ); ?>">
 						<span class="dashicons dashicons-no-alt"></span>
@@ -171,7 +171,7 @@ class PressPrimer_Assignment_LearnDash {
 				<?php endif; ?>
 			</div>
 
-			<p class="description" style="margin-top: 10px;">
+			<p class="description ppa-meta-box-description">
 				<?php esc_html_e( 'The assignment will appear at the end of this content. Users must pass to mark it complete.', 'pressprimer-assignment' ); ?>
 			</p>
 		</div>

@@ -257,7 +257,7 @@
 .ppa-type-option:focus {
 	outline: none;
 	border-color: var(--ppa-primary);
-	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+	box-shadow: var(--ppa-shadow-focus);
 }
 
 .ppa-type-option-icon {
@@ -360,8 +360,8 @@
 
 .ppa-upload-zone.ppa-upload-active {
 	border-color: var(--ppa-primary);
-	background: rgba(79, 70, 229, 0.04);
-	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+	background: rgba(var(--ppa-primary-rgb), 0.04);
+	box-shadow: 0 0 0 3px rgba(var(--ppa-primary-rgb), 0.1);
 }
 
 .ppa-upload-zone.ppa-upload-disabled {
@@ -632,7 +632,7 @@
 .ppa-student-notes textarea:focus {
 	outline: none;
 	border-color: var(--ppa-primary);
-	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+	box-shadow: var(--ppa-shadow-focus);
 }
 
 .ppa-student-notes textarea::placeholder {
@@ -667,7 +667,7 @@
 }
 
 .ppa-button:focus-visible {
-	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.25);
+	box-shadow: var(--ppa-shadow-focus);
 }
 
 .ppa-button-primary {
@@ -1284,6 +1284,112 @@
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border: 0;
+}
+
+/* Skip link - visually hidden until focused */
+.ppa-skip-link {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.ppa-skip-link:focus {
+	position: fixed;
+	top: var(--ppa-space-sm);
+	left: var(--ppa-space-sm);
+	width: auto;
+	height: auto;
+	padding: var(--ppa-space-sm) var(--ppa-space-md);
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background: var(--ppa-primary);
+	color: #ffffff;
+	z-index: 10000;
+	text-decoration: none;
+	font-weight: 600;
+	border-radius: var(--ppa-radius-sm);
+	outline: 2px solid var(--ppa-primary-dark);
+	outline-offset: 2px;
+}
+
+/* Focus visible for interactive elements missing keyboard focus indicators */
+.ppa-file-remove:focus-visible {
+	outline: 2px solid var(--ppa-error);
+	outline-offset: 2px;
+	border-radius: var(--ppa-radius-sm);
+}
+
+.ppa-delete-submission:focus-visible,
+.ppa-view-submission:focus-visible {
+	outline: 2px solid var(--ppa-primary);
+	outline-offset: 2px;
+}
+
+.ppa-confirm-close:focus-visible {
+	outline: 2px solid var(--ppa-primary, #0073aa);
+	outline-offset: 2px;
+}
+
+.ppa-type-option:focus-visible {
+	outline: 2px solid var(--ppa-primary);
+	outline-offset: 2px;
+	box-shadow: var(--ppa-shadow-focus);
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+	.ppa-assignment *,
+	.ppa-assignment *::before,
+	.ppa-assignment *::after,
+	.ppa-my-submissions *,
+	.ppa-my-submissions *::before,
+	.ppa-my-submissions *::after,
+	.ppa-confirm-overlay *,
+	.ppa-confirm-overlay *::before,
+	.ppa-confirm-overlay *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+	.ppa-button-primary {
+		border: 2px solid currentColor;
+	}
+
+	.ppa-meta-item {
+		border: 2px solid var(--ppa-border);
+	}
+
+	.ppa-type-option {
+		border: 2px solid var(--ppa-border);
+	}
+
+	.ppa-status-badge {
+		border: 2px solid currentColor;
+	}
+
+	.ppa-upload-zone {
+		border: 2px solid var(--ppa-border);
+	}
+
+	.ppa-submission-card {
+		border: 2px solid var(--ppa-border);
+	}
+
+	.ppa-grade-display {
+		border: 2px solid currentColor;
+	}
 }
 
 /* ==========================================================================

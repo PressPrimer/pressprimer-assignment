@@ -528,7 +528,7 @@ class PressPrimer_Assignment_Frontend {
 		}
 
 		$action  = sanitize_text_field( wp_unslash( $_GET['ppa_file_action'] ) );
-		$file_id = absint( $_GET['ppa_file_id'] );
+		$file_id = absint( wp_unslash( $_GET['ppa_file_id'] ) );
 
 		if ( ! in_array( $action, [ 'download', 'view' ], true ) || 0 === $file_id ) {
 			wp_die(

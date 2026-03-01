@@ -161,6 +161,16 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 	public $grader_id = null;
 
 	/**
+	 * Active grading time in seconds
+	 *
+	 * Cumulative time the grader spent actively grading this submission.
+	 *
+	 * @since 1.0.0
+	 * @var int|null
+	 */
+	public $grading_time_seconds = null;
+
+	/**
 	 * Score
 	 *
 	 * @since 1.0.0
@@ -272,6 +282,7 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 			'graded_at',
 			'returned_at',
 			'grader_id',
+			'grading_time_seconds',
 			'score',
 			'feedback',
 			'passed',

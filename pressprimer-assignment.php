@@ -28,7 +28,7 @@ define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_FILE', __FILE__ );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'PRESSPRIMER_ASSIGNMENT_DB_VERSION', '1.3.0' );
+define( 'PRESSPRIMER_ASSIGNMENT_DB_VERSION', '1.4.0' );
 
 // Composer autoloader (for vendor dependencies)
 if ( file_exists( PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'vendor/autoload.php' ) ) {

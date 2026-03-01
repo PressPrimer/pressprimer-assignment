@@ -94,6 +94,13 @@ const GradingForm = ( { submissionId } ) => {
 	// Ref for feedback textarea to detect focus.
 	const feedbackRef = useRef( null );
 
+	// Active grading time tracking.
+	const gradingTimeRef = useRef( {
+		startedAt: null, // Timestamp when active tracking began.
+		accumulated: 0, // Seconds accumulated since last save.
+		isActive: true, // Whether the tab is visible/active.
+	} );
+
 	/**
 	 * Load submission data from REST API.
 	 */
@@ -137,6 +144,60 @@ const GradingForm = ( { submissionId } ) => {
 	}, [ loadSubmission ] );
 
 	/**
+	 * Get elapsed active grading seconds since last reset and reset counter.
+	 *
+	 * @return {number} Elapsed seconds.
+	 */
+	const getAndResetGradingTime = useCallback( () => {
+		const timer = gradingTimeRef.current;
+		let elapsed = timer.accumulated;
+
+		// Add time from current active session.
+		if ( timer.isActive && timer.startedAt ) {
+			elapsed += Math.round( ( Date.now() - timer.startedAt ) / 1000 );
+		}
+
+		// Reset for next interval.
+		timer.accumulated = 0;
+		timer.startedAt = timer.isActive ? Date.now() : null;
+
+		return elapsed;
+	}, [] );
+
+	// Track active grading time via page visibility.
+	useEffect( () => {
+		const timer = gradingTimeRef.current;
+		timer.startedAt = Date.now();
+		timer.isActive = true;
+		timer.accumulated = 0;
+
+		const handleVisibility = () => {
+			if ( document.hidden ) {
+				// Tab hidden: accumulate elapsed time and pause.
+				if ( timer.isActive && timer.startedAt ) {
+					timer.accumulated += Math.round(
+						( Date.now() - timer.startedAt ) / 1000
+					);
+				}
+				timer.isActive = false;
+				timer.startedAt = null;
+			} else {
+				// Tab visible: resume tracking.
+				timer.isActive = true;
+				timer.startedAt = Date.now();
+			}
+		};
+
+		document.addEventListener( 'visibilitychange', handleVisibility );
+		return () => {
+			document.removeEventListener(
+				'visibilitychange',
+				handleVisibility
+			);
+		};
+	}, [ submissionId ] );
+
+	/**
 	 * Save grade via REST API.
 	 *
 	 * @param {boolean} showMessage Whether to show a success message.
@@ -151,6 +212,8 @@ const GradingForm = ( { submissionId } ) => {
 			savingRef.current = true;
 			setSaving( true );
 
+			const gradingTimeDelta = getAndResetGradingTime();
+
 			try {
 				await apiFetch( {
 					path: `/ppa/v1/submissions/${ submissionId }`,
@@ -159,6 +222,7 @@ const GradingForm = ( { submissionId } ) => {
 						score,
 						feedback,
 						status: score !== null ? 'graded' : undefined,
+						grading_time_seconds: gradingTimeDelta || undefined,
 					},
 				} );
 
@@ -181,7 +245,7 @@ const GradingForm = ( { submissionId } ) => {
 				savingRef.current = false;
 			}
 		},
-		[ submissionId, score, feedback ]
+		[ submissionId, score, feedback, getAndResetGradingTime ]
 	);
 
 	/**
@@ -212,12 +276,19 @@ const GradingForm = ( { submissionId } ) => {
 			return;
 		}
 
+		const gradingTimeDelta = getAndResetGradingTime();
+
 		setSaving( true );
 		try {
 			await apiFetch( {
 				path: `/ppa/v1/submissions/${ submissionId }`,
 				method: 'PUT',
-				data: { score, feedback, status: 'returned' },
+				data: {
+					score,
+					feedback,
+					status: 'returned',
+					grading_time_seconds: gradingTimeDelta || undefined,
+				},
 			} );
 
 			message.success(
@@ -236,7 +307,7 @@ const GradingForm = ( { submissionId } ) => {
 		} finally {
 			setSaving( false );
 		}
-	}, [ submissionId, score, feedback ] );
+	}, [ submissionId, score, feedback, getAndResetGradingTime ] );
 
 	// Auto-save every 30 seconds when there are unsaved changes.
 	useEffect( () => {

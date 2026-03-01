@@ -114,6 +114,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.3.0', '<' ) ) {
 			self::migrate_to_1_3_0();
 		}
+		if ( version_compare( $from_version, '1.4.0', '<' ) ) {
+			self::migrate_to_1_4_0();
+		}
 	}
 
 	/**
@@ -211,6 +214,30 @@ class PressPrimer_Assignment_Migrator {
 		if ( ! $column_exists ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN notification_email VARCHAR(500) DEFAULT NULL AFTER author_id" );
+		}
+	}
+
+	/**
+	 * Migration to 1.4.0
+	 *
+	 * Adds grading_time_seconds column to submissions table for
+	 * tracking active grading time per submission.
+	 *
+	 * @since 1.0.0
+	 */
+	private static function migrate_to_1_4_0() {
+		global $wpdb;
+
+		$submissions_table = $wpdb->prefix . 'ppa_submissions';
+
+		// Add grading_time_seconds to submissions.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $submissions_table, 'grading_time_seconds' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$submissions_table} ADD COLUMN grading_time_seconds INT UNSIGNED DEFAULT NULL AFTER grader_id" );
 		}
 	}
 

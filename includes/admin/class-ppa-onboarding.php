@@ -363,7 +363,7 @@ class PressPrimer_Assignment_Onboarding {
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitize_key applied below.
 		$action_type = isset( $_POST['action_type'] ) ? sanitize_key( wp_unslash( $_POST['action_type'] ) ) : '';
-		$step        = isset( $_POST['step'] ) ? absint( $_POST['step'] ) : 0;
+		$step        = isset( $_POST['step'] ) ? absint( wp_unslash( $_POST['step'] ) ) : 0;
 		$permanent   = isset( $_POST['permanent'] ) && 'true' === sanitize_text_field( wp_unslash( $_POST['permanent'] ) );
 
 		switch ( $action_type ) {

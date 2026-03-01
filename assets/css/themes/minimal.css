@@ -451,3 +451,17 @@
 		width: 100%;
 	}
 }
+
+/* ==========================================================================
+   Reduced Motion Support
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	.ppa-theme-minimal *,
+	.ppa-theme-minimal *::before,
+	.ppa-theme-minimal *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
