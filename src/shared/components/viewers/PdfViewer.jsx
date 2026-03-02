@@ -129,7 +129,8 @@ const PdfViewer = ( { url } ) => {
 					headers: {
 						'X-WP-Nonce':
 							window.pressprimerAssignmentGradingData?.nonce ||
-							window.pressprimerAssignmentSubmissionDetailData?.nonce ||
+							window.pressprimerAssignmentSubmissionDetailData
+								?.nonce ||
 							'',
 					},
 				} );

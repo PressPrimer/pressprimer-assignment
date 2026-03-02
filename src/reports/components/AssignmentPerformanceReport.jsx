@@ -96,14 +96,7 @@ const AssignmentPerformanceReport = () => {
 		} finally {
 			setLoading( false );
 		}
-	}, [
-		pagination.current,
-		pagination.pageSize,
-		sortField,
-		sortOrder,
-		search,
-		getEffectiveDates,
-	] );
+	}, [ pagination, sortField, sortOrder, search, getEffectiveDates ] );
 
 	// Fetch on mount and when dependencies change.
 	useEffect( () => {

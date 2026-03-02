@@ -61,7 +61,8 @@ const ImageViewer = ( { url, alt = '' } ) => {
 					headers: {
 						'X-WP-Nonce':
 							window.pressprimerAssignmentGradingData?.nonce ||
-							window.pressprimerAssignmentSubmissionDetailData?.nonce ||
+							window.pressprimerAssignmentSubmissionDetailData
+								?.nonce ||
 							'',
 					},
 				} );

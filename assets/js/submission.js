@@ -279,7 +279,9 @@
 
 			// Check file count limit.
 			if ( totalFiles >= this.maxFiles ) {
-				this.showError( pressprimerAssignmentFrontend.i18n.maxFilesReached );
+				this.showError(
+					pressprimerAssignmentFrontend.i18n.maxFilesReached
+				);
 				return false;
 			}
 
@@ -395,12 +397,14 @@
 						const message =
 							response.data && response.data.message
 								? response.data.message
-								: pressprimerAssignmentFrontend.i18n.uploadFailed;
+								: pressprimerAssignmentFrontend.i18n
+										.uploadFailed;
 						self.handleUploadError( $item, file.name, message );
 					}
 				} else {
 					// Parse error message from non-200 responses.
-					let errorMessage = pressprimerAssignmentFrontend.i18n.uploadFailed;
+					let errorMessage =
+						pressprimerAssignmentFrontend.i18n.uploadFailed;
 					try {
 						const errorResponse = JSON.parse( xhr.responseText );
 						if (
@@ -489,7 +493,8 @@
 		 * @param {string} message  Optional error message.
 		 */
 		handleUploadError( $item, fileName, message ) {
-			message = message || pressprimerAssignmentFrontend.i18n.uploadFailed;
+			message =
+				message || pressprimerAssignmentFrontend.i18n.uploadFailed;
 
 			$item
 				.removeClass( 'ppa-file-uploading' )
@@ -737,7 +742,9 @@
 			// Animate removal.
 			$item.fadeOut( 200, function () {
 				$( this ).remove();
-				self.announceToScreenReader( pressprimerAssignmentFrontend.i18n.removeFile );
+				self.announceToScreenReader(
+					pressprimerAssignmentFrontend.i18n.removeFile
+				);
 				window.PPA.SubmissionForm.updateSubmitButton();
 			} );
 		},
@@ -935,7 +942,8 @@
 			// Add a back button if not already present.
 			if ( ! $panel.find( '.ppa-type-back-btn' ).length ) {
 				const changeLabel =
-					pressprimerAssignmentFrontend.i18n.changeType || 'Change submission type';
+					pressprimerAssignmentFrontend.i18n.changeType ||
+					'Change submission type';
 				const $icon = $( '<span>' )
 					.addClass( 'dashicons dashicons-arrow-left-alt2' )
 					.attr( 'aria-hidden', 'true' );
@@ -1252,13 +1260,15 @@
 						const message =
 							response.data && response.data.message
 								? response.data.message
-								: pressprimerAssignmentFrontend.i18n.uploadFailed;
+								: pressprimerAssignmentFrontend.i18n
+										.uploadFailed;
 						self.handleSubmitError( message );
 					}
 				},
 				error( jqXHR ) {
 					// Extract server error message from response if available.
-					let errorMessage = pressprimerAssignmentFrontend.i18n.networkError;
+					let errorMessage =
+						pressprimerAssignmentFrontend.i18n.networkError;
 					try {
 						const errorResponse =
 							typeof jqXHR.responseJSON !== 'undefined'
@@ -1317,7 +1327,8 @@
 			this.$submitBtn
 				.prop( 'disabled', false )
 				.text(
-					pressprimerAssignmentFrontend.i18n.submitAssignment || 'Submit Assignment'
+					pressprimerAssignmentFrontend.i18n.submitAssignment ||
+						'Submit Assignment'
 				);
 
 			window.PPA.Upload.showError( message );

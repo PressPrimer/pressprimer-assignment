@@ -580,7 +580,10 @@
 
 			$( '#ppa-submit-text-btn' )
 				.prop( 'disabled', true )
-				.text( pressprimerAssignmentFrontend.i18n.submitting || 'Submitting...' );
+				.text(
+					pressprimerAssignmentFrontend.i18n.submitting ||
+						'Submitting...'
+				);
 
 			// Remove beforeunload warning during submit.
 			$( window ).off( 'beforeunload.ppaTextEditor' );
@@ -603,12 +606,14 @@
 						const errorMessage =
 							response.data && response.data.message
 								? response.data.message
-								: pressprimerAssignmentFrontend.i18n.networkError;
+								: pressprimerAssignmentFrontend.i18n
+										.networkError;
 						self.handleSubmitError( errorMessage );
 					}
 				},
 				error( jqXHR ) {
-					let errorMessage = pressprimerAssignmentFrontend.i18n.networkError;
+					let errorMessage =
+						pressprimerAssignmentFrontend.i18n.networkError;
 					try {
 						const errorResponse =
 							typeof jqXHR.responseJSON !== 'undefined'
@@ -663,7 +668,8 @@
 			$( '#ppa-submit-text-btn' )
 				.prop( 'disabled', false )
 				.text(
-					pressprimerAssignmentFrontend.i18n.submitAssignment || 'Submit Assignment'
+					pressprimerAssignmentFrontend.i18n.submitAssignment ||
+						'Submit Assignment'
 				);
 
 			// Re-bind beforeunload warning.
