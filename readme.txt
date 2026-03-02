@@ -12,7 +12,7 @@ Collect, review, and grade student assignments in WordPress. File uploads, text 
 
 == Description ==
 
-**PressPrimer Assignment** is a professional assignment submission and grading plugin that gives WordPress educators everything they need to collect student work, provide meaningful feedback, and track grades—without juggling email attachments, shared drives, or clunky LMS add-ons.
+**PressPrimer Assignment** is a professional assignment submission and grading plugin that gives WordPress educators everything they need to collect student work, provide meaningful feedback, and track grades, all without juggling email attachments, shared drives, or clunky LMS add-ons.
 
 Students get a clean, focused submission experience. Teachers get a centralized grading dashboard. And you keep full control of your data on your own WordPress site.
 
@@ -20,7 +20,7 @@ Students get a clean, focused submission experience. Teachers get a centralized 
 
 = Why PressPrimer Assignment? =
 
-Built-in assignment tools in WordPress LMS plugins are often afterthoughts—basic file uploads with no real grading workflow, limited feedback options, and dated interfaces. Dedicated assignment platforms charge monthly fees with per-student pricing that gets expensive fast.
+Built-in assignment tools in WordPress LMS plugins are often afterthoughts, limited to basic file uploads with no real grading workflow, limited feedback options, and dated interfaces. Dedicated assignment platforms charge monthly fees with per-student pricing that gets expensive fast.
 
 PressPrimer Assignment delivers a focused, polished assignment workflow with the features educators actually need:
 
@@ -59,7 +59,7 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 
 * Centralized grading queue with filter and sort
 * Side-by-side grading interface: document viewer on the left, grading panel on the right
-* Built-in viewers render PDF, DOCX, images, and text files directly in WordPress—no downloading required
+* Built-in viewers render PDF, DOCX, images, and text files directly in WordPress; no downloading required
 * Score input with automatic pass/fail calculation
 * Rich text feedback field
 * Grading guidelines reference panel pulled from the assignment
@@ -96,7 +96,7 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 * **Standalone WordPress educators** who need assignments without a full LMS
 * **Online course entrepreneurs** selling courses with graded assignments
 
-= Built-in LMS Integrations =
+= Built-in Integrations =
 
 PressPrimer Assignment detects and integrates with popular WordPress LMS plugins automatically.
 
@@ -107,10 +107,6 @@ PressPrimer Assignment detects and integrates with popular WordPress LMS plugins
 **Uncanny Automator:** Four triggers available—user submits an assignment, user is graded, user passes, user fails. Each trigger includes a full set of tokens (assignment title, score, feedback, student info, grader info, and more) for use in automated workflows.
 
 All integrations are included in the free version.
-
-= Works With PressPrimer Quiz =
-
-PressPrimer Assignment is designed as a companion to [PressPrimer Quiz](https://wordpress.org/plugins/pressprimer-quiz/). When both plugins are active, they share the Groups infrastructure and Teacher role, giving you a unified assessment suite for quizzes and assignments. Each plugin works independently—you don't need Quiz to use Assignment, or vice versa.
 
 = Built for Developers =
 
@@ -181,7 +177,7 @@ Yes. Administrators can enable resubmission on a per-assignment basis and set th
 
 = How does the grading interface work? =
 
-The grading interface uses a side-by-side layout. The student's submitted document renders directly in the left panel—PDF, DOCX, images, and text files all display without downloading. The right panel has fields for score, pass/fail status, and rich text feedback, plus a reference panel showing the assignment's grading guidelines.
+The grading interface uses a side-by-side layout. The student's submitted document renders directly in the left panel. PDF, DOCX, images, and text files all display without downloading. The right panel has fields for score, pass/fail status, and rich text feedback, plus a reference panel showing the assignment's grading guidelines.
 
 = Can I customize the email notifications? =
 
@@ -189,16 +185,11 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 
 == Screenshots ==
 
-1. Student-facing assignment page with submission form and drag-and-drop file upload
-2. Rich text editor for text-based submissions with live word count and auto-save
-3. Grading queue showing pending submissions with filter and sort controls
-4. Side-by-side grading interface with document viewer and feedback panel
-5. Admin assignment editor with file settings, point values, and submission type configuration
-6. My Submissions dashboard showing submission history with status and scores
-7. Email notification settings with customizable templates and token placeholders
-8. Admin dashboard with submission statistics and activity chart
-9. LearnDash lesson integration showing assignment attachment in the editor sidebar
-10. Three frontend themes: Default, Modern, and Minimal
+1. Dashboard showing key stats, quick actions, and assignment activity
+2. Upload support for a variety of document formats, including PDF, Word, and images
+3. Side-by-side grading interface with embedded document viewer and feedback panel
+4. Reports show how each assessment is performing
+5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
 

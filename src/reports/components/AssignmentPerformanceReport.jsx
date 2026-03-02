@@ -96,7 +96,15 @@ const AssignmentPerformanceReport = () => {
 		} finally {
 			setLoading( false );
 		}
-	}, [ pagination, sortField, sortOrder, search, getEffectiveDates ] );
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- pagination.current/pageSize are stable primitives; using the object would cause an infinite loop since fetchData calls setPagination.
+	}, [
+		pagination.current,
+		pagination.pageSize,
+		sortField,
+		sortOrder,
+		search,
+		getEffectiveDates,
+	] );
 
 	// Fetch on mount and when dependencies change.
 	useEffect( () => {
