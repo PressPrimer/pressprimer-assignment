@@ -79,6 +79,7 @@ const GradingForm = ( { submissionId } ) => {
 
 	// Form state.
 	const [ score, setScore ] = useState( null );
+	const [ scoreWarning, setScoreWarning ] = useState( '' );
 	const [ feedback, setFeedback ] = useState( '' );
 	const [ currentStatus, setCurrentStatus ] = useState( '' );
 
@@ -209,6 +210,25 @@ const GradingForm = ( { submissionId } ) => {
 				return false;
 			}
 
+			// Prevent saving with an out-of-range score.
+			if (
+				score !== null &&
+				assignment &&
+				( score < 0 || score > assignment.max_points )
+			) {
+				message.warning(
+					sprintf(
+						/* translators: %d: maximum points */
+						__(
+							'Please enter a score between 0 and %d.',
+							'pressprimer-assignment'
+						),
+						assignment.max_points
+					)
+				);
+				return false;
+			}
+
 			savingRef.current = true;
 			setSaving( true );
 
@@ -245,7 +265,7 @@ const GradingForm = ( { submissionId } ) => {
 				savingRef.current = false;
 			}
 		},
-		[ submissionId, score, feedback, getAndResetGradingTime ]
+		[ submissionId, score, feedback, assignment, getAndResetGradingTime ]
 	);
 
 	/**
@@ -432,9 +452,11 @@ const GradingForm = ( { submissionId } ) => {
 	}
 
 	const isReadOnly = currentStatus === 'returned';
-	const passing = score !== null && score >= assignment.passing_score;
+	const scoreIsValid =
+		score !== null && score >= 0 && score <= assignment.max_points;
+	const passing = scoreIsValid && score >= assignment.passing_score;
 	const percentage =
-		score !== null && assignment.max_points > 0
+		scoreIsValid && assignment.max_points > 0
 			? Math.round( ( score / assignment.max_points ) * 100 )
 			: null;
 
@@ -683,13 +705,33 @@ const GradingForm = ( { submissionId } ) => {
 							<Space align="center">
 								<InputNumber
 									id="ppa-score-input"
-									min={ 0 }
-									max={ assignment.max_points }
 									value={ score }
 									onChange={ ( val ) => {
 										setScore( val );
 										setHasChanges( true );
+										if ( val === null || val === '' ) {
+											setScoreWarning( '' );
+										} else if (
+											val < 0 ||
+											val > assignment.max_points
+										) {
+											setScoreWarning(
+												sprintf(
+													/* translators: %d: maximum points */
+													__(
+														'Score must be between 0 and %d.',
+														'pressprimer-assignment'
+													),
+													assignment.max_points
+												)
+											);
+										} else {
+											setScoreWarning( '' );
+										}
 									} }
+									status={
+										scoreWarning ? 'warning' : undefined
+									}
 									style={ { width: 120 } }
 									size="large"
 									disabled={ isReadOnly }
@@ -704,6 +746,19 @@ const GradingForm = ( { submissionId } ) => {
 									</Text>
 								) }
 							</Space>
+							{ scoreWarning && (
+								<div style={ { marginTop: 4 } }>
+									<Text
+										type="warning"
+										style={ {
+											color: '#faad14',
+											fontSize: 13,
+										} }
+									>
+										{ scoreWarning }
+									</Text>
+								</div>
+							) }
 
 							{ /* Quick Score Buttons */ }
 							{ ! isReadOnly && (
@@ -762,7 +817,7 @@ const GradingForm = ( { submissionId } ) => {
 							) }
 
 							{ /* Pass/Fail Preview */ }
-							{ score !== null && (
+							{ scoreIsValid && (
 								<div
 									className="ppa-pass-preview"
 									style={ { marginTop: 12 } }
@@ -854,7 +909,7 @@ const GradingForm = ( { submissionId } ) => {
 										type="primary"
 										icon={ <SendOutlined /> }
 										onClick={ returnToStudent }
-										disabled={ score === null }
+										disabled={ ! scoreIsValid }
 										className="ppa-btn-return"
 									>
 										{ __(
