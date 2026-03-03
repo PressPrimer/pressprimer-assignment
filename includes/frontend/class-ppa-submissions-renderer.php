@@ -174,10 +174,11 @@ class PressPrimer_Assignment_Submissions_Renderer {
 	}
 
 	/**
-	 * Get the URL of a page containing the assignment shortcode
+	 * Get the URL of a page containing the assignment shortcode or block
 	 *
 	 * Searches published posts/pages for a [ppa_assignment] shortcode
-	 * referencing the given assignment ID.
+	 * or pressprimer-assignment/assignment Gutenberg block referencing
+	 * the given assignment ID.
 	 *
 	 * @since 1.0.0
 	 *
@@ -196,6 +197,21 @@ class PressPrimer_Assignment_Submissions_Renderer {
 				"SELECT ID FROM {$wpdb->posts} WHERE post_status = %s AND post_content LIKE %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $wpdb->posts is a core table name.
 				'publish',
 				'%[ppa_assignment%id="' . $wpdb->esc_like( (string) $assignment_id ) . '"%'
+			)
+		);
+
+		if ( $post_id ) {
+			return get_permalink( (int) $post_id );
+		}
+
+		// Search for pages containing the Gutenberg block with this ID.
+		// Block markup: <!-- wp:pressprimer-assignment/assignment {"assignmentId":123} /-->
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$post_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} WHERE post_status = %s AND post_content LIKE %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $wpdb->posts is a core table name.
+				'publish',
+				'%wp:pressprimer-assignment/assignment%"assignmentId":' . $wpdb->esc_like( (string) $assignment_id ) . '%'
 			)
 		);
 
