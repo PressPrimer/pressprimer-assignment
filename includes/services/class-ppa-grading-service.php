@@ -108,7 +108,7 @@ class PressPrimer_Assignment_Grading_Service {
 		$submission->feedback  = $feedback;
 		$submission->passed    = $passed ? 1 : 0;
 		$submission->grader_id = get_current_user_id();
-		$submission->graded_at = current_time( 'mysql' );
+		$submission->graded_at = current_time( 'mysql', true );
 
 		// Accumulate active grading time.
 		$grading_time_delta = absint( $grading_time_delta );
@@ -211,7 +211,7 @@ class PressPrimer_Assignment_Grading_Service {
 
 		// Update status to returned.
 		$submission->status      = PressPrimer_Assignment_Submission::STATUS_RETURNED;
-		$submission->returned_at = current_time( 'mysql' );
+		$submission->returned_at = current_time( 'mysql', true );
 
 		$result = $submission->save();
 

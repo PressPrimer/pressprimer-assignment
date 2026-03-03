@@ -77,5 +77,9 @@ export const formatGradingTime = ( seconds ) => {
 		return `${ hours }h ${ remainingMins }m`;
 	}
 
+	if ( minutes === 0 ) {
+		return '< 1m';
+	}
+
 	return `${ minutes }m`;
 };
