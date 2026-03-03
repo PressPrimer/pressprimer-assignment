@@ -91,74 +91,83 @@ const SettingsPanel = ( { form } ) => {
 					/>
 				</Form.Item>
 
-				<Form.Item
-					label={
-						<Space>
-							<FileTextOutlined />
-							<span>
-								{ __(
-									'Description',
+				<Row gutter={ 16 }>
+					<Col span={ 12 }>
+						<Form.Item
+							label={
+								<Space>
+									<FileTextOutlined />
+									<span>
+										{ __(
+											'Description',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Brief description shown in assignment lists',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							}
+							name="description"
+						>
+							<TextArea
+								rows={ 5 }
+								placeholder={ __(
+									'Brief description of the assignment…',
 									'pressprimer-assignment'
 								) }
-							</span>
-							<Tooltip
-								title={ __(
-									'Brief description shown in assignment lists',
+								size="small"
+							/>
+						</Form.Item>
+					</Col>
+					<Col span={ 12 }>
+						<Form.Item
+							label={
+								<Space>
+									<span>
+										{ __(
+											'Instructions',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Detailed instructions shown to students on the assignment page',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							}
+							name="instructions"
+						>
+							<TextArea
+								rows={ 5 }
+								placeholder={ __(
+									'Provide detailed instructions for completing this assignment…',
 									'pressprimer-assignment'
 								) }
-							>
-								<QuestionCircleOutlined
-									style={ { fontSize: 12, color: '#8c8c8c' } }
-								/>
-							</Tooltip>
-						</Space>
-					}
-					name="description"
-				>
-					<TextArea
-						rows={ 3 }
-						placeholder={ __(
-							'Brief description of the assignment…',
-							'pressprimer-assignment'
-						) }
-						style={ { maxWidth: 500 } }
-						size="small"
-					/>
-				</Form.Item>
-
-				<Form.Item
-					label={
-						<Space>
-							<span>
-								{ __(
-									'Instructions',
-									'pressprimer-assignment'
-								) }
-							</span>
-							<Tooltip
-								title={ __(
-									'Detailed instructions shown to students on the assignment page',
-									'pressprimer-assignment'
-								) }
-							>
-								<QuestionCircleOutlined
-									style={ { fontSize: 12, color: '#8c8c8c' } }
-								/>
-							</Tooltip>
-						</Space>
-					}
-					name="instructions"
-				>
-					<TextArea
-						rows={ 5 }
-						placeholder={ __(
-							'Provide detailed instructions for completing this assignment…',
-							'pressprimer-assignment'
-						) }
-						style={ { maxWidth: 500 } }
-						size="small"
-					/>
-				</Form.Item>
+								size="small"
+							/>
+						</Form.Item>
+					</Col>
+				</Row>
 
 				<Row gutter={ 16 }>
 					<Col span={ 12 }>
@@ -421,176 +430,182 @@ const SettingsPanel = ( { form } ) => {
 				}
 				style={ { marginBottom: 24 } }
 			>
-				<Form.Item
-					label={
-						<Space>
-							<EditOutlined />
-							<span>
-								{ __(
-									'Submission Type',
-									'pressprimer-assignment'
-								) }
-							</span>
-							<Tooltip
-								title={ __(
-									'Choose how students submit their work: file upload, text editor, or either',
-									'pressprimer-assignment'
-								) }
-							>
-								<QuestionCircleOutlined
-									style={ {
-										fontSize: 12,
-										color: '#8c8c8c',
-									} }
-								/>
-							</Tooltip>
-						</Space>
-					}
-					name="submission_type"
-				>
-					<Select
-						style={ { width: 300 } }
-						size="small"
-						options={ [
-							{
-								value: 'file',
-								label: __(
-									'File Upload Only',
-									'pressprimer-assignment'
-								),
-							},
-							{
-								value: 'text',
-								label: __(
-									'Text Editor Only',
-									'pressprimer-assignment'
-								),
-							},
-							{
-								value: 'either',
-								label: __(
-									'Either (Student Chooses)',
-									'pressprimer-assignment'
-								),
-							},
-						] }
-					/>
-				</Form.Item>
+				<Row gutter={ 16 }>
+					<Col span={ 12 }>
+						<Form.Item
+							label={
+								<Space>
+									<EditOutlined />
+									<span>
+										{ __(
+											'Submission Type',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Choose how students submit their work: file upload, text editor, or either',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							}
+							name="submission_type"
+						>
+							<Select
+								style={ { width: 300 } }
+								size="small"
+								options={ [
+									{
+										value: 'file',
+										label: __(
+											'File Upload Only',
+											'pressprimer-assignment'
+										),
+									},
+									{
+										value: 'text',
+										label: __(
+											'Text Editor Only',
+											'pressprimer-assignment'
+										),
+									},
+									{
+										value: 'either',
+										label: __(
+											'Either (Student Chooses)',
+											'pressprimer-assignment'
+										),
+									},
+								] }
+							/>
+						</Form.Item>
 
-				<Form.Item
-					label={
-						<Space>
-							<span>
-								{ __(
-									'Allow Resubmission',
-									'pressprimer-assignment'
-								) }
-							</span>
-							<Tooltip
-								title={ __(
-									'Allow students to resubmit after their initial submission',
-									'pressprimer-assignment'
-								) }
-							>
-								<QuestionCircleOutlined
-									style={ { fontSize: 12, color: '#8c8c8c' } }
-								/>
-							</Tooltip>
-						</Space>
-					}
-					name="allow_resubmission"
-					valuePropName="checked"
-				>
-					<Switch size="small" />
-				</Form.Item>
-
-				{ allowResubmission && (
-					<Form.Item
-						label={
-							<Space>
-								<span>
-									{ __(
-										'Maximum Resubmissions',
-										'pressprimer-assignment'
-									) }
-								</span>
-								<Tooltip
-									title={ __(
-										'Maximum number of times a student can resubmit',
-										'pressprimer-assignment'
-									) }
-								>
-									<QuestionCircleOutlined
-										style={ {
-											fontSize: 12,
-											color: '#8c8c8c',
-										} }
-									/>
-								</Tooltip>
-							</Space>
-						}
-						name="max_resubmissions"
-					>
-						<InputNumber
-							min={ 1 }
-							max={ 100 }
-							style={ { width: 150 } }
-							size="small"
-						/>
-					</Form.Item>
-				) }
-				<Text
-					type="secondary"
-					style={ { fontSize: 12, display: 'block' } }
-				>
-					{ __(
-						'When disabled, students can only submit once.',
-						'pressprimer-assignment'
-					) }
-				</Text>
-
-				<div style={ { marginTop: 24 } }>
-					<Form.Item
-						label={
-							<Space>
-								<MailOutlined />
-								<span>
-									{ __(
-										'Notification Email',
-										'pressprimer-assignment'
-									) }
-								</span>
-								<Tooltip
-									title={ __(
-										'Additional email addresses to notify when a student submits. The assignment author always receives the notification.',
-										'pressprimer-assignment'
-									) }
-								>
-									<QuestionCircleOutlined
-										style={ {
-											fontSize: 12,
-											color: '#8c8c8c',
-										} }
-									/>
-								</Tooltip>
-							</Space>
-						}
-						name="notification_email"
-						extra={ __(
-							'Comma-separated email addresses. Leave blank to only notify the assignment author.',
-							'pressprimer-assignment'
-						) }
-					>
-						<Input
-							placeholder={ __(
-								'e.g., instructor@school.edu, ta@school.edu',
+						<Form.Item
+							label={
+								<Space>
+									<MailOutlined />
+									<span>
+										{ __(
+											'Notification Email',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Additional email addresses to notify when a student submits. The assignment author always receives the notification.',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							}
+							name="notification_email"
+							extra={ __(
+								'Comma-separated email addresses. Leave blank to only notify the assignment author.',
 								'pressprimer-assignment'
 							) }
-							style={ { width: 300 } }
-							size="small"
-						/>
-					</Form.Item>
-				</div>
+						>
+							<Input
+								placeholder={ __(
+									'e.g., instructor@school.edu, ta@school.edu',
+									'pressprimer-assignment'
+								) }
+								style={ { width: 300 } }
+								size="small"
+							/>
+						</Form.Item>
+					</Col>
+					<Col span={ 12 }>
+						<Form.Item
+							label={
+								<Space>
+									<span>
+										{ __(
+											'Allow Resubmission',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Allow students to resubmit after their initial submission',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							}
+							name="allow_resubmission"
+							valuePropName="checked"
+						>
+							<Switch size="small" />
+						</Form.Item>
+
+						{ allowResubmission && (
+							<Form.Item
+								label={
+									<Space>
+										<span>
+											{ __(
+												'Maximum Resubmissions',
+												'pressprimer-assignment'
+											) }
+										</span>
+										<Tooltip
+											title={ __(
+												'Maximum number of times a student can resubmit',
+												'pressprimer-assignment'
+											) }
+										>
+											<QuestionCircleOutlined
+												style={ {
+													fontSize: 12,
+													color: '#8c8c8c',
+												} }
+											/>
+										</Tooltip>
+									</Space>
+								}
+								name="max_resubmissions"
+							>
+								<InputNumber
+									min={ 1 }
+									max={ 100 }
+									style={ { width: 150 } }
+									size="small"
+								/>
+							</Form.Item>
+						) }
+						<Text
+							type="secondary"
+							style={ { fontSize: 12, display: 'block' } }
+						>
+							{ __(
+								'When disabled, students can only submit once.',
+								'pressprimer-assignment'
+							) }
+						</Text>
+					</Col>
+				</Row>
 			</Card>
 		</Space>
 	);
