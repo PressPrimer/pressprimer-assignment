@@ -17,6 +17,7 @@ import {
 	ZoomOutOutlined,
 	FullscreenOutlined,
 } from '@ant-design/icons';
+import { appendNonce } from '../../utils/nonce';
 
 /**
  * Zoom limits and step.
@@ -177,7 +178,7 @@ const ImageViewer = ( { url, alt = '' } ) => {
 					<Button
 						icon={ <FullscreenOutlined /> }
 						size="small"
-						onClick={ () => window.open( url ) }
+						onClick={ () => window.open( appendNonce( url ) ) }
 						title={ __(
 							'Open in new tab',
 							'pressprimer-assignment'

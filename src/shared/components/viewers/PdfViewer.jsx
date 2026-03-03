@@ -18,6 +18,7 @@ import {
 	FullscreenOutlined,
 } from '@ant-design/icons';
 import * as pdfjsLib from 'pdfjs-dist';
+import { appendNonce } from '../../utils/nonce';
 
 // Configure PDF.js worker.
 // The worker file is copied to the build directory by webpack CopyPlugin.
@@ -219,7 +220,10 @@ const PdfViewer = ( { url } ) => {
 		return (
 			<div style={ { padding: 40, textAlign: 'center', color: '#999' } }>
 				<p>{ error }</p>
-				<Button type="link" onClick={ () => window.open( url ) }>
+				<Button
+					type="link"
+					onClick={ () => window.open( appendNonce( url ) ) }
+				>
 					{ __(
 						'Try opening in a new tab',
 						'pressprimer-assignment'
@@ -270,7 +274,7 @@ const PdfViewer = ( { url } ) => {
 					<Button
 						icon={ <FullscreenOutlined /> }
 						size="small"
-						onClick={ () => window.open( url ) }
+						onClick={ () => window.open( appendNonce( url ) ) }
 						title={ __(
 							'Open in new tab',
 							'pressprimer-assignment'
