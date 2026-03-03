@@ -166,8 +166,12 @@ class PressPrimer_Assignment_Onboarding {
 			return;
 		}
 
-		$value = $permanent ? 'permanent' : 'session';
-		update_user_meta( $user_id, self::META_SKIPPED, $value );
+		if ( $permanent ) {
+			update_user_meta( $user_id, self::META_SKIPPED, 'permanent' );
+		}
+
+		// Always mark as completed so the tour doesn't reappear on navigation.
+		update_user_meta( $user_id, self::META_COMPLETED, true );
 	}
 
 	/**
