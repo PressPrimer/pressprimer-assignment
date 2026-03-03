@@ -186,7 +186,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 
 		$user_id      = get_current_user_id();
 		$is_logged_in = $user_id > 0;
-		$theme        = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
+		$theme        = $this->resolve_theme( $assignment );
 		$theme_class  = 'ppa-theme-' . sanitize_html_class( $theme );
 
 		// Get user's current submission for this assignment.
@@ -777,6 +777,39 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Resolve the display theme for an assignment
+	 *
+	 * Follows the resolution chain:
+	 * 1. Per-assignment theme (if set and not 'default')
+	 * 2. Global default theme from settings
+	 * 3. Hardcoded 'default' fallback
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+	 * @return string Validated theme slug.
+	 */
+	private function resolve_theme( $assignment ) {
+		$valid_themes = [ 'default', 'modern', 'minimal' ];
+
+		// Check per-assignment theme first.
+		if ( ! empty( $assignment->theme ) && 'default' !== $assignment->theme ) {
+			if ( in_array( $assignment->theme, $valid_themes, true ) ) {
+				return $assignment->theme;
+			}
+		}
+
+		// Fall back to global default.
+		$global_theme = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
+
+		if ( in_array( $global_theme, $valid_themes, true ) ) {
+			return $global_theme;
+		}
+
+		return 'default';
 	}
 
 	/**

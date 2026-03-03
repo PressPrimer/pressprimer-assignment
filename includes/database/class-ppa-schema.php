@@ -75,6 +75,7 @@ class PressPrimer_Assignment_Schema {
 			max_files INT UNSIGNED NOT NULL DEFAULT 5,
 			submission_type ENUM('file', 'text', 'either') NOT NULL DEFAULT 'file',
 			status ENUM('draft', 'published', 'archived') NOT NULL DEFAULT 'draft',
+			theme VARCHAR(50) NOT NULL DEFAULT 'default',
 			author_id BIGINT UNSIGNED NOT NULL,
 			notification_email VARCHAR(500) DEFAULT NULL,
 			submission_count INT UNSIGNED NOT NULL DEFAULT 0,

@@ -137,6 +137,17 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	public $status = 'draft';
 
 	/**
+	 * Display theme
+	 *
+	 * Per-assignment theme override. When set to 'default', the global
+	 * theme setting is used instead.
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	public $theme = 'default';
+
+	/**
 	 * Author user ID
 	 *
 	 * @since 1.0.0
@@ -229,6 +240,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'max_files',
 			'submission_type',
 			'status',
+			'theme',
 			'author_id',
 			'notification_email',
 			'submission_count',

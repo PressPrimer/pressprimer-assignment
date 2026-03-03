@@ -343,7 +343,9 @@ class PressPrimer_Assignment_Shortcodes {
 	 * @return string HTML output.
 	 */
 	private function render_assignment_fallback( $assignment, $display ) {
-		$theme = get_option( 'pressprimer_assignment_frontend_theme', 'default' );
+		$theme = ! empty( $assignment->theme ) && 'default' !== $assignment->theme
+			? $assignment->theme
+			: get_option( 'pressprimer_assignment_frontend_theme', 'default' );
 
 		$allowed_html = [
 			'div'  => [

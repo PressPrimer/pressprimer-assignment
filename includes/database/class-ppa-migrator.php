@@ -120,6 +120,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.5.0', '<' ) ) {
 			self::migrate_to_1_5_0();
 		}
+		if ( version_compare( $from_version, '1.6.0', '<' ) ) {
+			self::migrate_to_1_6_0();
+		}
 	}
 
 	/**
@@ -258,6 +261,30 @@ class PressPrimer_Assignment_Migrator {
 		if ( false !== $old_value ) {
 			update_option( 'pressprimer_assignment_frontend_theme', $old_value );
 			delete_option( 'ppa_frontend_theme' );
+		}
+	}
+
+	/**
+	 * Migration to 1.6.0
+	 *
+	 * Adds theme column to assignments table for per-assignment
+	 * theme selection (overrides the global default theme).
+	 *
+	 * @since 1.0.0
+	 */
+	private static function migrate_to_1_6_0() {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		// Add theme column to assignments.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $assignments_table, 'theme' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN theme VARCHAR(50) NOT NULL DEFAULT 'default' AFTER status" );
 		}
 	}
 

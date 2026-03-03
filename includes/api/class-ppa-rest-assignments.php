@@ -651,6 +651,14 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		// Theme field - validate against allowed themes.
+		if ( null !== $request->get_param( 'theme' ) ) {
+			$theme = sanitize_key( $request->get_param( 'theme' ) );
+			if ( in_array( $theme, [ 'default', 'modern', 'minimal' ], true ) ) {
+				$data['theme'] = $theme;
+			}
+		}
+
 		// Notification email (comma-separated email addresses).
 		if ( null !== $request->get_param( 'notification_email' ) ) {
 			$raw_emails = sanitize_text_field( $request->get_param( 'notification_email' ) );

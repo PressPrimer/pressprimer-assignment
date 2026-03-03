@@ -25,6 +25,7 @@ import {
 	FileTextOutlined,
 	EditOutlined,
 	MailOutlined,
+	FormatPainterOutlined,
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -209,6 +210,63 @@ const SettingsPanel = ( { form } ) => {
 										value: 'archived',
 										label: __(
 											'Archived',
+											'pressprimer-assignment'
+										),
+									},
+								] }
+							/>
+						</Form.Item>
+					</Col>
+					<Col span={ 12 }>
+						<Form.Item
+							label={
+								<Space>
+									<FormatPainterOutlined />
+									<span>
+										{ __(
+											'Theme',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Visual theme for this assignment. Overrides the global default set in Settings.',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							}
+							name="theme"
+						>
+							<Select
+								style={ { width: 200 } }
+								size="small"
+								options={ [
+									{
+										value: 'default',
+										label: __(
+											'Default',
+											'pressprimer-assignment'
+										),
+									},
+									{
+										value: 'modern',
+										label: __(
+											'Modern',
+											'pressprimer-assignment'
+										),
+									},
+									{
+										value: 'minimal',
+										label: __(
+											'Minimal',
 											'pressprimer-assignment'
 										),
 									},

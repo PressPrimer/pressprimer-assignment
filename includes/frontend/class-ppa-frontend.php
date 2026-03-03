@@ -136,8 +136,9 @@ class PressPrimer_Assignment_Frontend {
 	/**
 	 * Enqueue frontend styles
 	 *
-	 * Loads the base submission stylesheet, the active theme stylesheet,
-	 * and any appearance setting overrides as inline CSS.
+	 * Loads the base submission stylesheet, all theme stylesheets
+	 * (to support per-assignment theme overrides), and any appearance
+	 * setting overrides as inline CSS.
 	 *
 	 * @since 1.0.0
 	 */
@@ -153,22 +154,23 @@ class PressPrimer_Assignment_Frontend {
 			$version
 		);
 
-		// Load active theme CSS.
-		$theme = $this->get_active_theme();
+		// Load all theme CSS files so per-assignment themes work.
+		$themes = [ 'default', 'modern', 'minimal' ];
+		foreach ( $themes as $theme_slug ) {
+			wp_enqueue_style(
+				'ppa-theme-' . $theme_slug,
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/themes/' . $theme_slug . '.css',
+				[ 'ppa-submission' ],
+				$version
+			);
+		}
 
-		$theme_handle = 'ppa-theme-' . $theme;
-
-		wp_enqueue_style(
-			$theme_handle,
-			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/themes/' . $theme . '.css',
-			[ 'ppa-submission' ],
-			$version
-		);
-
-		// Apply appearance setting overrides as inline CSS.
-		$inline_css = $this->generate_appearance_overrides( $theme );
+		// Apply appearance setting overrides to all themes.
+		$inline_css = $this->generate_appearance_overrides( $themes );
 		if ( $inline_css ) {
-			wp_add_inline_style( $theme_handle, $inline_css );
+			// Attach to the last theme handle so it appears after all theme CSS.
+			$last_theme = end( $themes );
+			wp_add_inline_style( 'ppa-theme-' . $last_theme, $inline_css );
 		}
 	}
 
@@ -176,14 +178,15 @@ class PressPrimer_Assignment_Frontend {
 	 * Generate inline CSS from appearance settings
 	 *
 	 * Reads customization values from plugin settings and produces
-	 * CSS variable overrides scoped to the active theme selector.
+	 * CSS variable overrides scoped to all theme selectors so that
+	 * overrides work regardless of which theme an assignment uses.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $theme Active theme slug.
+	 * @param array $themes List of theme slugs to generate selectors for.
 	 * @return string Inline CSS string, or empty string if no overrides.
 	 */
-	private function generate_appearance_overrides( $theme ) {
+	private function generate_appearance_overrides( $themes ) {
 		$settings = get_option( 'pressprimer_assignment_settings', [] );
 
 		$overrides = [];
@@ -291,16 +294,22 @@ class PressPrimer_Assignment_Frontend {
 			return '';
 		}
 
-		// Build CSS string scoped to the active theme.
-		$selector = '.ppa-theme-' . $theme;
-		$css      = $selector . ",\n";
-		$css     .= '.ppa-assignment' . $selector . ",\n";
-		$css     .= '.ppa-my-submissions' . $selector . " {\n";
-
+		// Build CSS variable declarations.
+		$declarations = '';
 		foreach ( $overrides as $property => $value ) {
-			$css .= "\t" . $property . ': ' . $value . ";\n";
+			$declarations .= "\t" . $property . ': ' . $value . ";\n";
 		}
 
+		// Build combined selector covering all themes.
+		$selectors = [];
+		foreach ( $themes as $theme_slug ) {
+			$selectors[] = '.ppa-theme-' . $theme_slug;
+			$selectors[] = '.ppa-assignment.ppa-theme-' . $theme_slug;
+			$selectors[] = '.ppa-my-submissions.ppa-theme-' . $theme_slug;
+		}
+
+		$css  = implode( ",\n", $selectors ) . " {\n";
+		$css .= $declarations;
 		$css .= "}\n";
 
 		return $css;

@@ -238,6 +238,7 @@ const ColorSetting = ( { label, help, value, defaultColor, onChange } ) => {
 						onChange={ ( color ) =>
 							onChange( colorToHex( color ) )
 						}
+						disabledAlpha
 						showText
 					/>
 					{ hasCustomValue ? (
@@ -655,6 +656,7 @@ const AppearancePreview = ( { settings } ) => {
  * @return {JSX.Element} Rendered component.
  */
 const AppearanceTab = ( { settings, updateSetting } ) => {
+	const currentTheme = settings.appearance_theme || 'default';
 	const defaultColors = THEME_DEFAULTS.default;
 
 	/**
@@ -1044,6 +1046,41 @@ const AppearanceTab = ( { settings, updateSetting } ) => {
 
 	return (
 		<div>
+			{ /* Default Theme Selector */ }
+			<Card
+				title={ __( 'Default Theme', 'pressprimer-assignment' ) }
+				size="small"
+				style={ { marginBottom: 24 } }
+			>
+				<Paragraph type="secondary">
+					{ __(
+						'Choose the default display theme for all assignments. Individual assignments can override this in their settings.',
+						'pressprimer-assignment'
+					) }
+				</Paragraph>
+				<Select
+					value={ currentTheme }
+					onChange={ ( value ) =>
+						updateSetting( 'appearance_theme', value )
+					}
+					style={ { width: 300 } }
+					options={ [
+						{
+							value: 'default',
+							label: __( 'Default', 'pressprimer-assignment' ),
+						},
+						{
+							value: 'modern',
+							label: __( 'Modern', 'pressprimer-assignment' ),
+						},
+						{
+							value: 'minimal',
+							label: __( 'Minimal', 'pressprimer-assignment' ),
+						},
+					] }
+				/>
+			</Card>
+
 			{ /* Live Preview */ }
 			<AppearancePreview settings={ settings } />
 

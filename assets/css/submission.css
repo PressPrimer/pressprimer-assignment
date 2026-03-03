@@ -94,6 +94,7 @@
 	margin: var(--ppa-space-xl) auto;
 	padding: 0;
 	font-family: var(--ppa-font-sans);
+	font-size: var(--ppa-font-size-base, 1rem);
 	color: var(--ppa-text);
 	line-height: var(--ppa-line-height, 1.5);
 }
@@ -984,6 +985,7 @@
 	max-width: var(--ppa-max-width, 800px);
 	margin: var(--ppa-space-xl) auto;
 	font-family: var(--ppa-font-sans);
+	font-size: var(--ppa-font-size-base, 1rem);
 	color: var(--ppa-text);
 	line-height: var(--ppa-line-height, 1.5);
 }
