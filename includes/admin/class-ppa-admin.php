@@ -75,6 +75,12 @@ class PressPrimer_Assignment_Admin {
 				$this->sub_admins[ $key ]->init();
 			}
 		}
+
+		// Tags uses the same class as categories with 'tag' taxonomy.
+		if ( class_exists( 'PressPrimer_Assignment_Admin_Categories' ) ) {
+			$this->sub_admins['tags'] = new PressPrimer_Assignment_Admin_Categories( 'tag' );
+			$this->sub_admins['tags']->init();
+		}
 	}
 
 	/**
@@ -158,6 +164,16 @@ class PressPrimer_Assignment_Admin {
 			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
 			'pressprimer-assignment-categories',
 			[ $this, 'render_categories' ]
+		);
+
+		// Tags submenu.
+		add_submenu_page(
+			'pressprimer-assignment',
+			__( 'Tags', 'pressprimer-assignment' ),
+			__( 'Tags', 'pressprimer-assignment' ),
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
+			'pressprimer-assignment-tags',
+			[ $this, 'render_tags' ]
 		);
 
 		// Reports submenu.
@@ -482,6 +498,17 @@ class PressPrimer_Assignment_Admin {
 	public function render_categories() {
 		if ( isset( $this->sub_admins['categories'] ) ) {
 			$this->sub_admins['categories']->render();
+		}
+	}
+
+	/**
+	 * Render tags page
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_tags() {
+		if ( isset( $this->sub_admins['tags'] ) ) {
+			$this->sub_admins['tags']->render();
 		}
 	}
 

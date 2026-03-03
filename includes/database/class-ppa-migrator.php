@@ -123,6 +123,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.6.0', '<' ) ) {
 			self::migrate_to_1_6_0();
 		}
+		if ( version_compare( $from_version, '1.7.0', '<' ) ) {
+			self::migrate_to_1_7_0();
+		}
 	}
 
 	/**
@@ -285,6 +288,21 @@ class PressPrimer_Assignment_Migrator {
 		if ( ! $column_exists ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN theme VARCHAR(50) NOT NULL DEFAULT 'default' AFTER status" );
+		}
+	}
+
+	/**
+	 * Migration to 1.7.0
+	 *
+	 * Recalculates assignment_count for all categories.
+	 * Previous versions did not update counts when categories
+	 * were assigned via the REST API, leaving stale zeros.
+	 *
+	 * @since 1.0.0
+	 */
+	private static function migrate_to_1_7_0() {
+		if ( class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			PressPrimer_Assignment_Category::update_counts( null );
 		}
 	}
 

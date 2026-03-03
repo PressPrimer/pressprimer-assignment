@@ -561,6 +561,16 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 
 		$tax_table = $wpdb->prefix . 'ppa_assignment_tax';
 
+		// Get old category IDs before removing (for count updates).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$old_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT category_id FROM {$tax_table} WHERE assignment_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$this->id
+			)
+		);
+		$old_ids = array_map( 'absint', $old_ids );
+
 		// Remove existing relationships.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete(
@@ -570,6 +580,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 		);
 
 		// Insert new relationships.
+		$new_ids = [];
 		foreach ( $category_ids as $category_id ) {
 			$category_id = absint( $category_id );
 			if ( $category_id > 0 ) {
@@ -582,13 +593,67 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 					],
 					[ '%d', '%d' ]
 				);
+				$new_ids[] = $category_id;
 			}
 		}
 
 		// Clear cached categories.
 		$this->_categories = null;
 
+		// Update counts for all affected categories.
+		if ( class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			$affected_ids = array_unique( array_merge( $old_ids, $new_ids ) );
+			foreach ( $affected_ids as $cat_id ) {
+				PressPrimer_Assignment_Category::update_counts( $cat_id );
+			}
+		}
+
 		return true;
+	}
+
+	/**
+	 * Delete assignment and clean up relationships
+	 *
+	 * Removes taxonomy relationships and updates category counts
+	 * before deleting the assignment record.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool|WP_Error True on success, WP_Error on failure.
+	 */
+	public function delete() {
+		global $wpdb;
+
+		$tax_table = $wpdb->prefix . 'ppa_assignment_tax';
+
+		// Get category IDs before removing relationships.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$category_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT category_id FROM {$tax_table} WHERE assignment_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$this->id
+			)
+		);
+
+		// Remove taxonomy relationships.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->delete(
+			$tax_table,
+			[ 'assignment_id' => $this->id ],
+			[ '%d' ]
+		);
+
+		// Delete the assignment.
+		$result = parent::delete();
+
+		// Update counts for affected categories.
+		if ( true === $result && ! empty( $category_ids ) && class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			foreach ( $category_ids as $cat_id ) {
+				PressPrimer_Assignment_Category::update_counts( absint( $cat_id ) );
+			}
+		}
+
+		return $result;
 	}
 
 	/**

@@ -679,6 +679,7 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 			'cb'          => '<input type="checkbox" />',
 			'id'          => __( 'ID', 'pressprimer-assignment' ),
 			'title'       => __( 'Title', 'pressprimer-assignment' ),
+			'categories'  => __( 'Categories', 'pressprimer-assignment' ),
 			'submissions' => __( 'Submissions', 'pressprimer-assignment' ),
 			'status'      => __( 'Status', 'pressprimer-assignment' ),
 			'date'        => __( 'Date', 'pressprimer-assignment' ),
@@ -729,21 +730,31 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 
 		// Build query.
 		$table         = $wpdb->prefix . 'ppa_assignments';
+		$tax_table     = $wpdb->prefix . 'ppa_assignment_tax';
 		$where_clauses = [];
 		$where_values  = [];
+		$join_sql      = '';
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only filter parameters for list table display.
 		// Filter by search.
 		if ( isset( $_GET['s'] ) && '' !== $_GET['s'] ) {
-			$where_clauses[] = 'title LIKE %s';
+			$where_clauses[] = 'a.title LIKE %s';
 			$where_values[]  = '%' . $wpdb->esc_like( sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) . '%';
 		}
 
 		// Filter by status.
 		$get_status = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : '';
 		if ( '' !== $get_status && 'all' !== $get_status ) {
-			$where_clauses[] = 'status = %s';
+			$where_clauses[] = 'a.status = %s';
 			$where_values[]  = $get_status;
+		}
+
+		// Filter by category.
+		$get_category = isset( $_GET['category'] ) ? absint( wp_unslash( $_GET['category'] ) ) : 0;
+		if ( $get_category > 0 ) {
+			$join_sql        = "INNER JOIN {$tax_table} AS t ON a.id = t.assignment_id";
+			$where_clauses[] = 't.category_id = %d';
+			$where_values[]  = $get_category;
 		}
 
 		// Build WHERE clause.
@@ -763,12 +774,13 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 			$order = 'DESC';
 		}
 
-		// Build ORDER BY with sanitize_sql_orderby.
-		$order_sql = sanitize_sql_orderby( "{$orderby} {$order}" );
-		$order_sql = $order_sql ? "ORDER BY {$order_sql}" : 'ORDER BY created_at DESC';
+		// Build ORDER BY with sanitize_sql_orderby. Prefix with table alias.
+		$order_sql = sanitize_sql_orderby( "a.{$orderby} {$order}" );
+		$order_sql = $order_sql ? "ORDER BY {$order_sql}" : 'ORDER BY a.created_at DESC';
 
 		// Get total count.
-		$total_query = "SELECT COUNT(*) FROM {$table} {$where_sql}";
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name and validated clauses safely constructed.
+		$total_query = "SELECT COUNT(DISTINCT a.id) FROM {$table} AS a {$join_sql} {$where_sql}";
 
 		if ( ! empty( $where_values ) ) {
 			$total_query = $wpdb->prepare( $total_query, $where_values ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -779,7 +791,7 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 
 		// Get items.
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name and validated clauses safely constructed.
-		$items_query  = "SELECT * FROM {$table} {$where_sql} {$order_sql} LIMIT %d OFFSET %d";
+		$items_query  = "SELECT DISTINCT a.* FROM {$table} AS a {$join_sql} {$where_sql} {$order_sql} LIMIT %d OFFSET %d";
 		$query_values = array_merge( $where_values, [ $per_page, $offset ] );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- List table pagination, not suitable for caching.
@@ -921,6 +933,41 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 	}
 
 	/**
+	 * Render categories column
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param PressPrimer_Assignment_Assignment $item Assignment object.
+	 * @return string Column content.
+	 */
+	public function column_categories( $item ) {
+		if ( ! class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			return '&#8212;';
+		}
+
+		$categories = $item->get_categories();
+
+		if ( empty( $categories ) ) {
+			return '&#8212;';
+		}
+
+		$links = [];
+		foreach ( $categories as $cat ) {
+			$filter_url = add_query_arg(
+				[
+					'page'     => 'pressprimer-assignment-assignments',
+					'category' => $cat->id,
+				],
+				admin_url( 'admin.php' )
+			);
+
+			$links[] = '<a href="' . esc_url( $filter_url ) . '">' . esc_html( $cat->name ) . '</a>';
+		}
+
+		return implode( ', ', $links );
+	}
+
+	/**
 	 * Render status column
 	 *
 	 * @since 1.0.0
@@ -984,6 +1031,7 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 		<div class="alignleft actions">
 			<?php
 			$this->render_status_filter();
+			$this->render_category_filter();
 			submit_button( __( 'Filter', 'pressprimer-assignment' ), '', 'filter_action', false );
 			?>
 		</div>
@@ -1012,6 +1060,38 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 			<?php foreach ( $statuses as $value => $label ) : ?>
 				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current_status, $value ); ?>>
 					<?php echo esc_html( $label ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Render category filter dropdown
+	 *
+	 * @since 1.0.0
+	 */
+	private function render_category_filter() {
+		if ( ! class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			return;
+		}
+
+		$categories = PressPrimer_Assignment_Category::get_categories();
+
+		if ( empty( $categories ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state for selected().
+		$current_category = isset( $_GET['category'] ) ? absint( wp_unslash( $_GET['category'] ) ) : 0;
+
+		?>
+		<label class="screen-reader-text" for="filter-by-category"><?php esc_html_e( 'Filter by category', 'pressprimer-assignment' ); ?></label>
+		<select name="category" id="filter-by-category">
+			<option value=""><?php esc_html_e( 'All Categories', 'pressprimer-assignment' ); ?></option>
+			<?php foreach ( $categories as $cat ) : ?>
+				<option value="<?php echo esc_attr( $cat->id ); ?>" <?php selected( $current_category, $cat->id ); ?>>
+					<?php echo esc_html( $cat->name ); ?>
 				</option>
 			<?php endforeach; ?>
 		</select>

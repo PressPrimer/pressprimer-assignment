@@ -25,6 +25,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 class PressPrimer_Assignment_Admin_Categories {
 
 	/**
+	 * Taxonomy type: 'category' or 'tag'
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $taxonomy;
+
+	/**
+	 * Constructor
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $taxonomy Taxonomy type ('category' or 'tag'). Default 'category'.
+	 */
+	public function __construct( $taxonomy = 'category' ) {
+		$this->taxonomy = in_array( $taxonomy, [ 'category', 'tag' ], true ) ? $taxonomy : 'category';
+	}
+
+	/**
 	 * Initialize categories admin
 	 *
 	 * @since 1.0.0
@@ -33,6 +52,28 @@ class PressPrimer_Assignment_Admin_Categories {
 		add_action( 'admin_post_ppa_save_category', [ $this, 'handle_save' ] );
 		add_action( 'admin_post_ppa_delete_category', [ $this, 'handle_delete' ] );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
+	}
+
+	/**
+	 * Check if this instance manages tags
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if taxonomy is 'tag'.
+	 */
+	private function is_tag() {
+		return 'tag' === $this->taxonomy;
+	}
+
+	/**
+	 * Get the admin page slug for this taxonomy
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Page slug.
+	 */
+	private function get_page_slug() {
+		return $this->is_tag() ? 'pressprimer-assignment-tags' : 'pressprimer-assignment-categories';
 	}
 
 	/**
@@ -52,9 +93,15 @@ class PressPrimer_Assignment_Admin_Categories {
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only routing parameters.
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
-		$id     = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
+		$action   = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+		$id       = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
+		$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( wp_unslash( $_GET['taxonomy'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		// Allow taxonomy override from URL (used by shared save/delete handlers).
+		if ( in_array( $taxonomy, [ 'category', 'tag' ], true ) ) {
+			$this->taxonomy = $taxonomy;
+		}
 
 		// Handle edit action.
 		if ( 'edit' === $action && $id ) {
@@ -74,20 +121,29 @@ class PressPrimer_Assignment_Admin_Categories {
 	 * @since 1.0.0
 	 */
 	private function render_list_with_form() {
+		$is_tag     = $this->is_tag();
+		$page_title = $is_tag
+			? __( 'Tags', 'pressprimer-assignment' )
+			: __( 'Categories', 'pressprimer-assignment' );
+		$add_title  = $is_tag
+			? __( 'Add New Tag', 'pressprimer-assignment' )
+			: __( 'Add New Category', 'pressprimer-assignment' );
+
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Categories', 'pressprimer-assignment' ); ?></h1>
+			<h1><?php echo esc_html( $page_title ); ?></h1>
 
 			<div id="col-container" class="wp-clearfix">
 				<!-- Add Form Column -->
 				<div id="col-left">
 					<div class="col-wrap">
 						<div class="form-wrap">
-							<h2><?php esc_html_e( 'Add New Category', 'pressprimer-assignment' ); ?></h2>
+							<h2><?php echo esc_html( $add_title ); ?></h2>
 
 							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="ppa-category-form">
 								<?php wp_nonce_field( 'pressprimer_assignment_save_category', 'pressprimer_assignment_category_nonce' ); ?>
 								<input type="hidden" name="action" value="ppa_save_category">
+								<input type="hidden" name="taxonomy" value="<?php echo esc_attr( $this->taxonomy ); ?>">
 								<input type="hidden" name="return_url" value="<?php echo esc_url( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); ?>">
 
 								<!-- Name -->
@@ -120,7 +176,8 @@ class PressPrimer_Assignment_Admin_Categories {
 									</p>
 								</div>
 
-								<!-- Parent -->
+								<?php if ( ! $is_tag ) : ?>
+								<!-- Parent (categories only) -->
 								<div class="form-field term-parent-wrap">
 									<label for="category_parent"><?php esc_html_e( 'Parent Category', 'pressprimer-assignment' ); ?></label>
 									<select name="category_parent" id="category_parent">
@@ -141,6 +198,7 @@ class PressPrimer_Assignment_Admin_Categories {
 										<?php esc_html_e( 'Categories can have a hierarchy. You might have a Writing category, and under that have children for Essays and Reports. Optional.', 'pressprimer-assignment' ); ?>
 									</p>
 								</div>
+								<?php endif; ?>
 
 								<!-- Description -->
 								<div class="form-field term-description-wrap">
@@ -158,7 +216,7 @@ class PressPrimer_Assignment_Admin_Categories {
 
 								<p class="submit">
 									<button type="submit" class="button button-primary">
-										<?php esc_html_e( 'Add New Category', 'pressprimer-assignment' ); ?>
+										<?php echo esc_html( $add_title ); ?>
 									</button>
 								</p>
 							</form>
@@ -170,7 +228,7 @@ class PressPrimer_Assignment_Admin_Categories {
 				<div id="col-right">
 					<div class="col-wrap">
 						<?php
-						$list_table = new PressPrimer_Assignment_Categories_List_Table();
+						$list_table = new PressPrimer_Assignment_Categories_List_Table( $this->taxonomy );
 						$list_table->prepare_items();
 						$list_table->display();
 						?>
@@ -193,24 +251,32 @@ class PressPrimer_Assignment_Admin_Categories {
 	private function render_edit_form( $id ) {
 		$category = PressPrimer_Assignment_Category::get( $id );
 
-		if ( ! $category || 'category' !== $category->taxonomy ) {
+		if ( ! $category || $this->taxonomy !== $category->taxonomy ) {
+			$not_found = $this->is_tag()
+				? __( 'Tag not found.', 'pressprimer-assignment' )
+				: __( 'Category not found.', 'pressprimer-assignment' );
 			wp_die(
-				esc_html__( 'Category not found.', 'pressprimer-assignment' ),
+				esc_html( $not_found ),
 				esc_html__( 'Error', 'pressprimer-assignment' ),
 				[ 'response' => 404 ]
 			);
 		}
 
-		$back_url = admin_url( 'admin.php?page=pressprimer-assignment-categories' );
+		$is_tag     = $this->is_tag();
+		$back_url   = admin_url( 'admin.php?page=' . $this->get_page_slug() );
+		$edit_title = $is_tag
+			? __( 'Edit Tag', 'pressprimer-assignment' )
+			: __( 'Edit Category', 'pressprimer-assignment' );
 
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Edit Category', 'pressprimer-assignment' ); ?></h1>
+			<h1><?php echo esc_html( $edit_title ); ?></h1>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="ppa-category-edit-form">
 				<?php wp_nonce_field( 'pressprimer_assignment_save_category', 'pressprimer_assignment_category_nonce' ); ?>
 				<input type="hidden" name="action" value="ppa_save_category">
 				<input type="hidden" name="category_id" value="<?php echo esc_attr( $category->id ); ?>">
+				<input type="hidden" name="taxonomy" value="<?php echo esc_attr( $this->taxonomy ); ?>">
 				<input type="hidden" name="return_url" value="<?php echo esc_url( $back_url ); ?>">
 
 				<table class="form-table ppa-form-table">
@@ -250,7 +316,8 @@ class PressPrimer_Assignment_Admin_Categories {
 							</td>
 						</tr>
 
-						<!-- Parent -->
+						<?php if ( ! $is_tag ) : ?>
+						<!-- Parent (categories only) -->
 						<tr>
 							<th scope="row">
 								<label for="category_parent"><?php esc_html_e( 'Parent Category', 'pressprimer-assignment' ); ?></label>
@@ -272,6 +339,7 @@ class PressPrimer_Assignment_Admin_Categories {
 								</select>
 							</td>
 						</tr>
+						<?php endif; ?>
 
 						<!-- Description -->
 						<tr>
@@ -394,9 +462,17 @@ class PressPrimer_Assignment_Admin_Categories {
 		}
 
 		$category_id = isset( $_POST['category_id'] ) ? absint( wp_unslash( $_POST['category_id'] ) ) : 0;
-		$return_url  = isset( $_POST['return_url'] )
+
+		// Get taxonomy from form (defaults to 'category').
+		$taxonomy = isset( $_POST['taxonomy'] ) ? sanitize_key( wp_unslash( $_POST['taxonomy'] ) ) : 'category';
+		if ( ! in_array( $taxonomy, [ 'category', 'tag' ], true ) ) {
+			$taxonomy = 'category';
+		}
+
+		$default_page = 'tag' === $taxonomy ? 'pressprimer-assignment-tags' : 'pressprimer-assignment-categories';
+		$return_url   = isset( $_POST['return_url'] )
 			? esc_url_raw( wp_unslash( $_POST['return_url'] ) )
-			: admin_url( 'admin.php?page=pressprimer-assignment-categories' );
+			: admin_url( 'admin.php?page=' . $default_page );
 
 		$data = [
 			'name'        => isset( $_POST['category_name'] )
@@ -408,11 +484,11 @@ class PressPrimer_Assignment_Admin_Categories {
 			'description' => isset( $_POST['category_description'] )
 				? sanitize_textarea_field( wp_unslash( $_POST['category_description'] ) )
 				: '',
-			'taxonomy'    => 'category',
+			'taxonomy'    => $taxonomy,
 		];
 
-		// Handle parent category.
-		if ( isset( $_POST['category_parent'] ) ) {
+		// Handle parent category (categories only, not tags).
+		if ( 'category' === $taxonomy && isset( $_POST['category_parent'] ) ) {
 			$parent_id         = absint( wp_unslash( $_POST['category_parent'] ) );
 			$data['parent_id'] = $parent_id > 0 ? $parent_id : null;
 		}
@@ -492,6 +568,11 @@ class PressPrimer_Assignment_Admin_Categories {
 			wp_die( esc_html__( 'Category not found.', 'pressprimer-assignment' ) );
 		}
 
+		// Determine redirect page based on taxonomy.
+		$redirect_page = 'tag' === $category->taxonomy
+			? 'pressprimer-assignment-tags'
+			: 'pressprimer-assignment-categories';
+
 		// Delete category.
 		$result = $category->delete();
 
@@ -503,7 +584,7 @@ class PressPrimer_Assignment_Admin_Categories {
 		wp_safe_redirect(
 			add_query_arg(
 				[
-					'page'    => 'pressprimer-assignment-categories',
+					'page'    => $redirect_page,
 					'message' => 'deleted',
 				],
 				admin_url( 'admin.php' )
@@ -523,7 +604,8 @@ class PressPrimer_Assignment_Admin_Categories {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only notice flags from redirect.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
-		if ( 'pressprimer-assignment-categories' !== $page ) {
+		$valid_pages = [ 'pressprimer-assignment-categories', 'pressprimer-assignment-tags' ];
+		if ( ! in_array( $page, $valid_pages, true ) ) {
 			return;
 		}
 
@@ -534,18 +616,25 @@ class PressPrimer_Assignment_Admin_Categories {
 		$message_key = sanitize_key( wp_unslash( $_GET['message'] ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$class = 'notice notice-success is-dismissible';
-		$text  = '';
+		$is_tag = 'pressprimer-assignment-tags' === $page;
+		$class  = 'notice notice-success is-dismissible';
+		$text   = '';
 
 		switch ( $message_key ) {
 			case 'added':
-				$text = __( 'Category added successfully.', 'pressprimer-assignment' );
+				$text = $is_tag
+					? __( 'Tag added successfully.', 'pressprimer-assignment' )
+					: __( 'Category added successfully.', 'pressprimer-assignment' );
 				break;
 			case 'updated':
-				$text = __( 'Category updated successfully.', 'pressprimer-assignment' );
+				$text = $is_tag
+					? __( 'Tag updated successfully.', 'pressprimer-assignment' )
+					: __( 'Category updated successfully.', 'pressprimer-assignment' );
 				break;
 			case 'deleted':
-				$text = __( 'Category deleted successfully.', 'pressprimer-assignment' );
+				$text = $is_tag
+					? __( 'Tag deleted successfully.', 'pressprimer-assignment' )
+					: __( 'Category deleted successfully.', 'pressprimer-assignment' );
 				break;
 		}
 
@@ -570,18 +659,55 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 
 	/**
+	 * Taxonomy type: 'category' or 'tag'
+	 *
+	 * @since 1.0.0
+	 * @var string
+	 */
+	private $taxonomy;
+
+	/**
 	 * Constructor
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param string $taxonomy Taxonomy type ('category' or 'tag'). Default 'category'.
 	 */
-	public function __construct() {
+	public function __construct( $taxonomy = 'category' ) {
+		$this->taxonomy = in_array( $taxonomy, [ 'category', 'tag' ], true ) ? $taxonomy : 'category';
+
+		$singular = 'tag' === $this->taxonomy ? 'ppa-tag' : 'ppa-category';
+		$plural   = 'tag' === $this->taxonomy ? 'ppa-tags' : 'ppa-categories';
+
 		parent::__construct(
 			[
-				'singular' => 'ppa-category',
-				'plural'   => 'ppa-categories',
+				'singular' => $singular,
+				'plural'   => $plural,
 				'ajax'     => false,
 			]
 		);
+	}
+
+	/**
+	 * Check if this table manages tags
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if taxonomy is 'tag'.
+	 */
+	private function is_tag() {
+		return 'tag' === $this->taxonomy;
+	}
+
+	/**
+	 * Get the admin page slug for this taxonomy
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Page slug.
+	 */
+	private function get_page_slug() {
+		return $this->is_tag() ? 'pressprimer-assignment-tags' : 'pressprimer-assignment-categories';
 	}
 
 	/**
@@ -592,14 +718,21 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 	 * @return array Column headers.
 	 */
 	public function get_columns() {
-		return [
-			'cb'          => '<input type="checkbox" />',
-			'name'        => __( 'Name', 'pressprimer-assignment' ),
-			'parent'      => __( 'Parent', 'pressprimer-assignment' ),
-			'description' => __( 'Description', 'pressprimer-assignment' ),
-			'slug'        => __( 'Slug', 'pressprimer-assignment' ),
-			'assignments' => __( 'Assignments', 'pressprimer-assignment' ),
+		$columns = [
+			'cb'   => '<input type="checkbox" />',
+			'name' => __( 'Name', 'pressprimer-assignment' ),
 		];
+
+		// Only categories have a parent column (tags are flat).
+		if ( ! $this->is_tag() ) {
+			$columns['parent'] = __( 'Parent', 'pressprimer-assignment' );
+		}
+
+		$columns['description'] = __( 'Description', 'pressprimer-assignment' );
+		$columns['slug']        = __( 'Slug', 'pressprimer-assignment' );
+		$columns['assignments'] = __( 'Assignments', 'pressprimer-assignment' );
+
+		return $columns;
 	}
 
 	/**
@@ -647,7 +780,7 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 
 		// Build query args.
 		$args = [
-			'where' => [ 'taxonomy' => 'category' ],
+			'where' => [ 'taxonomy' => $this->taxonomy ],
 		];
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- List table filter params, not form processing.
@@ -727,7 +860,7 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 		wp_safe_redirect(
 			add_query_arg(
 				[
-					'page'    => 'pressprimer-assignment-categories',
+					'page'    => $this->get_page_slug(),
 					'message' => 'deleted',
 				],
 				admin_url( 'admin.php' )
@@ -793,11 +926,14 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 	 * @return string Name column HTML.
 	 */
 	protected function column_name( $item ) {
+		$page_slug = $this->get_page_slug();
+
 		$edit_url = add_query_arg(
 			[
-				'page'   => 'pressprimer-assignment-categories',
-				'action' => 'edit',
-				'id'     => $item->id,
+				'page'     => $page_slug,
+				'action'   => 'edit',
+				'id'       => $item->id,
+				'taxonomy' => $this->taxonomy,
 			],
 			admin_url( 'admin.php' )
 		);
@@ -815,10 +951,14 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 
 		$title = '<strong><a href="' . esc_url( $edit_url ) . '">' . esc_html( $item->name ) . '</a></strong>';
 
+		$confirm_text = $this->is_tag()
+			? __( 'Are you sure you want to delete this tag?', 'pressprimer-assignment' )
+			: __( 'Are you sure you want to delete this category?', 'pressprimer-assignment' );
+
 		// Row actions.
 		$actions           = [];
 		$actions['edit']   = '<a href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'pressprimer-assignment' ) . '</a>';
-		$actions['delete'] = '<a href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Are you sure you want to delete this category?', 'pressprimer-assignment' ) ) . '\');">' . esc_html__( 'Delete', 'pressprimer-assignment' ) . '</a>';
+		$actions['delete'] = '<a href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( $confirm_text ) . '\');">' . esc_html__( 'Delete', 'pressprimer-assignment' ) . '</a>';
 
 		return $title . $this->row_actions( $actions );
 	}
@@ -850,6 +990,10 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 	 * @since 1.0.0
 	 */
 	public function no_items() {
-		esc_html_e( 'No categories found.', 'pressprimer-assignment' );
+		if ( $this->is_tag() ) {
+			esc_html_e( 'No tags found.', 'pressprimer-assignment' );
+		} else {
+			esc_html_e( 'No categories found.', 'pressprimer-assignment' );
+		}
 	}
 }
