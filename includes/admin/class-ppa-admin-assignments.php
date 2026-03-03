@@ -369,6 +369,24 @@ class PressPrimer_Assignment_Admin_Assignments {
 
 		// Prepare assignment data for JavaScript.
 		$assignment_data = [];
+		$plugin_settings = get_option( 'pressprimer_assignment_settings', [] );
+
+		if ( 0 === $assignment_id ) {
+			// New assignment: populate defaults from plugin settings.
+			$default_file_size_mb = isset( $plugin_settings['default_max_file_size'] )
+				? absint( $plugin_settings['default_max_file_size'] )
+				: 5;
+
+			$assignment_data['defaults'] = [
+				'passing_score' => isset( $plugin_settings['default_passing_score'] )
+					? absint( $plugin_settings['default_passing_score'] )
+					: 60,
+				'max_file_size' => $default_file_size_mb * 1048576,
+				'max_files'     => isset( $plugin_settings['default_max_files'] )
+					? absint( $plugin_settings['default_max_files'] )
+					: 5,
+			];
+		}
 
 		if ( $assignment_id > 0 ) {
 			$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );

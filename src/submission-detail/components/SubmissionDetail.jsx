@@ -434,9 +434,9 @@ const SubmissionDetail = ( { submissionId } ) => {
 										color="error"
 									>
 										{ sprintf(
-											/* translators: %s: required passing score */
+											/* translators: %s: required passing score in points */
 											__(
-												'Not Passing (requires %s)',
+												'Not Passing (requires %s pts)',
 												'pressprimer-assignment'
 											),
 											String( assignment.passing_score )

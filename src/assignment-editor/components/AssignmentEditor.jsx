@@ -46,6 +46,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 		assignmentData.categories || []
 	);
 
+	// Defaults from plugin settings (provided for new assignments).
+	const defaults = assignmentData.defaults || {};
+
 	const isNew = ! currentId;
 
 	// Initialize form with assignment data.
@@ -198,11 +201,11 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						theme: 'default',
 						submission_type: 'file',
 						max_points: 100,
-						passing_score: 60,
+						passing_score: defaults.passing_score || 60,
 						allow_resubmission: false,
 						max_resubmissions: 1,
-						max_file_size: 5242880,
-						max_files: 5,
+						max_file_size: defaults.max_file_size || 5242880,
+						max_files: defaults.max_files || 5,
 						allowed_file_types: [
 							'pdf',
 							'docx',

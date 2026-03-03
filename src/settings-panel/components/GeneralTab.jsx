@@ -98,18 +98,18 @@ const GeneralTab = ( { settings, updateSetting, settingsData } ) => {
 							'pressprimer-assignment'
 						) }
 						help={ __(
-							'Percentage score required to pass assignments (0-100).',
+							'Default points required to pass new assignments.',
 							'pressprimer-assignment'
 						) }
 					>
 						<InputNumber
 							min={ 0 }
-							max={ 100 }
-							value={ settings.default_passing_score ?? 70 }
+							max={ 100000 }
+							value={ settings.default_passing_score ?? 60 }
 							onChange={ ( value ) =>
 								updateSetting( 'default_passing_score', value )
 							}
-							addonAfter="%"
+							addonAfter={ __( 'pts', 'pressprimer-assignment' ) }
 							style={ { width: 150 } }
 						/>
 					</Form.Item>

@@ -167,10 +167,10 @@ function Edit( props ) {
 							{ selectedAssignment.passing_score > 0 && (
 								<span className="ppa-assignment-block-preview-meta-item">
 									<strong>
-										{ selectedAssignment.passing_score }%
+										{ selectedAssignment.passing_score }
 									</strong>{ ' ' }
 									{ __(
-										'to pass',
+										'pts to pass',
 										'pressprimer-assignment'
 									) }
 								</span>

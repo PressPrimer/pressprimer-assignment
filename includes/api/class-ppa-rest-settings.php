@@ -124,7 +124,7 @@ class PressPrimer_Assignment_REST_Settings {
 		// =====================================================================
 
 		if ( isset( $data['default_passing_score'] ) ) {
-			$sanitized['default_passing_score'] = min( 100, max( 0, absint( $data['default_passing_score'] ) ) );
+			$sanitized['default_passing_score'] = min( 100000, max( 0, absint( $data['default_passing_score'] ) ) );
 		}
 
 		if ( isset( $data['default_max_file_size'] ) ) {
