@@ -370,6 +370,26 @@
 	cursor: not-allowed;
 }
 
+.ppa-upload-limit-notice {
+	display: flex;
+	align-items: center;
+	gap: var(--ppa-space-sm);
+	padding: var(--ppa-space-md);
+	background: var(--ppa-success-light);
+	border: 1px solid var(--ppa-success);
+	border-radius: var(--ppa-radius-md);
+	color: var(--ppa-text);
+	font-size: var(--ppa-font-size-sm);
+}
+
+.ppa-upload-limit-notice .dashicons {
+	color: var(--ppa-success);
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
+}
+
 .ppa-upload-icon {
 	margin-bottom: var(--ppa-space-md);
 	color: var(--ppa-text-light);

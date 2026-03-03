@@ -483,6 +483,8 @@
 					' — ' +
 					pressprimerAssignmentFrontend.i18n.uploadComplete
 			);
+
+			this.updateUploadZoneState();
 		},
 
 		/**
@@ -631,6 +633,62 @@
 		},
 
 		/* -----------------------------------------------------------------
+		   Upload Zone State
+		   ----------------------------------------------------------------- */
+
+		/**
+		 * Update the upload zone visibility based on file count.
+		 *
+		 * When the maximum number of files has been reached, hides the
+		 * drop zone and shows a status message. Restores it when files
+		 * are removed and the count drops below the limit.
+		 */
+		updateUploadZoneState() {
+			const atLimit = this.files.length >= this.maxFiles;
+			const i18n = pressprimerAssignmentFrontend.i18n || {};
+
+			if ( atLimit ) {
+				this.$dropZone.addClass( 'ppa-upload-disabled' ).slideUp( 200 );
+				this.$fileInput.prop( 'disabled', true );
+
+				// Show status message if not already present.
+				if (
+					! this.$container.find( '.ppa-upload-limit-notice' ).length
+				) {
+					const statusText = (
+						i18n.filesUploaded || '%1$d of %2$d files uploaded.'
+					)
+						.replace( '%1$d', this.files.length )
+						.replace( '%2$d', this.maxFiles );
+
+					const $notice = $( '<div>' )
+						.addClass( 'ppa-upload-limit-notice' )
+						.attr( 'role', 'status' )
+						.append(
+							$( '<span>' )
+								.addClass( 'dashicons dashicons-yes-alt' )
+								.attr( 'aria-hidden', 'true' )
+						)
+						.append( ' ' + statusText );
+
+					this.$dropZone.before( $notice );
+					$notice.hide().slideDown( 200 );
+				}
+			} else {
+				// Remove the notice and restore the drop zone.
+				this.$container
+					.find( '.ppa-upload-limit-notice' )
+					.slideUp( 200, function () {
+						$( this ).remove();
+					} );
+				this.$dropZone
+					.removeClass( 'ppa-upload-disabled' )
+					.slideDown( 200 );
+				this.$fileInput.prop( 'disabled', false );
+			}
+		},
+
+		/* -----------------------------------------------------------------
 		   File List DOM
 		   ----------------------------------------------------------------- */
 
@@ -745,6 +803,7 @@
 				self.announceToScreenReader(
 					pressprimerAssignmentFrontend.i18n.removeFile
 				);
+				self.updateUploadZoneState();
 				window.PPA.SubmissionForm.updateSubmitButton();
 			} );
 		},

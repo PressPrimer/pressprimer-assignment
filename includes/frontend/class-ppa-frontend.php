@@ -424,6 +424,8 @@ class PressPrimer_Assignment_Frontend {
 				'removeFile'             => __( 'Remove file', 'pressprimer-assignment' ),
 				'dragDropHere'           => __( 'Drag and drop files here or click to browse', 'pressprimer-assignment' ),
 				'maxFilesReached'        => __( 'Maximum number of files reached.', 'pressprimer-assignment' ),
+				/* translators: %1$d: number of files uploaded, %2$d: maximum files allowed */
+				'filesUploaded'          => __( '%1$d of %2$d files uploaded.', 'pressprimer-assignment' ),
 				'fileTooLarge'           => __( 'File is too large.', 'pressprimer-assignment' ),
 				'invalidFileType'        => __( 'File type not allowed.', 'pressprimer-assignment' ),
 				'networkError'           => __( 'A network error occurred. Please try again.', 'pressprimer-assignment' ),
