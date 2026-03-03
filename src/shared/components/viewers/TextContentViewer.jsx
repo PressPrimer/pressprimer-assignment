@@ -33,10 +33,22 @@ const TextContentViewer = ( { content = null, wordCount = null } ) => {
 			return;
 		}
 
-		// Strip HTML tags to get plain text.
+		// Convert HTML to plain text, preserving paragraph breaks.
+		// Replace block-level closing tags with newlines before
+		// extracting textContent so paragraph spacing is retained.
+		let html = content;
+		html = html.replace( /<\/p>\s*<p[^>]*>/gi, '\n\n' );
+		html = html.replace( /<br\s*\/?>/gi, '\n' );
+		html = html.replace( /<\/(?:p|div|h[1-6]|li|blockquote)>/gi, '\n' );
+		html = html.replace( /<\/(?:ul|ol|table|tr)>/gi, '\n' );
+
 		const tempDiv = document.createElement( 'div' );
-		tempDiv.innerHTML = content;
-		const plainText = tempDiv.textContent || tempDiv.innerText || '';
+		tempDiv.innerHTML = html;
+		const plainText = (
+			tempDiv.textContent ||
+			tempDiv.innerText ||
+			''
+		).trim();
 
 		const blob = new Blob( [ plainText ], { type: 'text/plain' } );
 		const url = URL.createObjectURL( blob );
@@ -107,7 +119,7 @@ const TextContentViewer = ( { content = null, wordCount = null } ) => {
 					maxHeight: 'calc(100vh - 280px)',
 					overflow: 'auto',
 					lineHeight: 1.8,
-					fontSize: 15,
+					fontSize: 14,
 				} }
 				dangerouslySetInnerHTML={ { __html: content } }
 			/>

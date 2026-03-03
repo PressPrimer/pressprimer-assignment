@@ -106,6 +106,34 @@
 	padding: 8px 0;
 }
 
+/* Text content viewer typography */
+.ppa-text-content-body h2 {
+	font-size: 20px;
+	margin: 0.8em 0 0.4em;
+}
+
+.ppa-text-content-body h3 {
+	font-size: 17px;
+	margin: 0.8em 0 0.4em;
+}
+
+.ppa-text-content-body h4,
+.ppa-text-content-body h5,
+.ppa-text-content-body h6 {
+	font-size: 14px;
+	margin: 0.8em 0 0.4em;
+}
+
+.ppa-text-content-body p,
+.ppa-text-content-body li,
+.ppa-text-content-body blockquote,
+.ppa-text-content-body td,
+.ppa-text-content-body th,
+.ppa-text-content-body ol,
+.ppa-text-content-body ul {
+	font-size: 14px;
+}
+
 /* Pass/fail preview tags */
 .ppa-pass-preview .ant-tag {
 	font-size: 13px;
