@@ -22,6 +22,8 @@ import {
 } from '@ant-design/icons';
 import PdfViewer from './PdfViewer';
 import DocxViewer from './DocxViewer';
+import RtfViewer from './RtfViewer';
+import OdtViewer from './OdtViewer';
 import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import TextContentViewer from './TextContentViewer';
@@ -34,8 +36,8 @@ const FILE_ICONS = {
 	pdf: <FilePdfOutlined />,
 	docx: <FileWordOutlined />,
 	txt: <FileTextOutlined />,
-	rtf: <FileTextOutlined />,
-	odt: <FileTextOutlined />,
+	rtf: <FileWordOutlined />,
+	odt: <FileWordOutlined />,
 	jpg: <FileImageOutlined />,
 	jpeg: <FileImageOutlined />,
 	png: <FileImageOutlined />,
@@ -116,7 +118,15 @@ const DocumentPanel = ( {
 			);
 		}
 
-		if ( [ 'txt', 'rtf', 'odt' ].includes( ext ) ) {
+		if ( ext === 'rtf' ) {
+			return <RtfViewer url={ file.download_url } />;
+		}
+
+		if ( ext === 'odt' ) {
+			return <OdtViewer url={ file.download_url } />;
+		}
+
+		if ( ext === 'txt' ) {
 			return <TextViewer url={ file.download_url } />;
 		}
 

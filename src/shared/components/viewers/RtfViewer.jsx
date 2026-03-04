@@ -1,40 +1,55 @@
 /**
- * Text Viewer Component
+ * RTF Viewer Component
  *
- * Displays plain text files (TXT) by fetching the file
- * content and rendering it in a pre-formatted block.
+ * Renders RTF documents using rtf.js. Fetches the file as an
+ * ArrayBuffer and converts it to HTML for display.
  *
  * @package
  * @since 1.0.0
  */
 
 import { useState, useEffect } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Spin, Button, Alert } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import { RTFJS } from 'rtf.js';
 import { appendNonce } from '../../utils/nonce';
 
+// Disable verbose rtf.js debug logging.
+RTFJS.loggingEnabled( false );
+
 /**
- * TextViewer component
+ * Convert an array of DOM elements to an HTML string.
+ *
+ * @param {HTMLElement[]} elements DOM elements from rtf.js render.
+ * @return {string} Combined outer HTML.
+ */
+const elementsToHtml = ( elements ) => {
+	const container = document.createElement( 'div' );
+	elements.forEach( ( el ) => container.appendChild( el ) );
+	return container.innerHTML;
+};
+
+/**
+ * RtfViewer component
  *
  * @param {Object} props     Component props.
- * @param {string} props.url Download URL for the text file.
+ * @param {string} props.url Download URL for the RTF file.
  * @return {JSX.Element} Rendered component.
  */
-const TextViewer = ( { url } ) => {
+const RtfViewer = ( { url } ) => {
 	const [ loading, setLoading ] = useState( true );
 	const [ error, setError ] = useState( null );
-	const [ content, setContent ] = useState( '' );
+	const [ html, setHtml ] = useState( '' );
 
 	useEffect( () => {
 		let cancelled = false;
 
-		const loadText = async () => {
+		const loadRtf = async () => {
 			setLoading( true );
 			setError( null );
 
 			try {
-				// Include WP REST nonce for authentication.
 				const response = await window.fetch( url, {
 					credentials: 'same-origin',
 					headers: {
@@ -52,20 +67,29 @@ const TextViewer = ( { url } ) => {
 					);
 				}
 
-				const text = await response.text();
+				const arrayBuffer = await response.arrayBuffer();
 
 				if ( cancelled ) {
 					return;
 				}
 
-				setContent( text );
+				// Parse and render the RTF document.
+				const doc = new RTFJS.Document( arrayBuffer, {} );
+				const elements = await doc.render();
+
+				if ( cancelled ) {
+					return;
+				}
+
+				// Convert DOM elements to HTML string for React rendering.
+				setHtml( elementsToHtml( elements ) );
 				setLoading( false );
 			} catch ( loadError ) {
 				if ( ! cancelled ) {
 					setError(
 						loadError.message ||
 							__(
-								'Failed to load file.',
+								'Failed to load document.',
 								'pressprimer-assignment'
 							)
 					);
@@ -74,7 +98,7 @@ const TextViewer = ( { url } ) => {
 			}
 		};
 
-		loadText();
+		loadRtf();
 
 		return () => {
 			cancelled = true;
@@ -91,7 +115,9 @@ const TextViewer = ( { url } ) => {
 					minHeight: 300,
 				} }
 			>
-				<Spin tip={ __( 'Loading file…', 'pressprimer-assignment' ) } />
+				<Spin
+					tip={ __( 'Loading document…', 'pressprimer-assignment' ) }
+				/>
 			</div>
 		);
 	}
@@ -101,7 +127,7 @@ const TextViewer = ( { url } ) => {
 			<div style={ { padding: 40, textAlign: 'center' } }>
 				<Alert
 					message={ __(
-						'Could not preview file',
+						'Could not preview document',
 						'pressprimer-assignment'
 					) }
 					description={ error }
@@ -120,57 +146,21 @@ const TextViewer = ( { url } ) => {
 		);
 	}
 
-	// Count lines for display.
-	const lineCount = content.split( '\n' ).length;
-
 	return (
-		<div className="ppa-text-viewer">
-			{ /* Info bar */ }
+		<div className="ppa-rtf-viewer">
 			<div
+				className="ppa-rtf-content"
 				style={ {
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					padding: '6px 12px',
-					borderBottom: '1px solid #f0f0f0',
-					background: '#fafafa',
-					fontSize: 13,
-					color: '#666',
-				} }
-			>
-				<span>
-					{ sprintf(
-						/* translators: 1: number of lines, 2: number of characters */
-						__(
-							'%1$d lines, %2$d characters',
-							'pressprimer-assignment'
-						),
-						lineCount,
-						content.length
-					) }
-				</span>
-			</div>
-
-			{ /* Content */ }
-			<pre
-				style={ {
-					margin: 0,
-					padding: '16px 24px',
+					padding: '24px 32px',
 					maxHeight: 'calc(100vh - 280px)',
 					overflow: 'auto',
-					whiteSpace: 'pre-wrap',
-					wordBreak: 'break-word',
-					fontFamily:
-						'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
-					fontSize: 13,
 					lineHeight: 1.6,
-					background: '#fff',
+					fontSize: 14,
 				} }
-			>
-				{ content }
-			</pre>
+				dangerouslySetInnerHTML={ { __html: html } }
+			/>
 		</div>
 	);
 };
 
-export default TextViewer;
+export default RtfViewer;

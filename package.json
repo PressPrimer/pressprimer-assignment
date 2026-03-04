@@ -29,12 +29,14 @@
     "@wordpress/element": "^6.0.0",
     "@wordpress/i18n": "^5.0.0",
     "antd": "^5.12.0",
+    "jszip": "^3.10.1",
     "mammoth": "^1.8.0",
     "pdfjs-dist": "^3.11.174",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.0",
-    "recharts": "^3.7.0"
+    "recharts": "^3.7.0",
+    "rtf.js": "^3.0.9"
   },
   "engines": {
     "node": ">=18.0.0",
