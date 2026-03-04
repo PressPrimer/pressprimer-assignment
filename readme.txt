@@ -27,7 +27,7 @@ PressPrimer Assignment delivers a focused, polished assignment workflow with the
 * **Flexible Submission Types** – Accept file uploads, rich text submissions, or let students choose. Support for PDF, DOCX, TXT, RTF, ODT, and image files out of the box.
 * **Grade Without Leaving WordPress** – A dedicated grading queue with a side-by-side interface: the student's document renders on the left while you score and write feedback on the right. Built-in viewers for PDF, Word documents, images, and text files mean you never have to download, open, and track files on your desktop.
 * **Native LMS Integration** – Works with LearnDash and Tutor LMS. Assignments appear in lessons, passing grades trigger lesson completion, and instructor roles are mapped automatically.
-* **Secure File Handling** – Six-layer file validation, storage outside the webroot, and permission-based file serving. Student files are never directly accessible via URL.
+* **Secure File Handling** – Six-layer file validation and permission-based file serving. Student files are never directly accessible via URL.
 * **Customizable Email Notifications** – Automatic emails for submission confirmation, grade release, and new submission alerts. Fully customizable templates with token placeholders.
 * **Three Professional Themes** – Default, Modern, and Minimal themes that match the PressPrimer Quiz visual style.
 
@@ -77,7 +77,6 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 
 * Dashboard with submission statistics, activity chart, and recent submissions
 * Reports page with filterable submission data
-* Assignment category management
 
 **Security & Accessibility**
 
@@ -102,7 +101,7 @@ PressPrimer Assignment detects and integrates with popular WordPress LMS plugins
 
 **LearnDash:** Attach assignments to lessons or topics via the editor sidebar. Passing an assignment can automatically mark the lesson or topic complete. LearnDash Group Leaders are granted teacher-level permissions to create assignments and grade their students' submissions. The "Mark Complete" button is hidden until a required assignment is passed.
 
-**Tutor LMS:** Attach assignments to lessons via the editor sidebar or course builder panel. Passing an assignment can auto-complete the lesson and trigger course completion when all lessons are done. Tutor LMS Instructors are granted teacher-level permissions. If both PressPrimer Quiz and PressPrimer Assignment are attached to a lesson, both must be passed before the lesson completes.
+**Tutor LMS:** Attach assignments to lessons via the course builder. Passing an assignment can auto-complete the lesson and trigger course completion when all lessons are done. Tutor LMS Instructors are granted teacher-level permissions. If both PressPrimer Quiz and PressPrimer Assignment are attached to a lesson, both must be passed before the lesson completes.
 
 **Uncanny Automator:** Four triggers available—user submits an assignment, user is graded, user passes, user fails. Each trigger includes a full set of tokens (assignment title, score, feedback, student info, grader info, and more) for use in automated workflows.
 
@@ -129,17 +128,9 @@ All integrations are included in the free version.
 3. Click **Install Now** and then **Activate**
 4. Navigate to **PressPrimer Assignment** in your admin menu to get started
 
-= After Activation =
-
-1. Go to **PressPrimer Assignment > Settings** to configure defaults
-2. Set your preferred theme under **Settings > Appearance**
-3. Configure email notifications under **Settings > Emails**
-4. Create your first assignment under **Assignments > Add New**
-5. Embed on any page using the `[ppa_assignment id="123"]` shortcode
-
 = LMS Integration =
 
-If you have LearnDash or Tutor LMS installed, integration features enable automatically. No configuration required—edit a lesson or topic and you'll see the assignment attachment options in the sidebar.
+If you have LearnDash or Tutor LMS installed, integration features enable automatically.
 
 == Frequently Asked Questions ==
 
@@ -169,11 +160,7 @@ By default: PDF, DOCX, TXT, RTF, ODT, JPG, JPEG, PNG, and GIF. Administrators ca
 
 = Can students submit text instead of files? =
 
-Yes. Each assignment can be configured to accept file uploads, text/rich text submissions, or let the student choose. Text submissions use a TinyMCE editor with live word count, auto-save drafts, and a 50,000-character limit.
-
-= Can students resubmit assignments? =
-
-Yes. Administrators can enable resubmission on a per-assignment basis and set the maximum number of allowed resubmissions. Students see their full submission history with feedback for each attempt.
+Yes. Each assignment can be configured to accept file uploads, text/rich text submissions, or let the student choose. Text submissions use a TinyMCE editor with live word and character counts, auto-save drafts, and a 50,000-character limit.
 
 = How does the grading interface work? =
 
