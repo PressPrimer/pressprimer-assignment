@@ -93,6 +93,10 @@ class PressPrimer_Assignment_LearnDash {
 
 		// Map LearnDash instructor capabilities.
 		$this->map_instructor_capabilities();
+		// Re-check on admin_init (priority 20) to survive LMS role resets.
+		// Some LMS plugins may call remove_role() then add_role() during upgrades,
+		// which wipes capabilities added by other plugins.
+		add_action( 'admin_init', [ $this, 'ensure_instructor_capabilities' ], 20 );
 		add_filter( 'pressprimer_assignment_user_has_teacher_capability', [ $this, 'check_instructor_capability' ], 10, 2 );
 	}
 
@@ -929,6 +933,31 @@ class PressPrimer_Assignment_LearnDash {
 		// Grant own-tier capabilities (matching Quiz's pattern).
 		$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
 		$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
+	}
+
+	/**
+	 * Ensure instructor capabilities survive LMS role resets
+	 *
+	 * Some LMS plugins may call remove_role() then add_role() during
+	 * upgrades, which wipes capabilities added by other plugins.
+	 * This method re-adds our capabilities after any upgrader runs.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ensure_instructor_capabilities() {
+		$group_leader = get_role( 'group_leader' );
+
+		if ( ! $group_leader ) {
+			return;
+		}
+
+		if ( ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
+		}
+
+		if ( ! $group_leader->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS ) ) {
+			$group_leader->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
+		}
 	}
 
 	/**

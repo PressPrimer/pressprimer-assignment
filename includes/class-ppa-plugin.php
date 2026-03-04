@@ -211,6 +211,12 @@ class PressPrimer_Assignment_Plugin {
 			'pressprimer_assignment_submission_deleted',
 			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
 		);
+
+		// Clear caches when an assignment is deleted.
+		add_action(
+			'pressprimer_assignment_deleted',
+			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
+		);
 	}
 
 	/**

@@ -187,7 +187,7 @@ class PressPrimer_Assignment_Admin_Submissions {
 	 * @since 1.0.0
 	 */
 	public function render() {
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ) );
 		}
 
@@ -535,6 +535,12 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			$where_values[]  = $like_term;
 		}
 
+		// Scope to current user's assignments' submissions for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$where_clauses[] = 'a.author_id = %d';
+			$where_values[]  = get_current_user_id();
+		}
+
 		// Build orderby and order.
 		$allowed_orderby = [ 'id', 'status', 'submitted_at', 'score' ];
 		$orderby         = isset( $_GET['orderby'] ) && '' !== $_GET['orderby'] ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'submitted_at';
@@ -840,13 +846,18 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state.
 		$current_assignment = isset( $_GET['assignment'] ) ? absint( wp_unslash( $_GET['assignment'] ) ) : 0;
 
-		// Get list of assignments.
-		$assignments = PressPrimer_Assignment_Assignment::find(
-			[
-				'order_by' => 'title',
-				'order'    => 'ASC',
-			]
-		);
+		// Get list of assignments (scoped to user's own for manage_own users).
+		$find_args = [
+			'order_by' => 'title',
+			'order'    => 'ASC',
+			'where'    => [],
+		];
+
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$find_args['where']['author_id'] = get_current_user_id();
+		}
+
+		$assignments = PressPrimer_Assignment_Assignment::find( $find_args );
 
 		?>
 		<label class="screen-reader-text" for="filter-by-assignment"><?php esc_html_e( 'Filter by assignment', 'pressprimer-assignment' ); ?></label>

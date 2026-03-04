@@ -456,6 +456,11 @@ class PressPrimer_Assignment_REST_Assignments {
 			$assignment->set_categories( array_map( 'absint', $categories ) );
 		}
 
+		// Clear dashboard statistics cache (assignment count changed).
+		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
+			PressPrimer_Assignment_Statistics_Service::clear_all_caches();
+		}
+
 		return rest_ensure_response( $this->prepare_item_for_response( $assignment ) );
 	}
 
@@ -510,6 +515,11 @@ class PressPrimer_Assignment_REST_Assignments {
 		$categories = $request->get_param( 'categories' );
 		if ( is_array( $categories ) ) {
 			$assignment->set_categories( array_map( 'absint', $categories ) );
+		}
+
+		// Clear dashboard statistics cache (status or other stats-relevant fields may have changed).
+		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
+			PressPrimer_Assignment_Statistics_Service::clear_all_caches();
 		}
 
 		return rest_ensure_response( $this->prepare_item_for_response( $assignment ) );

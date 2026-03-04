@@ -90,6 +90,10 @@ class PressPrimer_Assignment_TutorLMS {
 
 		// Map TutorLMS Instructor role to PPA teacher capabilities.
 		$this->map_instructor_capabilities();
+		// Re-check on admin_init (priority 20) to survive TutorLMS role resets.
+		// TutorLMS's upgrader (admin_init priority 10) may call remove_role()
+		// then add_role(), which wipes any capabilities added by other plugins.
+		add_action( 'admin_init', [ $this, 'ensure_instructor_capabilities' ], 20 );
 		add_filter( 'pressprimer_assignment_user_has_teacher_capability', [ $this, 'check_instructor_capability' ], 10, 2 );
 
 		// Frontend hooks — append assignment to lesson content via the_content filter.
@@ -1111,6 +1115,31 @@ class PressPrimer_Assignment_TutorLMS {
 		// Grant own-tier capabilities (matching Quiz's pattern).
 		$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
 		$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
+	}
+
+	/**
+	 * Ensure instructor capabilities survive TutorLMS role resets
+	 *
+	 * TutorLMS's upgrader may call remove_role() then add_role() on
+	 * admin_init, which wipes capabilities added by other plugins.
+	 * This method re-adds our capabilities after the upgrader runs.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ensure_instructor_capabilities() {
+		$instructor = get_role( 'tutor_instructor' );
+
+		if ( ! $instructor ) {
+			return;
+		}
+
+		if ( ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
+		}
+
+		if ( ! $instructor->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS ) ) {
+			$instructor->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
+		}
 	}
 
 	/**

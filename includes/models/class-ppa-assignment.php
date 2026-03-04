@@ -406,10 +406,10 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			}
 		}
 
-		// Validate max_resubmissions.
+		// Validate max_resubmissions (0 = disabled, 1-100 = allowed retakes).
 		if ( isset( $data['max_resubmissions'] ) ) {
 			$max = absint( $data['max_resubmissions'] );
-			if ( $max < 1 || $max > 100 ) {
+			if ( $max > 100 ) {
 				return new WP_Error(
 					'ppa_invalid_max_resubmissions',
 					__( 'Max resubmissions must be between 1 and 100.', 'pressprimer-assignment' )

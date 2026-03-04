@@ -163,7 +163,7 @@ class PressPrimer_Assignment_Admin_Grading {
 	 * @since 1.0.0
 	 */
 	public function render() {
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ) );
 		}
 

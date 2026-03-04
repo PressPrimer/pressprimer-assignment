@@ -84,7 +84,7 @@ class PressPrimer_Assignment_Admin_Categories {
 	 * @since 1.0.0
 	 */
 	public function render() {
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
 			wp_die(
 				esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ),
 				esc_html__( 'Permission Denied', 'pressprimer-assignment' ),
@@ -405,6 +405,11 @@ class PressPrimer_Assignment_Admin_Categories {
 			],
 		];
 
+		// Scope to current user's categories for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$args['where']['created_by'] = get_current_user_id();
+		}
+
 		if ( null === $parent_id ) {
 			$args['where']['parent_id'] = null;
 		} else {
@@ -456,8 +461,10 @@ class PressPrimer_Assignment_Admin_Categories {
 			wp_die( esc_html__( 'Security check failed.', 'pressprimer-assignment' ) );
 		}
 
-		// Check capability.
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		// Check capability — manage_own users can create/edit their own categories.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'pressprimer-assignment' ) );
 		}
 
@@ -499,6 +506,13 @@ class PressPrimer_Assignment_Admin_Categories {
 
 			if ( ! $category ) {
 				wp_die( esc_html__( 'Category not found.', 'pressprimer-assignment' ) );
+			}
+
+			// Ownership check for manage_own users.
+			if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+				&& (int) $category->created_by !== get_current_user_id()
+			) {
+				wp_die( esc_html__( 'You do not have permission to edit this category.', 'pressprimer-assignment' ) );
 			}
 
 			foreach ( $data as $key => $value ) {
@@ -553,8 +567,10 @@ class PressPrimer_Assignment_Admin_Categories {
 			wp_die( esc_html__( 'Security check failed.', 'pressprimer-assignment' ) );
 		}
 
-		// Check capability.
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		// Check capability — manage_own users can delete their own categories.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'pressprimer-assignment' ) );
 		}
 
@@ -566,6 +582,13 @@ class PressPrimer_Assignment_Admin_Categories {
 
 		if ( ! $category ) {
 			wp_die( esc_html__( 'Category not found.', 'pressprimer-assignment' ) );
+		}
+
+		// Ownership check for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+			&& (int) $category->created_by !== get_current_user_id()
+		) {
+			wp_die( esc_html__( 'You do not have permission to delete this category.', 'pressprimer-assignment' ) );
 		}
 
 		// Determine redirect page based on taxonomy.
@@ -783,6 +806,11 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 			'where' => [ 'taxonomy' => $this->taxonomy ],
 		];
 
+		// Scope to current user's categories for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$args['where']['created_by'] = get_current_user_id();
+		}
+
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- List table filter params, not form processing.
 		// Search.
 		if ( isset( $_REQUEST['s'] ) && '' !== $_REQUEST['s'] ) {
@@ -826,7 +854,9 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 		}
 
 		// Check capability.
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
 			return;
 		}
 
@@ -848,11 +878,15 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 			wp_die( esc_html__( 'Security check failed.', 'pressprimer-assignment' ) );
 		}
 
-		// Delete items.
+		$is_admin = current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+
+		// Delete items (with ownership check for manage_own users).
 		foreach ( $ids as $id ) {
 			$category = PressPrimer_Assignment_Category::get( $id );
 			if ( $category ) {
-				$category->delete();
+				if ( $is_admin || (int) $category->created_by === get_current_user_id() ) {
+					$category->delete();
+				}
 			}
 		}
 

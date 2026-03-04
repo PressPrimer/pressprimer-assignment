@@ -445,6 +445,7 @@
 	align-items: center;
 	justify-content: space-between;
 	flex-wrap: nowrap;
+	gap: var(--ppa-space-md);
 	padding: var(--ppa-space-md);
 	border: 1px solid var(--ppa-border-light);
 	border-radius: var(--ppa-radius-md);
@@ -481,6 +482,8 @@
 }
 
 .ppa-file-name {
+	flex: 1;
+	min-width: 0;
 	font-weight: 500;
 	color: var(--ppa-text);
 	white-space: nowrap;

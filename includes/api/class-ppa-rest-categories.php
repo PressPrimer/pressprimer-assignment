@@ -115,14 +115,34 @@ class PressPrimer_Assignment_REST_Categories {
 	/**
 	 * Check write permission
 	 *
-	 * Only users with full management access can create/update/delete categories.
+	 * Users with manage_own can create/update their own categories.
+	 * Users with manage_all can manage any category.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @return bool True if user has permission.
 	 */
 	public function check_write_permission() {
-		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+	}
+
+	/**
+	 * Check if current user can access a specific category
+	 *
+	 * Admins can access any category. Manage_own users can
+	 * only access categories they created.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param PressPrimer_Assignment_Category $category Category instance.
+	 * @return bool True if user can access.
+	 */
+	private function can_access_category( $category ) {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return true;
+		}
+		return (int) $category->created_by === get_current_user_id();
 	}
 
 	/**
@@ -182,6 +202,11 @@ class PressPrimer_Assignment_REST_Categories {
 			$args['where']['parent_id'] = $parent;
 		}
 
+		// Scope to current user's categories for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$args['where']['created_by'] = get_current_user_id();
+		}
+
 		// Handle search.
 		if ( $search ) {
 			$items = $this->search_categories( $search, $args );
@@ -209,27 +234,34 @@ class PressPrimer_Assignment_REST_Categories {
 		$table     = $wpdb->prefix . 'ppa_categories';
 		$like_term = '%' . $wpdb->esc_like( $search ) . '%';
 
-		$has_taxonomy = ! empty( $args['where']['taxonomy'] );
-		$taxonomy     = $has_taxonomy ? $args['where']['taxonomy'] : '';
+		$has_taxonomy   = ! empty( $args['where']['taxonomy'] );
+		$taxonomy       = $has_taxonomy ? $args['where']['taxonomy'] : '';
+		$has_created_by = ! empty( $args['where']['created_by'] );
+
+		// Build dynamic WHERE with params array.
+		$where  = 'WHERE name LIKE %s';
+		$params = [ $like_term ];
 
 		if ( $has_taxonomy ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE name LIKE %s AND taxonomy = %s ORDER BY name ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term,
-					$taxonomy
-				)
-			);
-		} else {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE name LIKE %s ORDER BY name ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$like_term
-				)
-			);
+			$where   .= ' AND taxonomy = %s';
+			$params[] = $taxonomy;
 		}
+
+		if ( $has_created_by ) {
+			$where   .= ' AND created_by = %d';
+			$params[] = absint( $args['where']['created_by'] );
+		}
+
+		$where .= ' ORDER BY name ASC';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic.
+			$wpdb->prepare(
+				"SELECT * FROM {$table} {$where}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, WHERE built with placeholders.
+				$params
+			)
+		);
 
 		$results = [];
 		if ( $rows ) {
@@ -310,6 +342,14 @@ class PressPrimer_Assignment_REST_Categories {
 			);
 		}
 
+		if ( ! $this->can_access_category( $category ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to edit this category.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
+			);
+		}
+
 		$data = $this->sanitize_category_data( $request );
 
 		// Update category properties.
@@ -381,6 +421,14 @@ class PressPrimer_Assignment_REST_Categories {
 				'ppa_not_found',
 				__( 'Category not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
+			);
+		}
+
+		if ( ! $this->can_access_category( $category ) ) {
+			return new WP_Error(
+				'ppa_forbidden',
+				__( 'You do not have permission to delete this category.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
 			);
 		}
 

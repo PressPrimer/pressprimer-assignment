@@ -239,7 +239,7 @@ class PressPrimer_Assignment_Admin_Assignments {
 	 */
 	public function render() {
 		// Check user permissions.
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ) );
 		}
 
@@ -758,6 +758,12 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 			$where_values[]  = $get_category;
 		}
 
+		// Scope to current user's assignments for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$where_clauses[] = 'a.author_id = %d';
+			$where_values[]  = get_current_user_id();
+		}
+
 		// Build WHERE clause.
 		$where_sql = ! empty( $where_clauses )
 			? 'WHERE ' . implode( ' AND ', $where_clauses )
@@ -1077,7 +1083,14 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 			return;
 		}
 
-		$categories = PressPrimer_Assignment_Category::get_categories();
+		$cat_args = [];
+
+		// Scope categories to user's own for manage_own users.
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$cat_args['where'] = [ 'created_by' => get_current_user_id() ];
+		}
+
+		$categories = PressPrimer_Assignment_Category::get_categories( $cat_args );
 
 		if ( empty( $categories ) ) {
 			return;
