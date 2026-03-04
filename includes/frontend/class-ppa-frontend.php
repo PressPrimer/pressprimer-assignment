@@ -463,7 +463,7 @@ class PressPrimer_Assignment_Frontend {
 				'textPreviewDescription' => __( 'This is the beginning of the text extracted from your file. It is provided so you can verify the content was captured correctly.', 'pressprimer-assignment' ),
 				'pdfWarningShort'        => __( 'Text extraction issue', 'pressprimer-assignment' ),
 				'pdfWarningTitle'        => __( 'Text Extraction Issue', 'pressprimer-assignment' ),
-				'pdfWarningMessage'      => __( 'We could not extract readable text from one or more PDF files. This may affect future features like automatic feedback.', 'pressprimer-assignment' ),
+				'pdfWarningMessage'      => __( 'We could not extract readable text from one or more PDF files. If the assignment is text-based, your instructor may have trouble extracting the text for review.', 'pressprimer-assignment' ),
 				'pdfWarningWhy'          => __( 'Why does this matter?', 'pressprimer-assignment' ),
 				'pdfWarningDetails'      => __( 'Some PDFs are scanned images without embedded text. For best results, consider using the text editor or uploading a DOCX file instead.', 'pressprimer-assignment' ),
 				'uploadHint'             => __( 'Upload at least one file to enable submission.', 'pressprimer-assignment' ),

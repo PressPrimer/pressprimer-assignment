@@ -1016,7 +1016,7 @@ msgid "Text Extraction Issue"
 msgstr ""
 
 #: includes/frontend/class-ppa-frontend.php:455
-msgid "We could not extract readable text from one or more PDF files. This may affect future features like automatic feedback."
+msgid "We could not extract readable text from one or more PDF files. If the assignment is text-based, your instructor may have trouble extracting the text for review."
 msgstr ""
 
 #: includes/frontend/class-ppa-frontend.php:456

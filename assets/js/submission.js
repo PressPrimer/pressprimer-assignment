@@ -1641,7 +1641,7 @@
 					'<p>' +
 					esc(
 						i18n.pdfWarningMessage ||
-							'We could not extract readable text from one or more PDF files. This may affect future features like automatic feedback.'
+							'We could not extract readable text from one or more PDF files. If the assignment is text-based, your instructor may have trouble extracting the text for review.'
 					) +
 					'</p>' +
 					'<details><summary>' +
