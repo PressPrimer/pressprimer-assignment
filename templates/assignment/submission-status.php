@@ -290,7 +290,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 								</span>
 							<?php endif; ?>
 							<?php if ( $prev_is_graded ) : ?>
-								<a href="<?php echo esc_url( add_query_arg( 'ppa_submission', absint( $prev->id ), get_permalink() ) ); ?>"
+								<a href="<?php echo esc_url( add_query_arg( 'pressprimer_assignment_submission', absint( $prev->id ), get_permalink() ) ); ?>"
 									class="ppa-view-submission"
 									aria-label="
 									<?php

@@ -33,7 +33,7 @@ class PressPrimer_Assignment_Onboarding {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const META_COMPLETED = 'ppa_onboarding_completed';
+	const META_COMPLETED = 'pressprimer_assignment_onboarding_completed';
 
 	/**
 	 * User meta key: onboarding skipped flag
@@ -41,7 +41,7 @@ class PressPrimer_Assignment_Onboarding {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const META_SKIPPED = 'ppa_onboarding_skipped';
+	const META_SKIPPED = 'pressprimer_assignment_onboarding_skipped';
 
 	/**
 	 * User meta key: current onboarding step
@@ -49,7 +49,7 @@ class PressPrimer_Assignment_Onboarding {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const META_STEP = 'ppa_onboarding_step';
+	const META_STEP = 'pressprimer_assignment_onboarding_step';
 
 	/**
 	 * User meta key: onboarding started flag
@@ -57,7 +57,7 @@ class PressPrimer_Assignment_Onboarding {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const META_STARTED = 'ppa_onboarding_started';
+	const META_STARTED = 'pressprimer_assignment_onboarding_started';
 
 	/**
 	 * Total number of onboarding steps
@@ -271,7 +271,7 @@ class PressPrimer_Assignment_Onboarding {
 
 		return [
 			'state'     => $this->get_onboarding_state(),
-			'nonce'     => wp_create_nonce( 'ppa_onboarding' ),
+			'nonce'     => wp_create_nonce( 'pressprimer_assignment_onboarding' ),
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 			'pluginUrl' => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 			'urls'      => [
@@ -359,7 +359,7 @@ class PressPrimer_Assignment_Onboarding {
 	 * @since 1.0.0
 	 */
 	public function handle_progress_ajax() {
-		check_ajax_referer( 'ppa_onboarding', 'nonce' );
+		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
 		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
 			wp_send_json_error( [ 'message' => 'Permission denied.' ] );
@@ -408,7 +408,7 @@ class PressPrimer_Assignment_Onboarding {
 	 * @since 1.0.0
 	 */
 	public function handle_get_state_ajax() {
-		check_ajax_referer( 'ppa_onboarding', 'nonce' );
+		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
 		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
 			wp_send_json_error( [ 'message' => 'Permission denied.' ] );

@@ -181,7 +181,7 @@ class PressPrimer_Assignment_TutorLMS {
 				<input
 					type="hidden"
 					id="ppa_assignment_id"
-					name="ppa_assignment_id"
+					name="pressprimer_assignment_id"
 					value="<?php echo esc_attr( $assignment_id ); ?>"
 				/>
 				<div id="ppa_assignment_results" class="ppa-assignment-results ppa-hidden"></div>
@@ -196,7 +196,7 @@ class PressPrimer_Assignment_TutorLMS {
 				<label>
 					<input
 						type="checkbox"
-						name="ppa_require_pass"
+						name="pressprimer_assignment_require_pass"
 						value="1"
 						<?php checked( $require_pass, '1' ); ?>
 					/>
@@ -434,7 +434,7 @@ class PressPrimer_Assignment_TutorLMS {
 		}
 
 		// Save assignment ID.
-		$assignment_id = isset( $_POST['ppa_assignment_id'] ) ? absint( wp_unslash( $_POST['ppa_assignment_id'] ) ) : 0;
+		$assignment_id = isset( $_POST['pressprimer_assignment_id'] ) ? absint( wp_unslash( $_POST['pressprimer_assignment_id'] ) ) : 0;
 		if ( $assignment_id ) {
 			update_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, $assignment_id );
 		} else {
@@ -442,7 +442,7 @@ class PressPrimer_Assignment_TutorLMS {
 		}
 
 		// Save require pass setting.
-		$require_pass = isset( $_POST['ppa_require_pass'] ) ? '1' : '';
+		$require_pass = isset( $_POST['pressprimer_assignment_require_pass'] ) ? '1' : '';
 		update_post_meta( $post_id, self::META_KEY_REQUIRE_PASS, $require_pass );
 	}
 
@@ -729,7 +729,7 @@ class PressPrimer_Assignment_TutorLMS {
 
 		// Render assignment shortcode.
 		$assignment_shortcode = sprintf(
-			'[ppa_assignment id="%d"]',
+			'[pressprimer_assignment id="%d"]',
 			absint( $assignment_id )
 		);
 

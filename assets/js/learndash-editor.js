@@ -222,12 +222,13 @@
 	const PPALearnDashPanel = () => {
 		const { editPost } = useDispatch( 'core/editor' );
 
-		// Try REST field first (ppa_assignment_id), fall back to meta for compatibility
+		// Try REST field first (pressprimer_assignment_id), fall back to meta for compatibility
 		const postData = useSelect( ( select ) => {
 			const editor = select( 'core/editor' );
 			return {
-				ppaAssignmentId:
-					editor.getEditedPostAttribute( 'ppa_assignment_id' ),
+				ppaAssignmentId: editor.getEditedPostAttribute(
+					'pressprimer_assignment_id'
+				),
 				meta: editor.getEditedPostAttribute( 'meta' ) || {},
 			};
 		} );
@@ -242,7 +243,7 @@
 			( newAssignmentId ) => {
 				// Update both REST field and meta for compatibility
 				editPost( {
-					ppa_assignment_id: newAssignmentId,
+					pressprimer_assignment_id: newAssignmentId,
 					meta: {
 						[ config.metaKeyAssignmentId ]: newAssignmentId,
 					},

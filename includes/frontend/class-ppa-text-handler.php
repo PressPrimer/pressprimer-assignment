@@ -33,8 +33,8 @@ class PressPrimer_Assignment_Text_Handler {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		add_action( 'wp_ajax_ppa_save_text_draft', [ $this, 'handle_save_draft' ] );
-		add_action( 'wp_ajax_ppa_submit_text_assignment', [ $this, 'handle_submit' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_save_text_draft', [ $this, 'handle_save_draft' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_submit_text_assignment', [ $this, 'handle_submit' ] );
 		add_filter( 'heartbeat_received', [ $this, 'handle_heartbeat' ], 10, 2 );
 	}
 
@@ -47,13 +47,13 @@ class PressPrimer_Assignment_Text_Handler {
 	 *
 	 * Validates nonce, checks ownership, and persists draft text content.
 	 *
-	 * AJAX action: ppa_save_text_draft
+	 * AJAX action: pressprimer_assignment_save_text_draft
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_save_draft() {
 		// Verify nonce.
-		if ( ! check_ajax_referer( 'ppa_save_text_draft', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'pressprimer_assignment_save_text_draft', 'nonce', false ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_nonce',
@@ -170,15 +170,15 @@ class PressPrimer_Assignment_Text_Handler {
 	 * @return array Modified response data.
 	 */
 	public function handle_heartbeat( $response, $data ) {
-		if ( empty( $data['ppa_text_autosave'] ) ) {
+		if ( empty( $data['pressprimer_assignment_text_autosave'] ) ) {
 			return $response;
 		}
 
-		$autosave = $data['ppa_text_autosave'];
+		$autosave = $data['pressprimer_assignment_text_autosave'];
 
 		// Require login.
 		if ( ! is_user_logged_in() ) {
-			$response['ppa_text_autosave_response'] = [ 'success' => false ];
+			$response['pressprimer_assignment_text_autosave_response'] = [ 'success' => false ];
 			return $response;
 		}
 
@@ -192,7 +192,7 @@ class PressPrimer_Assignment_Text_Handler {
 		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
 
 		if ( ! $assignment || ! $assignment->accepts_text_submission() ) {
-			$response['ppa_text_autosave_response'] = [ 'success' => false ];
+			$response['pressprimer_assignment_text_autosave_response'] = [ 'success' => false ];
 			return $response;
 		}
 
@@ -200,13 +200,13 @@ class PressPrimer_Assignment_Text_Handler {
 		$submission = $this->get_or_create_draft( $user_id, $assignment_id, $submission_id );
 
 		if ( is_wp_error( $submission ) ) {
-			$response['ppa_text_autosave_response'] = [ 'success' => false ];
+			$response['pressprimer_assignment_text_autosave_response'] = [ 'success' => false ];
 			return $response;
 		}
 
 		// Verify ownership and draft status.
 		if ( (int) $submission->user_id !== $user_id || PressPrimer_Assignment_Submission::STATUS_DRAFT !== $submission->status ) {
-			$response['ppa_text_autosave_response'] = [ 'success' => false ];
+			$response['pressprimer_assignment_text_autosave_response'] = [ 'success' => false ];
 			return $response;
 		}
 
@@ -215,7 +215,7 @@ class PressPrimer_Assignment_Text_Handler {
 		$submission->word_count   = $word_count;
 		$submission->save();
 
-		$response['ppa_text_autosave_response'] = [
+		$response['pressprimer_assignment_text_autosave_response'] = [
 			'success'       => true,
 			'submission_id' => $submission->id,
 		];
@@ -233,13 +233,13 @@ class PressPrimer_Assignment_Text_Handler {
 	 * Finalizes a text draft submission: validates content exists,
 	 * updates status to 'submitted', and fires action hooks.
 	 *
-	 * AJAX action: ppa_submit_text_assignment
+	 * AJAX action: pressprimer_assignment_submit_text_assignment
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_submit() {
 		// Verify nonce.
-		if ( ! check_ajax_referer( 'ppa_frontend_nonce', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'pressprimer_assignment_frontend_nonce', 'nonce', false ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_nonce',

@@ -862,7 +862,7 @@ Your instructor has provided feedback. Click the button below to view your compl
 	/**
 	 * Get URL for student to view their submission
 	 *
-	 * Tries to find a page with the [ppa_my_submissions] shortcode.
+	 * Tries to find a page with the [pressprimer_assignment_my_submissions] shortcode.
 	 * Falls back to the home URL.
 	 *
 	 * @since 1.0.0
@@ -890,7 +890,7 @@ Your instructor has provided feedback. Click the button below to view your compl
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$found_page_id = $wpdb->get_var(
 			"SELECT ID FROM {$wpdb->posts}
-			 WHERE post_content LIKE '%[ppa_my_submissions%'
+			 WHERE post_content LIKE '%[pressprimer_assignment_my_submissions%'
 			 AND post_status = 'publish'
 			 AND post_type IN ('page', 'post')
 			 LIMIT 1"

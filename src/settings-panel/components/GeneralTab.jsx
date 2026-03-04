@@ -57,7 +57,7 @@ const GeneralTab = ( { settings, updateSetting, settingsData } ) => {
 							'pressprimer-assignment'
 						) }
 						help={ __(
-							'Page containing the [ppa_my_submissions] shortcode. Used in email links so students can view their submissions.',
+							'Page containing the [pressprimer_assignment_my_submissions] shortcode. Used in email links so students can view their submissions.',
 							'pressprimer-assignment'
 						) }
 					>

@@ -2,12 +2,12 @@
 /**
  * PDF text extraction service
  *
- * Provides robust PDF text extraction for assignment submissions.
- * Uses Smalot\PdfParser as the primary method with pdftotext as fallback.
- * Includes garbage text filtering to ensure extraction quality.
+ * Provides PDF text extraction for assignment submissions using
+ * Smalot\PdfParser. Includes garbage text filtering to ensure
+ * extraction quality.
  *
  * Two-tier extraction strategy:
- * - Quick check (first 3 pages) during upload for the text_extractable flag.
+ * - Quick check (first few pages) during upload for the text_extractable flag.
  * - Full extraction (all pages) via WP Cron for AI features.
  *
  * @package PressPrimer_Assignment
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * PDF service class
  *
- * Extracts text from PDF files using multiple methods with
+ * Extracts text from PDF files using Smalot\PdfParser with
  * quality filtering. Supports both synchronous quick checks
  * and asynchronous full extraction via WP Cron.
  *
@@ -47,25 +47,6 @@ class PressPrimer_Assignment_PDF_Service {
 	 */
 	const QUICK_CHECK_PAGES = 10;
 
-	/**
-	 * Temporary files to clean up on shutdown
-	 *
-	 * @since 1.0.0
-	 * @var array
-	 */
-	private $temp_files = [];
-
-	/**
-	 * Constructor
-	 *
-	 * Registers cleanup handler for temporary files.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __construct() {
-		register_shutdown_function( [ $this, 'cleanup_temp_files' ] );
-	}
-
 	// =========================================================================
 	// Public API.
 	// =========================================================================
@@ -73,10 +54,8 @@ class PressPrimer_Assignment_PDF_Service {
 	/**
 	 * Extract text from a PDF file
 	 *
-	 * Attempts extraction using Smalot\PdfParser first, then
-	 * pdftotext as fallback. Returns WP_Error if neither works.
-	 * Does NOT fall back to basic PHP regex extraction — that
-	 * method produces too much garbage.
+	 * Uses Smalot\PdfParser to extract text content from PDF files.
+	 * Returns WP_Error if extraction fails or the library is unavailable.
 	 *
 	 * @since 1.0.0
 	 *
@@ -103,24 +82,19 @@ class PressPrimer_Assignment_PDF_Service {
 			);
 		}
 
-		// Method 1: Try Smalot\PdfParser if available.
-		if ( class_exists( '\\Smalot\\PdfParser\\Parser' ) ) {
-			$text = $this->extract_with_smalot( $file_path, $max_pages );
-			if ( ! is_wp_error( $text ) && ! empty( trim( $text ) ) ) {
-				return $text;
-			}
+		if ( ! class_exists( '\\Smalot\\PdfParser\\Parser' ) ) {
+			return new WP_Error(
+				'ppa_pdf_parser_unavailable',
+				__( 'PDF text extraction library is not available.', 'pressprimer-assignment' )
+			);
 		}
 
-		// Method 2: Try pdftotext command-line tool.
-		$text = $this->extract_with_pdftotext( $file_path, $max_pages );
+		$text = $this->extract_with_smalot( $file_path, $max_pages );
+
 		if ( ! is_wp_error( $text ) && ! empty( trim( $text ) ) ) {
-			$text = $this->filter_garbage_text( $text );
-			if ( ! empty( trim( $text ) ) ) {
-				return $text;
-			}
+			return $text;
 		}
 
-		// Do NOT fall back to basic PHP extraction — it produces too much garbage.
 		return new WP_Error(
 			'ppa_pdf_extraction_failed',
 			__( 'Unable to extract readable text from this PDF. The file may be a scanned image or use embedded fonts that cannot be read.', 'pressprimer-assignment' )
@@ -161,16 +135,10 @@ class PressPrimer_Assignment_PDF_Service {
 		$clean_text = trim( preg_replace( '/\s+/', ' ', $text ) );
 		$word_count = str_word_count( $clean_text );
 
-		// Determine which method succeeded.
-		$method = 'pdftotext';
-		if ( class_exists( '\\Smalot\\PdfParser\\Parser' ) ) {
-			$method = 'smalot';
-		}
-
 		return [
 			'extractable' => $word_count >= self::MIN_WORD_COUNT,
 			'word_count'  => $word_count,
-			'method'      => $method,
+			'method'      => 'smalot',
 		];
 	}
 
@@ -192,7 +160,7 @@ class PressPrimer_Assignment_PDF_Service {
 			return;
 		}
 
-		wp_schedule_single_event( time(), 'ppa_extract_pdf_text', [ $file_id ] );
+		wp_schedule_single_event( time(), 'pressprimer_assignment_extract_pdf_text', [ $file_id ] );
 	}
 
 	/**
@@ -278,86 +246,6 @@ class PressPrimer_Assignment_PDF_Service {
 				$e->getMessage()
 			);
 		}
-	}
-
-	/**
-	 * Extract PDF text using pdftotext command-line tool
-	 *
-	 * Fallback extraction method using poppler-utils pdftotext.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $file_path Path to PDF file.
-	 * @param int    $max_pages Maximum pages to extract (0 = all pages).
-	 * @return string|WP_Error Extracted text or WP_Error.
-	 */
-	private function extract_with_pdftotext( $file_path, $max_pages = 0 ) {
-		$pdftotext_path = $this->find_executable( 'pdftotext' );
-
-		if ( ! $pdftotext_path ) {
-			return new WP_Error(
-				'ppa_pdftotext_not_found',
-				__( 'pdftotext command not available.', 'pressprimer-assignment' )
-			);
-		}
-
-		// Create temp output file.
-		$temp_output        = wp_tempnam( 'ppa_pdf_' );
-		$this->temp_files[] = $temp_output;
-
-		// Build command with proper escaping.
-		if ( $max_pages > 0 ) {
-			$command = sprintf(
-				'%s -layout -l %d %s %s 2>&1',
-				escapeshellcmd( $pdftotext_path ),
-				(int) $max_pages,
-				escapeshellarg( $file_path ),
-				escapeshellarg( $temp_output )
-			);
-		} else {
-			$command = sprintf(
-				'%s -layout %s %s 2>&1',
-				escapeshellcmd( $pdftotext_path ),
-				escapeshellarg( $file_path ),
-				escapeshellarg( $temp_output )
-			);
-		}
-
-		// Execute command.
-		$output     = [];
-		$return_var = 0;
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Extracting text from PDF.
-		exec( $command, $output, $return_var );
-
-		if ( 0 !== $return_var ) {
-			return new WP_Error(
-				'ppa_pdftotext_error',
-				__( 'pdftotext command failed.', 'pressprimer-assignment' )
-			);
-		}
-
-		// Read the output file.
-		if ( ! file_exists( $temp_output ) ) {
-			return new WP_Error(
-				'ppa_pdftotext_no_output',
-				__( 'pdftotext did not produce output.', 'pressprimer-assignment' )
-			);
-		}
-
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading temp file with extracted PDF text.
-		$text = file_get_contents( $temp_output );
-
-		// Clean up temp file immediately.
-		wp_delete_file( $temp_output );
-
-		if ( false === $text ) {
-			return new WP_Error(
-				'ppa_pdftotext_read_error',
-				__( 'Could not read pdftotext output.', 'pressprimer-assignment' )
-			);
-		}
-
-		return $text;
 	}
 
 	// =========================================================================
@@ -451,65 +339,5 @@ class PressPrimer_Assignment_PDF_Service {
 		}
 
 		return $result;
-	}
-
-	// =========================================================================
-	// Utility methods.
-	// =========================================================================
-
-	/**
-	 * Find an executable in common system paths
-	 *
-	 * Searches standard locations for a command-line tool, with
-	 * fallback to the `which` command.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $name Executable name (e.g., 'pdftotext').
-	 * @return string|false Full path to executable or false if not found.
-	 */
-	private function find_executable( $name ) {
-		// Common paths to check.
-		$paths = [
-			'/usr/bin/' . $name,
-			'/usr/local/bin/' . $name,
-			'/opt/homebrew/bin/' . $name,
-			'/opt/local/bin/' . $name,
-		];
-
-		foreach ( $paths as $path ) {
-			if ( file_exists( $path ) && is_executable( $path ) ) {
-				return $path;
-			}
-		}
-
-		// Try 'which' command as fallback.
-		if ( function_exists( 'exec' ) && ! in_array( 'exec', array_map( 'trim', explode( ',', ini_get( 'disable_functions' ) ) ), true ) ) {
-			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec -- Finding pdftotext executable.
-			$which_result = @exec( 'which ' . escapeshellarg( $name ) . ' 2>/dev/null' );
-
-			if ( ! empty( $which_result ) && file_exists( $which_result ) ) {
-				return $which_result;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Clean up temporary files
-	 *
-	 * Removes any temporary files created during extraction.
-	 * Registered as a shutdown function in the constructor.
-	 *
-	 * @since 1.0.0
-	 */
-	public function cleanup_temp_files() {
-		foreach ( $this->temp_files as $file ) {
-			if ( file_exists( $file ) ) {
-				wp_delete_file( $file );
-			}
-		}
-		$this->temp_files = [];
 	}
 }

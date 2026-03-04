@@ -274,9 +274,9 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 	public function get_download_url() {
 		return add_query_arg(
 			[
-				'ppa_download' => 1,
-				'file_id'      => $this->id,
-				'_wpnonce'     => wp_create_nonce( 'ppa_download_' . $this->id ),
+				'pressprimer_assignment_download' => 1,
+				'file_id'                         => $this->id,
+				'_wpnonce'                        => wp_create_nonce( 'pressprimer_assignment_download_' . $this->id ),
 			],
 			admin_url( 'admin-ajax.php' )
 		);

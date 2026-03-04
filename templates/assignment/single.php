@@ -63,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		// Drafts take priority so the user returns to their in-progress work,
 		// UNLESS a specific submission was requested (e.g., from My Submissions "View" link).
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only display, no state change.
-		$ppa_viewing_specific = isset( $_GET['ppa_submission'] ) && absint( $_GET['ppa_submission'] ) > 0;
+		$ppa_viewing_specific = isset( $_GET['pressprimer_assignment_submission'] ) && absint( $_GET['pressprimer_assignment_submission'] ) > 0;
 		$ppa_has_active_draft = $is_logged_in
 			&& $user_submission
 			&& PressPrimer_Assignment_Submission::STATUS_DRAFT !== $user_submission->status

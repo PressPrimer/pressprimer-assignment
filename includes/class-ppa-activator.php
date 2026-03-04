@@ -210,7 +210,7 @@ class PressPrimer_Assignment_Activator {
 				'post_type'    => 'page',
 				'post_title'   => __( 'My Submissions', 'pressprimer-assignment' ),
 				'post_name'    => 'my-submissions',
-				'post_content' => '<!-- wp:shortcode -->[ppa_my_submissions]<!-- /wp:shortcode -->',
+				'post_content' => '<!-- wp:shortcode -->[pressprimer_assignment_my_submissions]<!-- /wp:shortcode -->',
 				'post_status'  => 'publish',
 				'post_author'  => get_current_user_id() ?: 1,
 			]

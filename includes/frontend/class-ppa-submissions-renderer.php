@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Submissions renderer class
  *
- * Renders the [ppa_my_submissions] shortcode output showing
+ * Renders the [pressprimer_assignment_my_submissions] shortcode output showing
  * a student's submission history across all assignments.
  *
  * @since 1.0.0
@@ -77,7 +77,7 @@ class PressPrimer_Assignment_Submissions_Renderer {
 			if ( $assignment && 'published' === $assignment->status ) {
 				$base_url = $this->get_assignment_url( $assignment );
 				if ( $base_url ) {
-					$view_url = add_query_arg( 'ppa_submission', absint( $submission->id ), $base_url );
+					$view_url = add_query_arg( 'pressprimer_assignment_submission', absint( $submission->id ), $base_url );
 				}
 			}
 
@@ -176,7 +176,7 @@ class PressPrimer_Assignment_Submissions_Renderer {
 	/**
 	 * Get the URL of a page containing the assignment shortcode or block
 	 *
-	 * Searches published posts/pages for a [ppa_assignment] shortcode
+	 * Searches published posts/pages for a [pressprimer_assignment] shortcode
 	 * or pressprimer-assignment/assignment Gutenberg block referencing
 	 * the given assignment ID.
 	 *
@@ -196,7 +196,7 @@ class PressPrimer_Assignment_Submissions_Renderer {
 			$wpdb->prepare(
 				"SELECT ID FROM {$wpdb->posts} WHERE post_status = %s AND post_content LIKE %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $wpdb->posts is a core table name.
 				'publish',
-				'%[ppa_assignment%id="' . $wpdb->esc_like( (string) $assignment_id ) . '"%'
+				'%[pressprimer_assignment%id="' . $wpdb->esc_like( (string) $assignment_id ) . '"%'
 			)
 		);
 

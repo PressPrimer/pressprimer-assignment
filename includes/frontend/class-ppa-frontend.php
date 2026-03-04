@@ -116,7 +116,7 @@ class PressPrimer_Assignment_Frontend {
 	 * Enqueue dashboard assets
 	 *
 	 * Loads the base assets plus the My Submissions dashboard stylesheet.
-	 * Called by the [ppa_my_submissions] shortcode.
+	 * Called by the [pressprimer_assignment_my_submissions] shortcode.
 	 *
 	 * @since 1.0.0
 	 */
@@ -411,9 +411,9 @@ class PressPrimer_Assignment_Frontend {
 		$data = [
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 			'restUrl'   => rest_url( 'ppa/v1/' ),
-			'nonce'     => wp_create_nonce( 'ppa_frontend_nonce' ),
+			'nonce'     => wp_create_nonce( 'pressprimer_assignment_frontend_nonce' ),
 			'restNonce' => wp_create_nonce( 'wp_rest' ),
-			'textNonce' => wp_create_nonce( 'ppa_save_text_draft' ),
+			'textNonce' => wp_create_nonce( 'pressprimer_assignment_save_text_draft' ),
 			'i18n'      => [
 				'uploading'              => __( 'Uploading...', 'pressprimer-assignment' ),
 				'uploadComplete'         => __( 'Upload complete.', 'pressprimer-assignment' ),
@@ -507,21 +507,21 @@ class PressPrimer_Assignment_Frontend {
 	/**
 	 * Handle file download/view requests
 	 *
-	 * Intercepts requests with ppa_file_action parameter and serves
+	 * Intercepts requests with pressprimer_assignment_file_action parameter and serves
 	 * the requested file after permission checks.
 	 *
-	 * URL format: ?ppa_file_action=download&ppa_file_id=123&ppa_nonce=abc
+	 * URL format: ?pressprimer_assignment_file_action=download&pressprimer_assignment_file_id=123&pressprimer_assignment_nonce=abc
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_file_request() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
-		if ( empty( $_GET['ppa_file_action'] ) || empty( $_GET['ppa_file_id'] ) ) {
+		if ( empty( $_GET['pressprimer_assignment_file_action'] ) || empty( $_GET['pressprimer_assignment_file_id'] ) ) {
 			return;
 		}
 
 		// Verify nonce.
-		if ( ! isset( $_GET['ppa_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['ppa_nonce'] ) ), 'ppa_file_action' ) ) {
+		if ( ! isset( $_GET['pressprimer_assignment_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['pressprimer_assignment_nonce'] ) ), 'pressprimer_assignment_file_action' ) ) {
 			wp_die(
 				esc_html__( 'Security check failed.', 'pressprimer-assignment' ),
 				esc_html__( 'Error', 'pressprimer-assignment' ),
@@ -538,8 +538,8 @@ class PressPrimer_Assignment_Frontend {
 			);
 		}
 
-		$action  = sanitize_text_field( wp_unslash( $_GET['ppa_file_action'] ) );
-		$file_id = absint( wp_unslash( $_GET['ppa_file_id'] ) );
+		$action  = sanitize_text_field( wp_unslash( $_GET['pressprimer_assignment_file_action'] ) );
+		$file_id = absint( wp_unslash( $_GET['pressprimer_assignment_file_id'] ) );
 
 		if ( ! in_array( $action, [ 'download', 'view' ], true ) || 0 === $file_id ) {
 			wp_die(
@@ -577,9 +577,9 @@ class PressPrimer_Assignment_Frontend {
 	public static function get_file_url( $file_id, $action = 'download' ) {
 		return add_query_arg(
 			[
-				'ppa_file_action' => $action,
-				'ppa_file_id'     => absint( $file_id ),
-				'ppa_nonce'       => wp_create_nonce( 'ppa_file_action' ),
+				'pressprimer_assignment_file_action' => $action,
+				'pressprimer_assignment_file_id'     => absint( $file_id ),
+				'pressprimer_assignment_nonce'       => wp_create_nonce( 'pressprimer_assignment_file_action' ),
 			],
 			home_url( '/' )
 		);

@@ -41,10 +41,10 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		add_action( 'wp_ajax_ppa_upload_file', [ $this, 'handle_upload' ] );
-		add_action( 'wp_ajax_ppa_remove_file', [ $this, 'handle_remove' ] );
-		add_action( 'wp_ajax_ppa_submit_assignment', [ $this, 'handle_submit' ] );
-		add_action( 'wp_ajax_ppa_delete_submission', [ $this, 'handle_delete_submission' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_upload_file', [ $this, 'handle_upload' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_remove_file', [ $this, 'handle_remove' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_submit_assignment', [ $this, 'handle_submit' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_delete_submission', [ $this, 'handle_delete_submission' ] );
 	}
 
 	/**
@@ -74,13 +74,13 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * Validates nonce, checks permissions, validates the file,
 	 * creates or retrieves a draft submission, and stores the file.
 	 *
-	 * AJAX action: ppa_upload_file
+	 * AJAX action: pressprimer_assignment_upload_file
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_upload() {
 		// Verify nonce.
-		if ( ! check_ajax_referer( 'ppa_frontend_nonce', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'pressprimer_assignment_frontend_nonce', 'nonce', false ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_nonce',
@@ -257,13 +257,13 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * Removes an uploaded file from a draft submission.
 	 * Only the file owner can remove files from their draft.
 	 *
-	 * AJAX action: ppa_remove_file
+	 * AJAX action: pressprimer_assignment_remove_file
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_remove() {
 		// Verify nonce.
-		if ( ! check_ajax_referer( 'ppa_frontend_nonce', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'pressprimer_assignment_frontend_nonce', 'nonce', false ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_nonce',
@@ -375,13 +375,13 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * Finalizes a draft submission: validates files exist, saves student
 	 * notes, updates status to 'submitted', and fires action hooks.
 	 *
-	 * AJAX action: ppa_submit_assignment
+	 * AJAX action: pressprimer_assignment_submit_assignment
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_submit() {
 		// Verify nonce.
-		if ( ! check_ajax_referer( 'ppa_frontend_nonce', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'pressprimer_assignment_frontend_nonce', 'nonce', false ) ) {
 			wp_send_json_error(
 				[
 					'code'    => 'invalid_nonce',
@@ -732,13 +732,13 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * Only the submission owner can delete their submissions.
 	 * Properly cleans up associated files from disk.
 	 *
-	 * AJAX action: ppa_delete_submission
+	 * AJAX action: pressprimer_assignment_delete_submission
 	 *
 	 * @since 1.0.0
 	 */
 	public function handle_delete_submission() {
 		// Verify nonce.
-		if ( ! check_ajax_referer( 'ppa_frontend_nonce', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'pressprimer_assignment_frontend_nonce', 'nonce', false ) ) {
 			wp_send_json_error(
 				[ 'message' => __( 'Security check failed.', 'pressprimer-assignment' ) ],
 				403

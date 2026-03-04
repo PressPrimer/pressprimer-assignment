@@ -53,7 +53,7 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 * Student notes field for context or questions
 * View submission status, grade, and instructor feedback
 * Previous submission history with feedback for each attempt
-* [ppa_my_submissions] shortcode for a personal submissions dashboard
+* [pressprimer_assignment_my_submissions] shortcode for a personal submissions dashboard
 
 **Grading & Feedback**
 
@@ -83,6 +83,8 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 * Six-layer file upload validation (extension whitelist, MIME verification, double-extension blocking, dangerous file rejection)
 * Files stored outside webroot with permission-based serving through PHP
 * Capability-based access control (teachers see only their own assignments)
+* WordPress Privacy API integration (Tools > Export/Erase Personal Data)
+* Clean uninstall with optional complete data and file removal
 * Three professional themes with responsive design, RTL support, and print styles
 * Keyboard navigation, screen reader support, and reduced motion preferences
 
@@ -119,6 +121,18 @@ All integrations are included in the free version.
 
 * [Knowledge Base](https://pressprimer.com/knowledge-base/pressprimer-assignment/)
 
+= Source Code & Development =
+
+The full uncompressed source code for all JavaScript and CSS files is available in our public GitHub repository:
+
+* [GitHub Repository](https://github.com/PressPrimer/pressprimer-assignment)
+
+The `/src` directory contains all unminified source files. The plugin uses webpack for building production assets. To rebuild from source:
+
+1. Clone the repository
+2. Run `npm install` to install dependencies
+3. Run `npm run build` to compile assets
+
 == Installation ==
 
 = Automatic Installation =
@@ -131,6 +145,17 @@ All integrations are included in the free version.
 = LMS Integration =
 
 If you have LearnDash or Tutor LMS installed, integration features enable automatically.
+
+== Privacy ==
+
+PressPrimer Assignment stores student submission data (files, text, grades, and feedback) in your WordPress database under your full control. No data is transmitted to external servers. All submitted files are stored in a protected directory under `wp-content/uploads/ppa-submissions/` and served via PHP with permission checks.
+
+The plugin integrates with the WordPress Privacy API:
+
+* **Tools > Export Personal Data** — includes all submissions, grades, feedback, and uploaded file metadata for the requested user.
+* **Tools > Erase Personal Data** — permanently deletes all submissions, grades, and uploaded files for the requested user.
+
+Administrators can permanently delete all plugin data (database tables, uploaded files, options, and user meta) via Settings > Advanced > "Remove all data on uninstall" before uninstalling the plugin.
 
 == Frequently Asked Questions ==
 
@@ -148,7 +173,7 @@ Yes. Assignments integrate with Tutor LMS lessons via the editor sidebar and cou
 
 = Can I use this without an LMS plugin? =
 
-Absolutely. PressPrimer Assignment works as a standalone plugin. Use the `[ppa_assignment]` shortcode to embed assignments on any page or post. The LMS integrations are a bonus that enable automatically when an LMS is detected—they don't restrict standalone use.
+Absolutely. PressPrimer Assignment works as a standalone plugin. Use the `[pressprimer_assignment]` shortcode to embed assignments on any page or post. The LMS integrations are a bonus that enable automatically when an LMS is detected—they don't restrict standalone use.
 
 = Does this work with PressPrimer Quiz? =
 

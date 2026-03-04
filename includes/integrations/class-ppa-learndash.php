@@ -164,7 +164,7 @@ class PressPrimer_Assignment_LearnDash {
 				<input
 					type="hidden"
 					id="ppa_assignment_id"
-					name="ppa_assignment_id"
+					name="pressprimer_assignment_id"
 					value="<?php echo esc_attr( $assignment_id ); ?>"
 				/>
 				<div id="ppa_assignment_results" class="ppa-assignment-results ppa-hidden"></div>
@@ -415,7 +415,7 @@ class PressPrimer_Assignment_LearnDash {
 		}
 
 		// Save assignment ID.
-		$assignment_id = isset( $_POST['ppa_assignment_id'] ) ? absint( wp_unslash( $_POST['ppa_assignment_id'] ) ) : 0;
+		$assignment_id = isset( $_POST['pressprimer_assignment_id'] ) ? absint( wp_unslash( $_POST['pressprimer_assignment_id'] ) ) : 0;
 
 		if ( $assignment_id ) {
 			update_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, $assignment_id );
@@ -452,7 +452,7 @@ class PressPrimer_Assignment_LearnDash {
 			// Also register as REST field for LearnDash custom REST controller compatibility.
 			register_rest_field(
 				$post_type,
-				'ppa_assignment_id',
+				'pressprimer_assignment_id',
 				[
 					'get_callback'    => function ( $post ) {
 						return absint( get_post_meta( $post['id'], self::META_KEY_ASSIGNMENT_ID, true ) );
@@ -569,7 +569,7 @@ class PressPrimer_Assignment_LearnDash {
 
 		// Render assignment shortcode.
 		$assignment_shortcode = sprintf(
-			'[ppa_assignment id="%d"]',
+			'[pressprimer_assignment id="%d"]',
 			absint( $assignment_id )
 		);
 

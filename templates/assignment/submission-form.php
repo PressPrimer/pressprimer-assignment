@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		data-can-resubmit="<?php echo esc_attr( $can_resubmit_data ); ?>"
 		data-resubmissions-remaining="<?php echo esc_attr( $resubmissions_remaining ); ?>"
 		data-assignment-title="<?php echo esc_attr( $assignment->title ); ?>">
-		<?php wp_nonce_field( 'ppa_submit_assignment', 'ppa_nonce' ); ?>
+		<?php wp_nonce_field( 'pressprimer_assignment_submit_assignment', 'pressprimer_assignment_nonce' ); ?>
 		<input type="hidden" name="assignment_id" value="<?php echo esc_attr( $assignment->id ); ?>">
 
 		<div class="ppa-form-section">

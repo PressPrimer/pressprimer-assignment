@@ -345,7 +345,7 @@
 			this.uploadsInProgress++;
 			window.PPA.SubmissionForm.updateSubmitButton();
 
-			formData.append( 'action', 'ppa_upload_file' );
+			formData.append( 'action', 'pressprimer_assignment_upload_file' );
 			formData.append( 'file', file );
 			formData.append( 'assignment_id', this.assignmentId );
 			formData.append( 'nonce', pressprimerAssignmentFrontend.nonce );
@@ -782,7 +782,7 @@
 					url: pressprimerAssignmentFrontend.ajaxUrl,
 					type: 'POST',
 					data: {
-						action: 'ppa_remove_file',
+						action: 'pressprimer_assignment_remove_file',
 						file_id: parseInt( fileId, 10 ),
 						nonce: pressprimerAssignmentFrontend.nonce,
 					},
@@ -1306,7 +1306,7 @@
 				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
-					action: 'ppa_submit_assignment',
+					action: 'pressprimer_assignment_submit_assignment',
 					assignment_id: window.PPA.Upload.assignmentId,
 					file_ids: fileIds,
 					student_notes: self.$notesField.val(),
@@ -1430,7 +1430,7 @@
 						url: pressprimerAssignmentFrontend.ajaxUrl,
 						type: 'POST',
 						data: {
-							action: 'ppa_delete_submission',
+							action: 'pressprimer_assignment_delete_submission',
 							submission_id: submissionId,
 							nonce: pressprimerAssignmentFrontend.nonce,
 						},

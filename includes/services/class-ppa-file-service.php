@@ -257,20 +257,32 @@ class PressPrimer_Assignment_File_Service {
 		$year_dir = trailingslashit( $upload_dir['path'] ) . gmdate( 'Y' );
 		$this->create_index_file( $year_dir );
 
-		// Move uploaded file.
+		// Move uploaded file using the WP Filesystem API.
 		$target_path = trailingslashit( $target_dir ) . $stored_filename;
 
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- move_uploaded_file may warn on permission issues.
-		if ( ! @move_uploaded_file( $file['tmp_name'], $target_path ) ) {
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+
+		$tmp_contents = $wp_filesystem->get_contents( $file['tmp_name'] );
+		if ( false === $tmp_contents ) {
+			return new WP_Error(
+				'ppa_read_failed',
+				__( 'Failed to read uploaded file.', 'pressprimer-assignment' )
+			);
+		}
+
+		if ( ! $wp_filesystem->put_contents( $target_path, $tmp_contents, FS_CHMOD_FILE ) ) {
 			return new WP_Error(
 				'ppa_move_failed',
 				__( 'Failed to move uploaded file.', 'pressprimer-assignment' )
 			);
 		}
 
-		// Set appropriate file permissions.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Setting secure permissions on uploaded file.
-		chmod( $target_path, 0644 );
+		// Remove the temporary upload file.
+		wp_delete_file( $file['tmp_name'] );
 
 		// Calculate SHA-256 hash for integrity verification.
 		$file_hash = hash_file( 'sha256', $target_path );

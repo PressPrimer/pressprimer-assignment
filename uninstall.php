@@ -8,6 +8,7 @@
  * IMPORTANT: By default, this script preserves ALL data to prevent accidental data loss.
  * Data is only removed if the user has explicitly enabled "Remove all data on uninstall"
  * in the plugin settings page. This includes:
+ * - Uploaded submission files
  * - Database tables
  * - Options
  * - User meta
@@ -57,6 +58,9 @@ function pressprimer_assignment_uninstall() {
 	// User has explicitly chosen to remove all data
 	// Proceed with complete removal
 
+	// Remove uploaded files from disk before dropping tables.
+	pressprimer_assignment_remove_uploaded_files();
+
 	// Remove all database tables
 	pressprimer_assignment_drop_tables();
 
@@ -93,6 +97,55 @@ function pressprimer_assignment_uninstall() {
 
 	// Clear any remaining transients
 	pressprimer_assignment_clear_transients();
+}
+
+/**
+ * Remove uploaded submission files
+ *
+ * Deletes the ppa-submissions directory and all its contents
+ * from wp-content/uploads. Handles both single site and multisite.
+ *
+ * @since 1.0.0
+ */
+function pressprimer_assignment_remove_uploaded_files() {
+	$upload_dir_name = 'ppa-submissions';
+
+	if ( is_multisite() ) {
+		$site_ids = get_sites( [ 'fields' => 'ids' ] );
+
+		foreach ( $site_ids as $site_id ) {
+			switch_to_blog( $site_id );
+			$upload_dir = wp_upload_dir();
+			$ppa_dir    = trailingslashit( $upload_dir['basedir'] ) . $upload_dir_name;
+			pressprimer_assignment_delete_directory( $ppa_dir );
+			restore_current_blog();
+		}
+	} else {
+		$upload_dir = wp_upload_dir();
+		$ppa_dir    = trailingslashit( $upload_dir['basedir'] ) . $upload_dir_name;
+		pressprimer_assignment_delete_directory( $ppa_dir );
+	}
+}
+
+/**
+ * Recursively delete a directory and its contents
+ *
+ * @since 1.0.0
+ *
+ * @param string $dir Directory path to delete.
+ */
+function pressprimer_assignment_delete_directory( $dir ) {
+	if ( ! is_dir( $dir ) ) {
+		return;
+	}
+
+	global $wp_filesystem;
+	if ( ! function_exists( 'WP_Filesystem' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+	}
+	WP_Filesystem();
+
+	$wp_filesystem->rmdir( $dir, true );
 }
 
 /**
@@ -251,10 +304,10 @@ function pressprimer_assignment_remove_capabilities() {
  */
 function pressprimer_assignment_remove_site_capabilities() {
 	$capabilities = [
-		'ppa_manage_all',
-		'ppa_manage_own',
-		'ppa_manage_settings',
-		'ppa_view_reports',
+		'pressprimer_assignment_manage_all',
+		'pressprimer_assignment_manage_own',
+		'pressprimer_assignment_manage_settings',
+		'pressprimer_assignment_view_reports',
 	];
 
 	// Get all WordPress roles.

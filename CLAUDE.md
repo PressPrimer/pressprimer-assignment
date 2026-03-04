@@ -206,6 +206,61 @@ $count_sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", 
 
 ---
 
+## WordPress.org Prefix Requirements (CRITICAL — REJECTION IF WRONG)
+
+PressPrimer Quiz was **rejected by WordPress.org** for using `ppq_` (3 characters) on globally-registered identifiers. The same rule applies to Assignment. **`ppa_` is NOT an acceptable prefix for global identifiers.** This was a painful lesson — do not repeat it.
+
+### The Rule
+
+Any identifier that is registered in a **global WordPress namespace** MUST use the full `pressprimer_assignment_` prefix (or `pressprimerAssignment` in camelCase for JS objects).
+
+### What MUST use `pressprimer_assignment_` (long prefix)
+
+| Identifier Type | Example | Registered Via |
+|-----------------|---------|----------------|
+| AJAX actions | `pressprimer_assignment_upload_file` | `wp_ajax_pressprimer_assignment_upload_file` |
+| Admin post actions | `pressprimer_assignment_save_category` | `admin_post_pressprimer_assignment_save_category` |
+| Shortcodes | `pressprimer_assignment` | `add_shortcode( 'pressprimer_assignment', ... )` |
+| Nonce actions | `pressprimer_assignment_frontend_nonce` | `wp_create_nonce( 'pressprimer_assignment_frontend_nonce' )` |
+| Cron hooks | `pressprimer_assignment_extract_pdf_text` | `add_action( 'pressprimer_assignment_extract_pdf_text', ... )` |
+| Options | `pressprimer_assignment_settings` | `get_option( 'pressprimer_assignment_settings' )` |
+| User meta keys | `pressprimer_assignment_*` | `get_user_meta()` |
+| Post meta keys | `pressprimer_assignment_*` | `get_post_meta()` |
+| Transients | `pressprimer_assignment_*` | `get_transient()` |
+| Custom hooks/filters | `pressprimer_assignment_*` | `do_action()` / `apply_filters()` |
+| wp_localize_script objects | `pressprimerAssignmentFrontend` | `wp_localize_script()` |
+| URL query parameters | `pressprimer_assignment_file_action` | `$_GET` / `$_POST` |
+| Capabilities | `pressprimer_assignment_manage_all` | `add_cap()` / `current_user_can()` |
+| REST field names | `pressprimer_assignment_id` | `register_rest_field()` |
+| Form POST field names | `pressprimer_assignment_id` | `name=""` attribute → `$_POST['name']` |
+
+### What CAN use `ppa-` (short prefix — these are safe)
+
+| Identifier Type | Example | Why It's Safe |
+|-----------------|---------|---------------|
+| Script handles | `ppa-submission` | `wp_enqueue_script( 'ppa-submission' )` — handle collisions are harmless |
+| Style handles | `ppa-admin-css` | `wp_enqueue_style( 'ppa-admin-css' )` — same reason |
+| REST API namespace | `ppa/v1` | REST namespaces are scoped by design |
+| CSS class names | `.ppa-button` | Not in any WordPress registry |
+| CSS variables | `--ppa-primary` | Not in any WordPress registry |
+| PHP class names | `PressPrimer_Assignment_*` | Already long-prefixed |
+| Database tables | `{prefix}ppa_assignments` | Prefixed by `$wpdb->prefix`, not global |
+| HTML element IDs | `id="ppa_text_content"` | Not in any WordPress registry |
+| WP_Error codes | `'ppa_not_found'` | Internal error identifiers, not global |
+| Internal PHP functions | `ppa_get_assignment()` | Only if not hooked into WP — but prefer class methods |
+
+### How to Check
+
+Before ANY commit that adds new WordPress hooks, shortcodes, options, AJAX actions, or cron jobs:
+
+1. Search for `'ppa_` in the changed files
+2. If the string appears as a hook name, action name, shortcode tag, option key, nonce action, query parameter, capability, REST field name, or form POST field name — it MUST be changed to `pressprimer_assignment_`
+3. If the string appears as a script handle, CSS class, or REST namespace — it's fine
+
+**When in doubt, use the long prefix. There is zero downside to a longer prefix. There is a guaranteed WordPress.org rejection for a short one.**
+
+---
+
 ## Input Sanitization (CRITICAL)
 
 ### Sanitize Immediately When Receiving Input
@@ -564,7 +619,7 @@ git commit -m "fix: apply late_penalty_percent to final_score"
 
 Before creating a release ZIP:
 
-1. **Prefixes** - Search for `ppa_` in transients, wp_localize_script object names, options
+1. **Prefixes** - Verify ALL globally-registered identifiers use `pressprimer_assignment_` (see Prefix Requirements section)
 2. **SQL** - No variable interpolation in ORDER BY, use `%i` for field names
 3. **Escaping** - No `phpcs:ignore` for EscapeOutput, use `wp_kses()` instead
 4. **Inline code** - No `<script>` or `<style>` tags in PHP
@@ -779,7 +834,7 @@ Verified from Quiz's `themes/default.css` — same values with `--ppa-` prefix.
 2. **Test with WP_DEBUG enabled** - Catches notices and warnings
 3. **Sanitize early, escape late** - Core WordPress security principle
 4. **No variable interpolation in SQL** - Use placeholders exclusively
-5. **4+ character prefixes** - For all global identifiers
+5. **Long prefixes for global identifiers** - See "WordPress.org Prefix Requirements" section below
 6. **Use CSS classes instead of inline styles** - For elements that need wp_kses
 7. **phpcs:ignore for escaping = REJECTION** - Always use wp_kses() instead
 8. **File upload security** - Validate extension, MIME type, and magic bytes

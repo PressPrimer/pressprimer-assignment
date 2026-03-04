@@ -35,7 +35,7 @@ class PressPrimer_Assignment_Capabilities {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const PPA_CAP_MANAGE_ALL = 'ppa_manage_all';
+	const PPA_CAP_MANAGE_ALL = 'pressprimer_assignment_manage_all';
 
 	/**
 	 * Settings management capability
@@ -43,7 +43,7 @@ class PressPrimer_Assignment_Capabilities {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const PPA_CAP_MANAGE_SETTINGS = 'ppa_manage_settings';
+	const PPA_CAP_MANAGE_SETTINGS = 'pressprimer_assignment_manage_settings';
 
 	/**
 	 * Own content management capability
@@ -54,7 +54,7 @@ class PressPrimer_Assignment_Capabilities {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const PPA_CAP_MANAGE_OWN = 'ppa_manage_own';
+	const PPA_CAP_MANAGE_OWN = 'pressprimer_assignment_manage_own';
 
 	/**
 	 * Reports viewing capability
@@ -62,7 +62,7 @@ class PressPrimer_Assignment_Capabilities {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const PPA_CAP_VIEW_REPORTS = 'ppa_view_reports';
+	const PPA_CAP_VIEW_REPORTS = 'pressprimer_assignment_view_reports';
 
 	/**
 	 * Setup capabilities

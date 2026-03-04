@@ -89,6 +89,9 @@ class PressPrimer_Assignment_Plugin {
 		// Register statistics cache invalidation hooks.
 		$this->register_statistics_hooks();
 
+		// Register privacy exporters/erasers.
+		$this->init_privacy();
+
 		// Initialize components.
 		$this->init_admin();
 		$this->init_frontend();
@@ -155,7 +158,7 @@ class PressPrimer_Assignment_Plugin {
 	 */
 	private function register_cron_hooks() {
 		if ( class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
-			add_action( 'ppa_extract_pdf_text', [ 'PressPrimer_Assignment_PDF_Service', 'process_scheduled_extraction' ] );
+			add_action( 'pressprimer_assignment_extract_pdf_text', [ 'PressPrimer_Assignment_PDF_Service', 'process_scheduled_extraction' ] );
 		}
 	}
 
@@ -365,6 +368,20 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_Blocks' ) ) {
 			$blocks = new PressPrimer_Assignment_Blocks();
 			$blocks->init();
+		}
+	}
+
+	/**
+	 * Initialize Privacy API integration
+	 *
+	 * Registers personal data exporters and erasers with
+	 * the WordPress Privacy API (Tools > Export/Erase Personal Data).
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_privacy() {
+		if ( class_exists( 'PressPrimer_Assignment_Privacy' ) ) {
+			PressPrimer_Assignment_Privacy::init();
 		}
 	}
 }

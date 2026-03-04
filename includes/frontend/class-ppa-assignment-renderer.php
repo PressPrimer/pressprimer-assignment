@@ -197,7 +197,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		if ( $is_logged_in ) {
 			// Check if a specific submission was requested (e.g., from My Submissions "View" link).
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only display, no state change.
-			$requested_submission_id = isset( $_GET['ppa_submission'] ) ? absint( wp_unslash( $_GET['ppa_submission'] ) ) : 0;
+			$requested_submission_id = isset( $_GET['pressprimer_assignment_submission'] ) ? absint( wp_unslash( $_GET['pressprimer_assignment_submission'] ) ) : 0;
 
 			if ( $requested_submission_id > 0 ) {
 				$user_submission = $this->get_specific_submission( $requested_submission_id, $assignment->id, $user_id );

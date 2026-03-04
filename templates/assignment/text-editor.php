@@ -65,7 +65,7 @@ if ( $assignment->allow_resubmission && $is_resubmission ) {
 		data-can-resubmit="<?php echo esc_attr( $can_resubmit_data ); ?>"
 		data-resubmissions-remaining="<?php echo esc_attr( $resubmissions_remaining ); ?>"
 		data-assignment-title="<?php echo esc_attr( $assignment->title ); ?>">
-		<?php wp_nonce_field( 'ppa_save_text_submission', 'ppa_text_nonce' ); ?>
+		<?php wp_nonce_field( 'pressprimer_assignment_save_text_submission', 'pressprimer_assignment_text_nonce' ); ?>
 		<input type="hidden" name="assignment_id" value="<?php echo esc_attr( $assignment->id ); ?>">
 		<input type="hidden" name="submission_id" value="<?php echo esc_attr( $draft_id ); ?>">
 

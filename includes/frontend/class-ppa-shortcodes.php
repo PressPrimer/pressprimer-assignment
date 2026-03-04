@@ -49,8 +49,8 @@ class PressPrimer_Assignment_Shortcodes {
 	 * @since 1.0.0
 	 */
 	public function register_shortcodes() {
-		add_shortcode( 'ppa_assignment', [ $this, 'render_assignment' ] );
-		add_shortcode( 'ppa_my_submissions', [ $this, 'render_my_submissions' ] );
+		add_shortcode( 'pressprimer_assignment', [ $this, 'render_assignment' ] );
+		add_shortcode( 'pressprimer_assignment_my_submissions', [ $this, 'render_my_submissions' ] );
 	}
 
 	/**
@@ -96,7 +96,7 @@ class PressPrimer_Assignment_Shortcodes {
 	 * Displays a single assignment with its submission form or
 	 * the user's existing submission status.
 	 *
-	 * Usage: [ppa_assignment id="123"]
+	 * Usage: [pressprimer_assignment id="123"]
 	 *
 	 * @since 1.0.0
 	 *
@@ -113,7 +113,7 @@ class PressPrimer_Assignment_Shortcodes {
 			'show_file_info'    => 'true',
 		];
 
-		$atts = shortcode_atts( $defaults, $atts, 'ppa_assignment' );
+		$atts = shortcode_atts( $defaults, $atts, 'pressprimer_assignment' );
 
 		$assignment_id = absint( $atts['id'] );
 
@@ -165,7 +165,7 @@ class PressPrimer_Assignment_Shortcodes {
 	 *
 	 * Displays the current user's submission history across all assignments.
 	 *
-	 * Usage: [ppa_my_submissions]
+	 * Usage: [pressprimer_assignment_my_submissions]
 	 *
 	 * @since 1.0.0
 	 *
@@ -181,7 +181,7 @@ class PressPrimer_Assignment_Shortcodes {
 			'show_date'   => 'true',
 		];
 
-		$atts = shortcode_atts( $defaults, $atts, 'ppa_my_submissions' );
+		$atts = shortcode_atts( $defaults, $atts, 'pressprimer_assignment_my_submissions' );
 
 		// Require login.
 		if ( ! is_user_logged_in() ) {

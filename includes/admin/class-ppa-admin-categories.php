@@ -49,8 +49,8 @@ class PressPrimer_Assignment_Admin_Categories {
 	 * @since 1.0.0
 	 */
 	public function init() {
-		add_action( 'admin_post_ppa_save_category', [ $this, 'handle_save' ] );
-		add_action( 'admin_post_ppa_delete_category', [ $this, 'handle_delete' ] );
+		add_action( 'admin_post_pressprimer_assignment_save_category', [ $this, 'handle_save' ] );
+		add_action( 'admin_post_pressprimer_assignment_delete_category', [ $this, 'handle_delete' ] );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 	}
 
@@ -142,7 +142,7 @@ class PressPrimer_Assignment_Admin_Categories {
 
 							<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="ppa-category-form">
 								<?php wp_nonce_field( 'pressprimer_assignment_save_category', 'pressprimer_assignment_category_nonce' ); ?>
-								<input type="hidden" name="action" value="ppa_save_category">
+								<input type="hidden" name="action" value="pressprimer_assignment_save_category">
 								<input type="hidden" name="taxonomy" value="<?php echo esc_attr( $this->taxonomy ); ?>">
 								<input type="hidden" name="return_url" value="<?php echo esc_url( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); ?>">
 
@@ -274,7 +274,7 @@ class PressPrimer_Assignment_Admin_Categories {
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="ppa-category-edit-form">
 				<?php wp_nonce_field( 'pressprimer_assignment_save_category', 'pressprimer_assignment_category_nonce' ); ?>
-				<input type="hidden" name="action" value="ppa_save_category">
+				<input type="hidden" name="action" value="pressprimer_assignment_save_category">
 				<input type="hidden" name="category_id" value="<?php echo esc_attr( $category->id ); ?>">
 				<input type="hidden" name="taxonomy" value="<?php echo esc_attr( $this->taxonomy ); ?>">
 				<input type="hidden" name="return_url" value="<?php echo esc_url( $back_url ); ?>">
@@ -975,7 +975,7 @@ class PressPrimer_Assignment_Categories_List_Table extends WP_List_Table {
 		$delete_url = wp_nonce_url(
 			add_query_arg(
 				[
-					'action' => 'ppa_delete_category',
+					'action' => 'pressprimer_assignment_delete_category',
 					'id'     => $item->id,
 				],
 				admin_url( 'admin-post.php' )

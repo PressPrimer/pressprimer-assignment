@@ -340,7 +340,7 @@
 				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
-					action: 'ppa_save_text_draft',
+					action: 'pressprimer_assignment_save_text_draft',
 					nonce: pressprimerAssignmentFrontend.textNonce,
 					assignment_id: self.assignmentId,
 					submission_id: self.submissionId,
@@ -391,7 +391,7 @@
 
 			$( document ).on( 'heartbeat-send', function ( e, data ) {
 				if ( self.isDirty && self.editor && ! self.isSaving ) {
-					data.ppa_text_autosave = {
+					data.pressprimer_assignment_text_autosave = {
 						assignment_id: self.assignmentId,
 						submission_id: self.submissionId,
 						text_content: self.editor.getContent(),
@@ -401,10 +401,10 @@
 			} );
 
 			$( document ).on( 'heartbeat-tick', function ( e, data ) {
-				if ( data.ppa_text_autosave_response ) {
-					if ( data.ppa_text_autosave_response.success ) {
+				if ( data.pressprimer_assignment_text_autosave_response ) {
+					if ( data.pressprimer_assignment_text_autosave_response.success ) {
 						self.submissionId =
-							data.ppa_text_autosave_response.submission_id;
+							data.pressprimer_assignment_text_autosave_response.submission_id;
 						self.isDirty = false;
 						self.updateSaveStatus( 'saved' );
 
@@ -501,7 +501,7 @@
 				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
-					action: 'ppa_save_text_draft',
+					action: 'pressprimer_assignment_save_text_draft',
 					nonce: pressprimerAssignmentFrontend.textNonce,
 					assignment_id: self.assignmentId,
 					submission_id: self.submissionId,
@@ -592,7 +592,7 @@
 				url: pressprimerAssignmentFrontend.ajaxUrl,
 				type: 'POST',
 				data: {
-					action: 'ppa_submit_text_assignment',
+					action: 'pressprimer_assignment_submit_text_assignment',
 					nonce: pressprimerAssignmentFrontend.nonce,
 					assignment_id: self.assignmentId,
 					submission_id: self.submissionId,
