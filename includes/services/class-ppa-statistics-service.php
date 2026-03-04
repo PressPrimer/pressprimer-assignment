@@ -65,6 +65,15 @@ class PressPrimer_Assignment_Statistics_Service {
 
 		// Always clear the global cache.
 		delete_transient( 'pressprimer_assignment_dashboard_stats_all' );
+
+		// Clear all per-user dashboard caches (prefix match).
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Deleting transients by prefix.
+		$wpdb->query(
+			"DELETE FROM {$wpdb->options}
+			WHERE option_name LIKE '_transient_pressprimer\_assignment\_dashboard\_stats\_%'
+				OR option_name LIKE '_transient_timeout_pressprimer\_assignment\_dashboard\_stats\_%'"
+		);
 	}
 
 	/**
