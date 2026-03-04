@@ -97,6 +97,14 @@ class PressPrimer_Assignment_Statistics_Service {
 	 * @param int|null $author_id Optional. Author ID for targeted dashboard cache clear.
 	 */
 	public static function clear_all_caches( $author_id = null ) {
+		// When called via action hooks the first arg may be a Submission
+		// object or a submission ID rather than an author ID — normalise.
+		if ( is_object( $author_id ) ) {
+			$author_id = null;
+		} elseif ( $author_id ) {
+			$author_id = absint( $author_id );
+		}
+
 		self::clear_dashboard_cache( $author_id );
 		self::clear_activity_chart_cache();
 		self::clear_overview_cache();

@@ -99,6 +99,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			const payload = {
 				...values,
 				allow_resubmission: values.allow_resubmission ? 1 : 0,
+				max_resubmissions: values.allow_resubmission
+					? values.max_resubmissions
+					: 0,
 				categories: selectedCategories,
 			};
 

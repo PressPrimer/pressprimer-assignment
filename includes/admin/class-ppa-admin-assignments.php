@@ -414,6 +414,7 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'allowed_file_types' => $assignment->allowed_file_types,
 					'max_file_size'      => (int) $assignment->max_file_size,
 					'max_files'          => (int) $assignment->max_files,
+					'notification_email' => $assignment->notification_email ?? '',
 					'submission_type'    => $assignment->submission_type,
 					'status'             => $assignment->status,
 					'categories'         => $category_ids,
