@@ -108,6 +108,7 @@ function pressprimer_assignment_drop_tables() {
 
 	// Table names without prefix (ppa_ short prefix for DB tables)
 	$table_names = [
+		'ppa_assignment_tax',
 		'ppa_assignments',
 		'ppa_submissions',
 		'ppa_submission_files',
@@ -251,6 +252,7 @@ function pressprimer_assignment_remove_capabilities() {
 function pressprimer_assignment_remove_site_capabilities() {
 	$capabilities = [
 		'ppa_manage_all',
+		'ppa_manage_own',
 		'ppa_manage_settings',
 		'ppa_view_reports',
 	];

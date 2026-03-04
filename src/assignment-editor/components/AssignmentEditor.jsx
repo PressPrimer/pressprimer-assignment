@@ -54,6 +54,15 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 	// Initialize form with assignment data.
 	useEffect( () => {
 		if ( assignmentData.id ) {
+			// wp_localize_script converts all values to strings,
+			// so parse numeric/boolean fields explicitly.
+			const allowResub =
+				parseInt( assignmentData.allow_resubmission, 10 ) === 1;
+			const maxResub = parseInt(
+				assignmentData.max_resubmissions,
+				10
+			);
+
 			form.setFieldsValue( {
 				title: assignmentData.title || '',
 				description: assignmentData.description || '',
@@ -62,13 +71,18 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				status: assignmentData.status || 'draft',
 				theme: assignmentData.theme || 'default',
 				submission_type: assignmentData.submission_type || 'file',
-				max_points: assignmentData.max_points || 100,
-				passing_score: assignmentData.passing_score || 60,
-				allow_resubmission: !! assignmentData.allow_resubmission,
-				max_resubmissions: assignmentData.max_resubmissions || 1,
+				max_points:
+					parseFloat( assignmentData.max_points ) || 100,
+				passing_score:
+					parseFloat( assignmentData.passing_score ) || 60,
+				allow_resubmission: allowResub,
+				max_resubmissions: isNaN( maxResub ) ? 1 : maxResub,
+				notification_email:
+					assignmentData.notification_email || '',
 				max_file_size:
 					parseInt( assignmentData.max_file_size, 10 ) || 5242880,
-				max_files: assignmentData.max_files || 5,
+				max_files:
+					parseInt( assignmentData.max_files, 10 ) || 5,
 				allowed_file_types: assignmentData.allowed_file_types || [
 					'pdf',
 					'docx',
@@ -207,6 +221,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						passing_score: defaults.passing_score || 60,
 						allow_resubmission: false,
 						max_resubmissions: 1,
+						notification_email: '',
 						max_file_size: defaults.max_file_size || 5242880,
 						max_files: defaults.max_files || 5,
 						allowed_file_types: [
