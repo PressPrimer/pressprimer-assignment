@@ -402,7 +402,10 @@
 
 			$( document ).on( 'heartbeat-tick', function ( e, data ) {
 				if ( data.pressprimer_assignment_text_autosave_response ) {
-					if ( data.pressprimer_assignment_text_autosave_response.success ) {
+					if (
+						data.pressprimer_assignment_text_autosave_response
+							.success
+					) {
 						self.submissionId =
 							data.pressprimer_assignment_text_autosave_response.submission_id;
 						self.isDirty = false;

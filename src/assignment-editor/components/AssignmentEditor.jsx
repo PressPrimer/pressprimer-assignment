@@ -58,10 +58,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			// so parse numeric/boolean fields explicitly.
 			const allowResub =
 				parseInt( assignmentData.allow_resubmission, 10 ) === 1;
-			const maxResub = parseInt(
-				assignmentData.max_resubmissions,
-				10
-			);
+			const maxResub = parseInt( assignmentData.max_resubmissions, 10 );
 
 			form.setFieldsValue( {
 				title: assignmentData.title || '',
@@ -71,18 +68,14 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				status: assignmentData.status || 'draft',
 				theme: assignmentData.theme || 'default',
 				submission_type: assignmentData.submission_type || 'file',
-				max_points:
-					parseFloat( assignmentData.max_points ) || 100,
-				passing_score:
-					parseFloat( assignmentData.passing_score ) || 60,
+				max_points: parseFloat( assignmentData.max_points ) || 100,
+				passing_score: parseFloat( assignmentData.passing_score ) || 60,
 				allow_resubmission: allowResub,
 				max_resubmissions: isNaN( maxResub ) ? 1 : maxResub,
-				notification_email:
-					assignmentData.notification_email || '',
+				notification_email: assignmentData.notification_email || '',
 				max_file_size:
 					parseInt( assignmentData.max_file_size, 10 ) || 5242880,
-				max_files:
-					parseInt( assignmentData.max_files, 10 ) || 5,
+				max_files: parseInt( assignmentData.max_files, 10 ) || 5,
 				allowed_file_types: assignmentData.allowed_file_types || [
 					'pdf',
 					'docx',
