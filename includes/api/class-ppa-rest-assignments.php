@@ -407,7 +407,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		if ( ! $assignment ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Assignment not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -415,7 +415,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		if ( ! $this->can_access_assignment( $assignment ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to access this assignment.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);
@@ -478,7 +478,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		if ( ! $assignment ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Assignment not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -486,7 +486,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		if ( ! $this->can_access_assignment( $assignment ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to edit this assignment.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);
@@ -539,7 +539,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		if ( ! $assignment ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Assignment not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -547,7 +547,7 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		if ( ! $this->can_access_assignment( $assignment ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to delete this assignment.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);

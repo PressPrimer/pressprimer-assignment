@@ -189,7 +189,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 		foreach ( $required as $field ) {
 			if ( empty( $data[ $field ] ) ) {
 				return new WP_Error(
-					'ppa_missing_field',
+					'pressprimer_assignment_missing_field',
 					/* translators: %s: field name */
 					sprintf( __( 'Required field "%s" is missing.', 'pressprimer-assignment' ), $field )
 				);
@@ -200,7 +200,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 		$data['submission_id'] = absint( $data['submission_id'] );
 		if ( 0 === $data['submission_id'] ) {
 			return new WP_Error(
-				'ppa_invalid_submission',
+				'pressprimer_assignment_invalid_submission',
 				__( 'Invalid submission ID.', 'pressprimer-assignment' )
 			);
 		}
@@ -209,7 +209,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 		$data['file_size'] = absint( $data['file_size'] );
 		if ( 0 === $data['file_size'] ) {
 			return new WP_Error(
-				'ppa_invalid_file_size',
+				'pressprimer_assignment_invalid_file_size',
 				__( 'File size must be greater than zero.', 'pressprimer-assignment' )
 			);
 		}
@@ -217,7 +217,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 		// Validate file_hash length (SHA-256 = 64 hex chars).
 		if ( 64 !== strlen( $data['file_hash'] ) ) {
 			return new WP_Error(
-				'ppa_invalid_hash',
+				'pressprimer_assignment_invalid_hash',
 				__( 'File hash must be a valid SHA-256 hash.', 'pressprimer-assignment' )
 			);
 		}
@@ -296,7 +296,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 
 		if ( ! file_exists( $full_path ) ) {
 			return new WP_Error(
-				'ppa_file_not_found',
+				'pressprimer_assignment_file_not_found',
 				__( 'File not found on disk.', 'pressprimer-assignment' )
 			);
 		}
@@ -305,7 +305,7 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 
 		if ( $current_hash !== $this->file_hash ) {
 			return new WP_Error(
-				'ppa_integrity_failed',
+				'pressprimer_assignment_integrity_failed',
 				__( 'File integrity check failed. The file may have been modified.', 'pressprimer-assignment' )
 			);
 		}

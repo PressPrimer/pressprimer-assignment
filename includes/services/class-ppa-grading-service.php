@@ -47,7 +47,7 @@ class PressPrimer_Assignment_Grading_Service {
 		$submission = PressPrimer_Assignment_Submission::get( $submission_id );
 		if ( ! $submission ) {
 			return new WP_Error(
-				'ppa_submission_not_found',
+				'pressprimer_assignment_submission_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' )
 			);
 		}
@@ -56,7 +56,7 @@ class PressPrimer_Assignment_Grading_Service {
 		$assignment = $submission->get_assignment();
 		if ( ! $assignment ) {
 			return new WP_Error(
-				'ppa_assignment_not_found',
+				'pressprimer_assignment_assignment_not_found',
 				__( 'Assignment not found for this submission.', 'pressprimer-assignment' )
 			);
 		}
@@ -65,7 +65,7 @@ class PressPrimer_Assignment_Grading_Service {
 		$score = floatval( $score );
 		if ( $score < 0 || $score > $assignment->max_points ) {
 			return new WP_Error(
-				'ppa_invalid_score',
+				'pressprimer_assignment_invalid_score',
 				sprintf(
 					/* translators: %s: maximum points value */
 					__( 'Score must be between 0 and %s.', 'pressprimer-assignment' ),
@@ -196,7 +196,7 @@ class PressPrimer_Assignment_Grading_Service {
 		$submission = PressPrimer_Assignment_Submission::get( $submission_id );
 		if ( ! $submission ) {
 			return new WP_Error(
-				'ppa_submission_not_found',
+				'pressprimer_assignment_submission_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' )
 			);
 		}
@@ -204,7 +204,7 @@ class PressPrimer_Assignment_Grading_Service {
 		// Verify submission is in a graded state.
 		if ( PressPrimer_Assignment_Submission::STATUS_GRADED !== $submission->status ) {
 			return new WP_Error(
-				'ppa_not_graded',
+				'pressprimer_assignment_not_graded',
 				__( 'Submission must be graded before it can be returned.', 'pressprimer-assignment' )
 			);
 		}

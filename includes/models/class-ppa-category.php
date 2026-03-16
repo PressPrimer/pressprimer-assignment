@@ -132,7 +132,7 @@ class PressPrimer_Assignment_Category extends PressPrimer_Assignment_Model {
 		// Validate required fields.
 		if ( empty( $data['name'] ) ) {
 			return new WP_Error(
-				'ppa_missing_name',
+				'pressprimer_assignment_missing_name',
 				__( 'Category name is required.', 'pressprimer-assignment' )
 			);
 		}
@@ -145,7 +145,7 @@ class PressPrimer_Assignment_Category extends PressPrimer_Assignment_Model {
 		// Validate taxonomy.
 		if ( ! in_array( $data['taxonomy'], [ 'category', 'tag' ], true ) ) {
 			return new WP_Error(
-				'ppa_invalid_taxonomy',
+				'pressprimer_assignment_invalid_taxonomy',
 				__( 'Taxonomy must be either "category" or "tag".', 'pressprimer-assignment' )
 			);
 		}
@@ -171,7 +171,7 @@ class PressPrimer_Assignment_Category extends PressPrimer_Assignment_Model {
 			$parent = self::get( absint( $data['parent_id'] ) );
 			if ( ! $parent || 'category' !== $parent->taxonomy ) {
 				return new WP_Error(
-					'ppa_invalid_parent',
+					'pressprimer_assignment_invalid_parent',
 					__( 'Invalid parent category.', 'pressprimer-assignment' )
 				);
 			}
@@ -456,7 +456,7 @@ class PressPrimer_Assignment_Category extends PressPrimer_Assignment_Model {
 
 		if ( empty( $this->id ) ) {
 			return new WP_Error(
-				'ppa_no_id',
+				'pressprimer_assignment_no_id',
 				__( 'Cannot delete category without ID.', 'pressprimer-assignment' )
 			);
 		}

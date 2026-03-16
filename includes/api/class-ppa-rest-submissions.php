@@ -410,7 +410,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		if ( ! $submission ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -418,7 +418,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		if ( ! $this->can_access_submission( $submission ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to view this submission.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);
@@ -509,7 +509,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		if ( ! $submission ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -517,7 +517,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		if ( ! $this->can_access_submission( $submission ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to grade this submission.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);
@@ -617,7 +617,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		}
 
 		return new WP_Error(
-			'ppa_no_changes',
+			'pressprimer_assignment_no_changes',
 			__( 'No valid changes provided.', 'pressprimer-assignment' ),
 			[ 'status' => 400 ]
 		);
@@ -638,7 +638,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		if ( ! is_array( $ids ) || empty( $ids ) ) {
 			return new WP_Error(
-				'ppa_invalid_ids',
+				'pressprimer_assignment_invalid_ids',
 				__( 'No submission IDs provided.', 'pressprimer-assignment' ),
 				[ 'status' => 400 ]
 			);
@@ -813,7 +813,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
 		if ( ! $file ) {
 			return new WP_Error(
-				'ppa_file_not_found',
+				'pressprimer_assignment_file_not_found',
 				__( 'File not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -823,7 +823,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		$submission = PressPrimer_Assignment_Submission::get( $file->submission_id );
 		if ( ! $submission || ! $this->can_access_submission( $submission ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to view this file.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);
@@ -834,7 +834,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		if ( ! file_exists( $full_path ) ) {
 			return new WP_Error(
-				'ppa_file_missing',
+				'pressprimer_assignment_file_missing',
 				__( 'File not found on server.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);

@@ -684,7 +684,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		// Check if assignment allows resubmission.
 		if ( ! $assignment->allow_resubmission ) {
 			return new WP_Error(
-				'ppa_resubmission_disabled',
+				'pressprimer_assignment_resubmission_disabled',
 				__( 'Resubmission is not allowed for this assignment.', 'pressprimer-assignment' )
 			);
 		}
@@ -717,7 +717,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		// Uses submission_number to match the renderer's can_user_resubmit() logic.
 		if ( $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return new WP_Error(
-				'ppa_max_resubmissions',
+				'pressprimer_assignment_max_resubmissions',
 				__( 'You have reached the maximum number of submissions for this assignment.', 'pressprimer-assignment' )
 			);
 		}

@@ -554,7 +554,7 @@ class PressPrimer_Assignment_Frontend {
 
 		// serve_file exits on success, so if we get here there was an error.
 		if ( is_wp_error( $result ) ) {
-			$status_code = 'ppa_access_denied' === $result->get_error_code() ? 403 : 404;
+			$status_code = 'pressprimer_assignment_access_denied' === $result->get_error_code() ? 403 : 404;
 			wp_die(
 				esc_html( $result->get_error_message() ),
 				esc_html__( 'Error', 'pressprimer-assignment' ),

@@ -287,7 +287,7 @@ class PressPrimer_Assignment_REST_Categories {
 
 		if ( ! $category ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Category not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -336,7 +336,7 @@ class PressPrimer_Assignment_REST_Categories {
 
 		if ( ! $category ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Category not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -344,7 +344,7 @@ class PressPrimer_Assignment_REST_Categories {
 
 		if ( ! $this->can_access_category( $category ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to edit this category.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);
@@ -383,7 +383,7 @@ class PressPrimer_Assignment_REST_Categories {
 			$new_parent = $data['parent_id'];
 			if ( null !== $new_parent && absint( $new_parent ) === absint( $category->id ) ) {
 				return new WP_Error(
-					'ppa_invalid_parent',
+					'pressprimer_assignment_invalid_parent',
 					__( 'A category cannot be its own parent.', 'pressprimer-assignment' ),
 					[ 'status' => 400 ]
 				);
@@ -418,7 +418,7 @@ class PressPrimer_Assignment_REST_Categories {
 
 		if ( ! $category ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Category not found.', 'pressprimer-assignment' ),
 				[ 'status' => 404 ]
 			);
@@ -426,7 +426,7 @@ class PressPrimer_Assignment_REST_Categories {
 
 		if ( ! $this->can_access_category( $category ) ) {
 			return new WP_Error(
-				'ppa_forbidden',
+				'pressprimer_assignment_forbidden',
 				__( 'You do not have permission to delete this category.', 'pressprimer-assignment' ),
 				[ 'status' => 403 ]
 			);

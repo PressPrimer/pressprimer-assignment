@@ -137,7 +137,7 @@ class PressPrimer_Assignment_File_Service {
 		// Verify this is a legitimate upload.
 		if ( ! is_uploaded_file( $file['tmp_name'] ) ) {
 			return new WP_Error(
-				'ppa_invalid_upload',
+				'pressprimer_assignment_invalid_upload',
 				__( 'Invalid file upload.', 'pressprimer-assignment' )
 			);
 		}
@@ -147,7 +147,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( empty( $filename ) ) {
 			return new WP_Error(
-				'ppa_empty_filename',
+				'pressprimer_assignment_empty_filename',
 				__( 'Filename is empty or invalid.', 'pressprimer-assignment' )
 			);
 		}
@@ -158,7 +158,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( ! in_array( $extension, $allowed, true ) ) {
 			return new WP_Error(
-				'ppa_invalid_extension',
+				'pressprimer_assignment_invalid_extension',
 				sprintf(
 					/* translators: %s: comma-separated list of allowed file extensions */
 					__( 'File type not allowed. Accepted types: %s', 'pressprimer-assignment' ),
@@ -184,7 +184,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( $file['size'] > $max_size ) {
 			return new WP_Error(
-				'ppa_file_too_large',
+				'pressprimer_assignment_file_too_large',
 				sprintf(
 					/* translators: %s: maximum file size */
 					__( 'File size exceeds the maximum limit of %s.', 'pressprimer-assignment' ),
@@ -196,7 +196,7 @@ class PressPrimer_Assignment_File_Service {
 		// Check for zero-byte files.
 		if ( 0 === $file['size'] ) {
 			return new WP_Error(
-				'ppa_empty_file',
+				'pressprimer_assignment_empty_file',
 				__( 'The uploaded file is empty.', 'pressprimer-assignment' )
 			);
 		}
@@ -221,7 +221,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( 0 === $submission_id ) {
 			return new WP_Error(
-				'ppa_invalid_submission',
+				'pressprimer_assignment_invalid_submission',
 				__( 'Invalid submission ID.', 'pressprimer-assignment' )
 			);
 		}
@@ -245,7 +245,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( ! wp_mkdir_p( $target_dir ) ) {
 			return new WP_Error(
-				'ppa_dir_creation_failed',
+				'pressprimer_assignment_dir_creation_failed',
 				__( 'Failed to create upload directory.', 'pressprimer-assignment' )
 			);
 		}
@@ -269,14 +269,14 @@ class PressPrimer_Assignment_File_Service {
 		$tmp_contents = $wp_filesystem->get_contents( $file['tmp_name'] );
 		if ( false === $tmp_contents ) {
 			return new WP_Error(
-				'ppa_read_failed',
+				'pressprimer_assignment_read_failed',
 				__( 'Failed to read uploaded file.', 'pressprimer-assignment' )
 			);
 		}
 
 		if ( ! $wp_filesystem->put_contents( $target_path, $tmp_contents, FS_CHMOD_FILE ) ) {
 			return new WP_Error(
-				'ppa_move_failed',
+				'pressprimer_assignment_move_failed',
 				__( 'Failed to move uploaded file.', 'pressprimer-assignment' )
 			);
 		}
@@ -290,7 +290,7 @@ class PressPrimer_Assignment_File_Service {
 		if ( false === $file_hash ) {
 			wp_delete_file( $target_path );
 			return new WP_Error(
-				'ppa_hash_failed',
+				'pressprimer_assignment_hash_failed',
 				__( 'Failed to calculate file hash.', 'pressprimer-assignment' )
 			);
 		}
@@ -365,7 +365,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( ! empty( $upload_dir['error'] ) ) {
 			return new WP_Error(
-				'ppa_upload_dir_error',
+				'pressprimer_assignment_upload_dir_error',
 				$upload_dir['error']
 			);
 		}
@@ -375,7 +375,7 @@ class PressPrimer_Assignment_File_Service {
 		// Create directory if it doesn't exist.
 		if ( ! wp_mkdir_p( $ppa_dir ) ) {
 			return new WP_Error(
-				'ppa_dir_creation_failed',
+				'pressprimer_assignment_dir_creation_failed',
 				__( 'Failed to create upload directory.', 'pressprimer-assignment' )
 			);
 		}
@@ -415,7 +415,7 @@ class PressPrimer_Assignment_File_Service {
 		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
 		if ( ! $file ) {
 			return new WP_Error(
-				'ppa_file_not_found',
+				'pressprimer_assignment_file_not_found',
 				__( 'File record not found.', 'pressprimer-assignment' )
 			);
 		}
@@ -456,7 +456,7 @@ class PressPrimer_Assignment_File_Service {
 		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
 		if ( ! $file ) {
 			return new WP_Error(
-				'ppa_file_not_found',
+				'pressprimer_assignment_file_not_found',
 				__( 'File not found.', 'pressprimer-assignment' )
 			);
 		}
@@ -465,7 +465,7 @@ class PressPrimer_Assignment_File_Service {
 		$submission = PressPrimer_Assignment_Submission::get( $file->submission_id );
 		if ( ! $submission ) {
 			return new WP_Error(
-				'ppa_submission_not_found',
+				'pressprimer_assignment_submission_not_found',
 				__( 'Submission not found.', 'pressprimer-assignment' )
 			);
 		}
@@ -496,7 +496,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( ! $can_access ) {
 			return new WP_Error(
-				'ppa_access_denied',
+				'pressprimer_assignment_access_denied',
 				__( 'You do not have permission to access this file.', 'pressprimer-assignment' )
 			);
 		}
@@ -506,7 +506,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( ! file_exists( $full_path ) ) {
 			return new WP_Error(
-				'ppa_file_missing',
+				'pressprimer_assignment_file_missing',
 				__( 'File not found on server.', 'pressprimer-assignment' )
 			);
 		}
@@ -540,7 +540,7 @@ class PressPrimer_Assignment_File_Service {
 	private function check_upload_error( $file ) {
 		if ( ! isset( $file['error'] ) || is_array( $file['error'] ) ) {
 			return new WP_Error(
-				'ppa_upload_error',
+				'pressprimer_assignment_upload_error',
 				__( 'Invalid file upload.', 'pressprimer-assignment' )
 			);
 		}
@@ -552,38 +552,38 @@ class PressPrimer_Assignment_File_Service {
 			case UPLOAD_ERR_INI_SIZE:
 			case UPLOAD_ERR_FORM_SIZE:
 				return new WP_Error(
-					'ppa_file_too_large',
+					'pressprimer_assignment_file_too_large',
 					__( 'The uploaded file exceeds the server upload limit.', 'pressprimer-assignment' )
 				);
 
 			case UPLOAD_ERR_PARTIAL:
 				return new WP_Error(
-					'ppa_upload_partial',
+					'pressprimer_assignment_upload_partial',
 					__( 'The file was only partially uploaded. Please try again.', 'pressprimer-assignment' )
 				);
 
 			case UPLOAD_ERR_NO_FILE:
 				return new WP_Error(
-					'ppa_no_file',
+					'pressprimer_assignment_no_file',
 					__( 'No file was uploaded.', 'pressprimer-assignment' )
 				);
 
 			case UPLOAD_ERR_NO_TMP_DIR:
 			case UPLOAD_ERR_CANT_WRITE:
 				return new WP_Error(
-					'ppa_server_error',
+					'pressprimer_assignment_server_error',
 					__( 'Server configuration error. Please contact the administrator.', 'pressprimer-assignment' )
 				);
 
 			case UPLOAD_ERR_EXTENSION:
 				return new WP_Error(
-					'ppa_blocked_extension',
+					'pressprimer_assignment_blocked_extension',
 					__( 'File upload was blocked by a server extension.', 'pressprimer-assignment' )
 				);
 
 			default:
 				return new WP_Error(
-					'ppa_unknown_error',
+					'pressprimer_assignment_unknown_error',
 					__( 'An unknown upload error occurred.', 'pressprimer-assignment' )
 				);
 		}
@@ -615,7 +615,7 @@ class PressPrimer_Assignment_File_Service {
 			foreach ( $parts as $part ) {
 				if ( in_array( strtolower( $part ), self::DANGEROUS_EXTENSIONS, true ) ) {
 					return new WP_Error(
-						'ppa_dangerous_extension',
+						'pressprimer_assignment_dangerous_extension',
 						__( 'File contains a potentially dangerous extension.', 'pressprimer-assignment' )
 					);
 				}
@@ -625,7 +625,7 @@ class PressPrimer_Assignment_File_Service {
 		// Also check full filename with the regex pattern.
 		if ( preg_match( $pattern, $filename ) ) {
 			return new WP_Error(
-				'ppa_dangerous_extension',
+				'pressprimer_assignment_dangerous_extension',
 				__( 'File contains a potentially dangerous extension.', 'pressprimer-assignment' )
 			);
 		}
@@ -658,7 +658,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( false === $detected_mime ) {
 			return new WP_Error(
-				'ppa_mime_detection_failed',
+				'pressprimer_assignment_mime_detection_failed',
 				__( 'Unable to verify file content type.', 'pressprimer-assignment' )
 			);
 		}
@@ -666,7 +666,7 @@ class PressPrimer_Assignment_File_Service {
 		// Check if detected MIME type is in our allowed list.
 		if ( ! isset( self::ALLOWED_MIME_TYPES[ $detected_mime ] ) ) {
 			return new WP_Error(
-				'ppa_invalid_mime',
+				'pressprimer_assignment_invalid_mime',
 				__( 'File content does not match an allowed type.', 'pressprimer-assignment' )
 			);
 		}
@@ -676,7 +676,7 @@ class PressPrimer_Assignment_File_Service {
 
 		if ( ! in_array( $extension, $valid_extensions, true ) ) {
 			return new WP_Error(
-				'ppa_mime_mismatch',
+				'pressprimer_assignment_mime_mismatch',
 				__( 'File content does not match the file extension.', 'pressprimer-assignment' )
 			);
 		}
@@ -723,7 +723,7 @@ class PressPrimer_Assignment_File_Service {
 		}
 
 		return new WP_Error(
-			'ppa_mime_detection_failed',
+			'pressprimer_assignment_mime_detection_failed',
 			__( 'Unable to determine file type.', 'pressprimer-assignment' )
 		);
 	}

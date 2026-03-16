@@ -323,7 +323,7 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 		// Validate required fields.
 		if ( empty( $data['assignment_id'] ) ) {
 			return new WP_Error(
-				'ppa_missing_assignment',
+				'pressprimer_assignment_missing_assignment',
 				__( 'Assignment ID is required.', 'pressprimer-assignment' )
 			);
 		}
@@ -331,7 +331,7 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 		// Validate status.
 		if ( ! empty( $data['status'] ) && ! in_array( $data['status'], self::get_valid_statuses(), true ) ) {
 			return new WP_Error(
-				'ppa_invalid_status',
+				'pressprimer_assignment_invalid_status',
 				__( 'Invalid submission status.', 'pressprimer-assignment' )
 			);
 		}

@@ -182,7 +182,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( empty( $data ) ) {
 			return new WP_Error(
-				'ppa_no_data',
+				'pressprimer_assignment_no_data',
 				__( 'No valid data provided for creation.', 'pressprimer-assignment' )
 			);
 		}
@@ -194,7 +194,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( false === $result ) {
 			return new WP_Error(
-				'ppa_db_error',
+				'pressprimer_assignment_db_error',
 				__( 'Database error: Failed to create record.', 'pressprimer-assignment' )
 			);
 		}
@@ -217,7 +217,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( empty( $this->id ) ) {
 			return new WP_Error(
-				'ppa_no_id',
+				'pressprimer_assignment_no_id',
 				__( 'Cannot save record without ID.', 'pressprimer-assignment' )
 			);
 		}
@@ -234,7 +234,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( empty( $data ) ) {
 			return new WP_Error(
-				'ppa_no_data',
+				'pressprimer_assignment_no_data',
 				__( 'No valid data to save.', 'pressprimer-assignment' )
 			);
 		}
@@ -252,7 +252,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( false === $result ) {
 			return new WP_Error(
-				'ppa_db_error',
+				'pressprimer_assignment_db_error',
 				__( 'Database error: Failed to save record.', 'pressprimer-assignment' )
 			);
 		}
@@ -274,7 +274,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( empty( $this->id ) ) {
 			return new WP_Error(
-				'ppa_no_id',
+				'pressprimer_assignment_no_id',
 				__( 'Cannot delete record without ID.', 'pressprimer-assignment' )
 			);
 		}
@@ -290,7 +290,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( false === $result ) {
 			return new WP_Error(
-				'ppa_db_error',
+				'pressprimer_assignment_db_error',
 				__( 'Database error: Failed to delete record.', 'pressprimer-assignment' )
 			);
 		}
@@ -504,7 +504,7 @@ abstract class PressPrimer_Assignment_Model {
 	public function refresh() {
 		if ( empty( $this->id ) ) {
 			return new WP_Error(
-				'ppa_no_id',
+				'pressprimer_assignment_no_id',
 				__( 'Cannot refresh record without ID.', 'pressprimer-assignment' )
 			);
 		}
@@ -513,7 +513,7 @@ abstract class PressPrimer_Assignment_Model {
 
 		if ( ! $fresh ) {
 			return new WP_Error(
-				'ppa_not_found',
+				'pressprimer_assignment_not_found',
 				__( 'Record not found in database.', 'pressprimer-assignment' )
 			);
 		}

@@ -340,7 +340,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			$clean_title = trim( sanitize_text_field( $data['title'] ) );
 			if ( '' === $clean_title ) {
 				return new WP_Error(
-					'ppa_empty_title',
+					'pressprimer_assignment_empty_title',
 					__( 'Assignment title cannot be empty.', 'pressprimer-assignment' )
 				);
 			}
@@ -349,7 +349,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 		// Validate submission_type.
 		if ( ! empty( $data['submission_type'] ) && ! in_array( $data['submission_type'], [ 'file', 'text', 'either' ], true ) ) {
 			return new WP_Error(
-				'ppa_invalid_submission_type',
+				'pressprimer_assignment_invalid_submission_type',
 				__( 'Invalid submission type. Must be file, text, or either.', 'pressprimer-assignment' )
 			);
 		}
@@ -357,7 +357,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 		// Validate status.
 		if ( ! empty( $data['status'] ) && ! in_array( $data['status'], [ 'draft', 'published', 'archived' ], true ) ) {
 			return new WP_Error(
-				'ppa_invalid_status',
+				'pressprimer_assignment_invalid_status',
 				__( 'Invalid status. Must be draft, published, or archived.', 'pressprimer-assignment' )
 			);
 		}
@@ -367,7 +367,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			$points = floatval( $data['max_points'] );
 			if ( $points < 0.01 || $points > 100000.00 ) {
 				return new WP_Error(
-					'ppa_invalid_max_points',
+					'pressprimer_assignment_invalid_max_points',
 					__( 'Max points must be between 0.01 and 100,000.', 'pressprimer-assignment' )
 				);
 			}
@@ -378,7 +378,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			$score = floatval( $data['passing_score'] );
 			if ( $score < 0.00 || $score > 100000.00 ) {
 				return new WP_Error(
-					'ppa_invalid_passing_score',
+					'pressprimer_assignment_invalid_passing_score',
 					__( 'Passing score must be between 0 and 100,000.', 'pressprimer-assignment' )
 				);
 			}
@@ -389,7 +389,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			$size = absint( $data['max_file_size'] );
 			if ( $size < 1024 || $size > 104857600 ) {
 				return new WP_Error(
-					'ppa_invalid_file_size',
+					'pressprimer_assignment_invalid_file_size',
 					__( 'Max file size must be between 1 KB and 100 MB.', 'pressprimer-assignment' )
 				);
 			}
@@ -400,7 +400,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			$max = absint( $data['max_files'] );
 			if ( $max < 1 || $max > 50 ) {
 				return new WP_Error(
-					'ppa_invalid_max_files',
+					'pressprimer_assignment_invalid_max_files',
 					__( 'Max files must be between 1 and 50.', 'pressprimer-assignment' )
 				);
 			}
@@ -411,7 +411,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			$max = absint( $data['max_resubmissions'] );
 			if ( $max > 100 ) {
 				return new WP_Error(
-					'ppa_invalid_max_resubmissions',
+					'pressprimer_assignment_invalid_max_resubmissions',
 					__( 'Max resubmissions must be between 1 and 100.', 'pressprimer-assignment' )
 				);
 			}

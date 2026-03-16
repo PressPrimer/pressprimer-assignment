@@ -66,7 +66,7 @@ class PressPrimer_Assignment_PDF_Service {
 	public function extract_text( $file_path, $max_pages = 0 ) {
 		if ( ! file_exists( $file_path ) || ! is_readable( $file_path ) ) {
 			return new WP_Error(
-				'ppa_file_not_found',
+				'pressprimer_assignment_file_not_found',
 				__( 'PDF file not found or not readable.', 'pressprimer-assignment' )
 			);
 		}
@@ -77,14 +77,14 @@ class PressPrimer_Assignment_PDF_Service {
 
 		if ( '%PDF-' !== $header ) {
 			return new WP_Error(
-				'ppa_not_a_pdf',
+				'pressprimer_assignment_not_a_pdf',
 				__( 'File is not a valid PDF.', 'pressprimer-assignment' )
 			);
 		}
 
 		if ( ! class_exists( '\\Smalot\\PdfParser\\Parser' ) ) {
 			return new WP_Error(
-				'ppa_pdf_parser_unavailable',
+				'pressprimer_assignment_pdf_parser_unavailable',
 				__( 'PDF text extraction library is not available.', 'pressprimer-assignment' )
 			);
 		}
@@ -96,7 +96,7 @@ class PressPrimer_Assignment_PDF_Service {
 		}
 
 		return new WP_Error(
-			'ppa_pdf_extraction_failed',
+			'pressprimer_assignment_pdf_extraction_failed',
 			__( 'Unable to extract readable text from this PDF. The file may be a scanned image or use embedded fonts that cannot be read.', 'pressprimer-assignment' )
 		);
 	}
@@ -242,7 +242,7 @@ class PressPrimer_Assignment_PDF_Service {
 			return $text;
 		} catch ( \Exception $e ) {
 			return new WP_Error(
-				'ppa_pdf_parser_error',
+				'pressprimer_assignment_pdf_parser_error',
 				$e->getMessage()
 			);
 		}
