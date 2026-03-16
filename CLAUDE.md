@@ -148,11 +148,127 @@ These rules govern how AI assistants work on this codebase.
 4. Then release addon updates
 5. Document in both changelogs that versions are coordinated
 
+### Cross-Plugin Investigation Required
+
+**Always search ALL 4 plugins** when looking for patterns, implementations, or references. The PressPrimer Assignment ecosystem consists of:
+
+1. `pressprimer-assignment/` — Free plugin (WordPress.org)
+2. `pressprimer-assignment-educator/` — Educator addon ($149/yr)
+3. `pressprimer-assignment-school/` — School addon ($299/yr)
+4. `pressprimer-assignment-enterprise/` — Enterprise addon ($499/yr)
+
+**Also search PressPrimer Quiz** for any pattern involving:
+- Groups and group membership (shared tables — Quiz is the reference implementation)
+- Teacher role behavior and data isolation
+- Admin UI patterns (Quiz's React components are the reference for all admin UI)
+- Email notification HTML structure (both plugins use the same template)
+- Frontend theme system (CSS variables, RTL, print styles)
+
+**Before building any new feature:**
+1. Search all 4 Assignment plugin codebases for similar existing implementations
+2. Study how Quiz handles the same concern — it is the reference implementation for shared patterns
+3. Match the established patterns exactly — do not reinvent solutions that already exist
+4. If a pattern exists in one addon, it is the reference implementation for all addons
+
+**Never conclude something "doesn't exist" after checking only 1-2 plugins.**
+
+### Study Existing Implementations First
+
+**Before building any new page, component, or feature, ALWAYS find and read the closest existing equivalent.** Do not start writing code until you understand the established patterns.
+
+For example:
+- Building a new **report page**? Read the existing Reports page in the free plugin first
+- Building a new **admin list**? Read an existing list page in the same plugin first
+- Building a new **REST endpoint**? Read an existing controller in the same plugin first
+- Building a new **settings panel**? Read `src/admin/pages/Settings/` first
+- Building a new **grading feature**? Read `src/grading/` first
+- Building anything involving **groups**? Read Quiz's Educator addon group implementation first
+
+**What to study in existing implementations:**
+1. HTML structure and CSS class names (exact wrapper elements)
+2. How data is fetched (API paths, hooks, error handling)
+3. How different user roles are handled (admin vs teacher vs student)
+4. How the feature integrates with addons (filters, actions, white-label)
+5. What libraries and components are used (Ant Design vs native HTML)
+6. Loading states, empty states, and error states
+
+### Role-Based Data Access (CRITICAL)
+
+**ALL data output must consider the user's role once the Educator addon is active.** The Educator addon introduces a data isolation system where teachers only see data from students in their groups, while admins see everything.
+
+This applies to every endpoint, report, and list that a teacher could query.
+
+#### How It Works
+
+The free plugin exposes a filter hook that the Educator addon uses to inject user visibility constraints:
+
+```php
+// In any service method or REST endpoint that returns submission/student data:
+$visible_user_ids = apply_filters(
+    'pressprimer_assignment_visible_user_ids',
+    null,              // null = no constraint (default for admin, or when Educator not active)
+    get_current_user_id()
+);
+
+// null    = no constraint — admin sees all data
+// array() = empty — no access (should return empty result)
+// array(1, 2, 3) = restrict to these user IDs (teacher sees only their students)
+
+if ( null !== $visible_user_ids ) {
+    if ( empty( $visible_user_ids ) ) {
+        return []; // No access
+    }
+    // Add WHERE user_id IN (...) to query
+}
+```
+
+#### Checklist for New Reports/Endpoints
+
+- [ ] Does the endpoint include the `pressprimer_assignment_visible_user_ids` filter?
+- [ ] Does the SQL query accept an optional user ID constraint?
+- [ ] Are aggregate calculations (averages, counts) designed to accept a user ID scope?
+- [ ] Does the response change appropriately for admin vs teacher when Educator is active?
+- [ ] Have you tested that a teacher only sees their own students' data?
+
 ---
 
 ## WordPress.org Coding Standards
 
 These rules were established during the PressPrimer Quiz WordPress.org plugin review process. **All code must follow these standards.**
+
+---
+
+## Prefixing (CRITICAL)
+
+WordPress.org requires **minimum 4 characters** for global namespace identifiers.
+
+```php
+// CORRECT - full prefix
+define( 'PRESSPRIMER_ASSIGNMENT_VERSION', '1.0.0' );
+function pressprimer_assignment_init() {}
+set_transient( 'pressprimer_assignment_cache', $data );
+wp_localize_script( 'ppa-submission', 'pressprimer_assignment_data', $data );
+
+// WRONG - 3 character prefix (REJECTED)
+define( 'PPA_VERSION', '1.0.0' );
+function ppa_init() {}
+set_transient( 'ppa_cache', $data );
+wp_localize_script( 'ppa-submission', 'ppaData', $data );
+```
+
+**Items that require the full `pressprimer_assignment_` prefix:**
+- All `define()` constants
+- All global functions
+- All class names
+- All hook names (do_action, apply_filters)
+- All AJAX action names
+- All option names
+- **All transient names** (commonly missed!)
+- All user meta and post meta keys
+- All shortcode names
+- **All wp_localize_script object names** (commonly missed!)
+
+**Short `ppa_` prefix is acceptable for:** CSS classes, JavaScript namespace (`PPA`), REST API namespace (`ppa/v1`), database table names (`wp_ppa_`), nonces, capabilities — these are not globally registered PHP identifiers.
 
 ---
 
@@ -206,61 +322,6 @@ $count_sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", 
 
 ---
 
-## WordPress.org Prefix Requirements (CRITICAL — REJECTION IF WRONG)
-
-PressPrimer Quiz was **rejected by WordPress.org** for using `ppq_` (3 characters) on globally-registered identifiers. The same rule applies to Assignment. **`ppa_` is NOT an acceptable prefix for global identifiers.** This was a painful lesson — do not repeat it.
-
-### The Rule
-
-Any identifier that is registered in a **global WordPress namespace** MUST use the full `pressprimer_assignment_` prefix (or `pressprimerAssignment` in camelCase for JS objects).
-
-### What MUST use `pressprimer_assignment_` (long prefix)
-
-| Identifier Type | Example | Registered Via |
-|-----------------|---------|----------------|
-| AJAX actions | `pressprimer_assignment_upload_file` | `wp_ajax_pressprimer_assignment_upload_file` |
-| Admin post actions | `pressprimer_assignment_save_category` | `admin_post_pressprimer_assignment_save_category` |
-| Shortcodes | `pressprimer_assignment` | `add_shortcode( 'pressprimer_assignment', ... )` |
-| Nonce actions | `pressprimer_assignment_frontend_nonce` | `wp_create_nonce( 'pressprimer_assignment_frontend_nonce' )` |
-| Cron hooks | `pressprimer_assignment_extract_pdf_text` | `add_action( 'pressprimer_assignment_extract_pdf_text', ... )` |
-| Options | `pressprimer_assignment_settings` | `get_option( 'pressprimer_assignment_settings' )` |
-| User meta keys | `pressprimer_assignment_*` | `get_user_meta()` |
-| Post meta keys | `pressprimer_assignment_*` | `get_post_meta()` |
-| Transients | `pressprimer_assignment_*` | `get_transient()` |
-| Custom hooks/filters | `pressprimer_assignment_*` | `do_action()` / `apply_filters()` |
-| wp_localize_script objects | `pressprimerAssignmentFrontend` | `wp_localize_script()` |
-| URL query parameters | `pressprimer_assignment_file_action` | `$_GET` / `$_POST` |
-| Capabilities | `pressprimer_assignment_manage_all` | `add_cap()` / `current_user_can()` |
-| REST field names | `pressprimer_assignment_id` | `register_rest_field()` |
-| Form POST field names | `pressprimer_assignment_id` | `name=""` attribute → `$_POST['name']` |
-
-### What CAN use `ppa-` (short prefix — these are safe)
-
-| Identifier Type | Example | Why It's Safe |
-|-----------------|---------|---------------|
-| Script handles | `ppa-submission` | `wp_enqueue_script( 'ppa-submission' )` — handle collisions are harmless |
-| Style handles | `ppa-admin-css` | `wp_enqueue_style( 'ppa-admin-css' )` — same reason |
-| REST API namespace | `ppa/v1` | REST namespaces are scoped by design |
-| CSS class names | `.ppa-button` | Not in any WordPress registry |
-| CSS variables | `--ppa-primary` | Not in any WordPress registry |
-| PHP class names | `PressPrimer_Assignment_*` | Already long-prefixed |
-| Database tables | `{prefix}ppa_assignments` | Prefixed by `$wpdb->prefix`, not global |
-| HTML element IDs | `id="ppa_text_content"` | Not in any WordPress registry |
-| WP_Error codes | `'ppa_not_found'` | Internal error identifiers, not global |
-| Internal PHP functions | `ppa_get_assignment()` | Only if not hooked into WP — but prefer class methods |
-
-### How to Check
-
-Before ANY commit that adds new WordPress hooks, shortcodes, options, AJAX actions, or cron jobs:
-
-1. Search for `'ppa_` in the changed files
-2. If the string appears as a hook name, action name, shortcode tag, option key, nonce action, query parameter, capability, REST field name, or form POST field name — it MUST be changed to `pressprimer_assignment_`
-3. If the string appears as a script handle, CSS class, or REST namespace — it's fine
-
-**When in doubt, use the long prefix. There is zero downside to a longer prefix. There is a guaranteed WordPress.org rejection for a short one.**
-
----
-
 ## Input Sanitization (CRITICAL)
 
 ### Sanitize Immediately When Receiving Input
@@ -292,6 +353,37 @@ $data = [
 ];
 ```
 
+### json_decode() Is NOT Sanitization
+
+```php
+// BAD - json_decode doesn't sanitize
+$data = json_decode( wp_unslash( $_POST['data'] ), true );
+// Using $data directly - NOT SAFE
+
+// GOOD - Sanitize each field after decoding
+$raw = json_decode( wp_unslash( $_POST['data'] ), true );
+if ( ! is_array( $raw ) ) {
+    $raw = [];
+}
+$data = [
+    'title'    => isset( $raw['title'] ) ? sanitize_text_field( $raw['title'] ) : '',
+    'feedback' => isset( $raw['feedback'] ) ? wp_kses_post( $raw['feedback'] ) : '',
+    'score'    => isset( $raw['score'] ) ? floatval( $raw['score'] ) : 0.0,
+];
+```
+
+### Never Iterate Over Entire Superglobals
+
+```php
+// WRONG - Processing ALL parameters
+foreach ( $_POST as $key => $value ) { ... }
+
+// CORRECT - Only process the expected parameters
+$assignment_id = isset( $_POST['assignment_id'] ) ? absint( $_POST['assignment_id'] ) : 0;
+$score         = isset( $_POST['score'] ) ? floatval( $_POST['score'] ) : 0.0;
+$feedback      = isset( $_POST['feedback'] ) ? wp_kses_post( wp_unslash( $_POST['feedback'] ) ) : '';
+```
+
 ---
 
 ## Output Escaping (CRITICAL)
@@ -317,16 +409,59 @@ echo wp_kses( $html, $allowed_html );
 ### Use CSS Classes Instead of Inline Styles
 
 ```php
-// WRONG - style attribute may be stripped
+// WRONG - style attribute may be stripped by wp_kses
 echo '<div style="display: none;">';
 
 // CORRECT - Use CSS classes
 echo '<div class="ppa-hidden">';
+// With CSS: .ppa-hidden { display: none !important; }
+```
+
+### wp_add_inline_style() Needs CSS Sanitization
+
+```php
+// WRONG - Unsanitized CSS
+$css = $this->get_theme_css();
+wp_add_inline_style( 'ppa-submission', $css ); // REJECTED
+
+// CORRECT - Build CSS only from individually validated values
+$primary   = sanitize_hex_color( $settings['primary_color'] ) ?: '#0073aa';
+$max_width = absint( $settings['max_width'] ) ?: 800;
+$css = sprintf(
+    '.ppa-assignment { --ppa-primary: %s; --ppa-max-width: %dpx; }',
+    $primary,
+    $max_width
+);
+wp_add_inline_style( 'ppa-submission', $css );
 ```
 
 ---
 
 ## File Upload Security (CRITICAL)
+
+### Always Validate Before Processing
+
+```php
+// WRONG - Passing $_FILES directly
+$result = $this->store_file( $_FILES['submission_file'] ); // REJECTED
+
+// CORRECT - Validate first, then pass
+if ( ! isset( $_FILES['submission_file'] ) || $_FILES['submission_file']['error'] !== UPLOAD_ERR_OK ) {
+    wp_send_json_error( [ 'message' => __( 'Upload failed.', 'pressprimer-assignment' ) ] );
+}
+
+$allowed_types = [
+    'pdf'  => 'application/pdf',
+    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+$file_type = wp_check_filetype( $_FILES['submission_file']['name'], $allowed_types );
+
+if ( ! $file_type['ext'] ) {
+    wp_send_json_error( [ 'message' => __( 'Invalid file type.', 'pressprimer-assignment' ) ] );
+}
+
+// Then also validate MIME type via finfo (see full validation in SECURITY.md)
+```
 
 ### Validate File Types Thoroughly
 
@@ -367,7 +502,47 @@ if ( ! in_array( $mime, array_values( $allowed_mimes ), true ) ) {
 
 ---
 
+## Prohibited Code Patterns
+
+### Never Use These
+
+```php
+eval()            // Security risk - REJECTED
+create_function() // Deprecated - REJECTED
+extract()         // Security risk - REJECTED
+goto              // REJECTED
+```
+
+### Heredoc/Nowdoc Syntax Is Prohibited
+
+```php
+// WRONG - Heredoc not allowed
+$html = <<<HTML
+<div class="my-class">Content</div>
+HTML;
+
+// CORRECT - Use string concatenation or sprintf
+$html = '<div class="' . esc_attr( $class ) . '">' . esc_html( $content ) . '</div>';
+```
+
+### No Inline Script/Style Tags in PHP
+
+```php
+// WRONG - Inline tags rejected
+?>
+<script>var data = <?php echo wp_json_encode( $data ); ?>;</script>
+<?php
+
+// CORRECT - Use WordPress functions
+wp_localize_script( 'ppa-submission', 'pressprimer_assignment_data', $data );
+wp_add_inline_script( 'ppa-submission', 'console.log("loaded");' );
+```
+
+---
+
 ## Admin UI Standards (React + Ant Design)
+
+**All WordPress admin pages MUST use React with Ant Design for consistency.** Do not use plain PHP forms or vanilla JavaScript for admin interfaces.
 
 ### Component Library
 
@@ -380,7 +555,7 @@ import { Button, Table, Form, Input, Select, Modal, message } from 'antd';
 ### API Calls Pattern
 
 ```javascript
-// Use wp.apiFetch for all REST calls
+// Use @wordpress/api-fetch for all REST calls
 import apiFetch from '@wordpress/api-fetch';
 
 const saveAssignment = async (data) => {
@@ -399,6 +574,28 @@ const saveAssignment = async (data) => {
 };
 ```
 
+### apiFetch Path Convention (CRITICAL)
+
+**Always use relative paths with `apiFetch`.** The `@wordpress/api-fetch` package automatically prepends the site's REST root URL.
+
+```javascript
+// CORRECT — relative path
+apiFetch({ path: '/ppa/v1/assignments' });
+apiFetch({ path: `/ppa/v1/submissions/${submissionId}` });
+
+// WRONG — full URL (apiFetch will double-prepend the root)
+apiFetch({ path: restUrl + 'assignments' });       // Results in /wp-json/wp-json/...
+apiFetch({ path: window.pressprimer_assignment_data.restUrl }); // Same problem
+```
+
+**REST namespace paths by plugin:**
+- Free plugin: `/ppa/v1/*`
+- Educator addon: `/ppae/v1/*`
+- School addon: `/ppas/v1/*`
+- Enterprise addon: `/ppaent/v1/*`
+
+**Do NOT pass `rest_url()` output to React components as an API base URL.** If localized data includes a `restUrl` field, it is for reference/display only, never as an `apiFetch` path.
+
 ### Form Field Widths
 
 | Field Type | Width |
@@ -409,225 +606,80 @@ const saveAssignment = async (data) => {
 | Select dropdowns | `300px` (match related text inputs) |
 | Full width | `style={{ width: '100%' }}` |
 
----
+### UI Component Patterns
 
-## File Structure
+These patterns are established in the Quiz codebase and must be matched for visual consistency.
 
-```
-pressprimer-assignment/
-├── pressprimer-assignment.php     # Main plugin file
-├── uninstall.php                  # Cleanup on uninstall
-├── readme.txt                     # WordPress.org readme
-├── package.json
-├── composer.json
-│
-├── includes/
-│   ├── class-ppa-activator.php
-│   ├── class-ppa-deactivator.php
-│   ├── class-ppa-autoloader.php
-│   ├── class-ppa-plugin.php
-│   ├── class-ppa-addon-manager.php
-│   │
-│   ├── models/
-│   │   ├── class-ppa-assignment.php
-│   │   ├── class-ppa-submission.php
-│   │   ├── class-ppa-submission-file.php
-│   │   ├── class-ppa-category.php
-│   │   └── class-ppa-model.php
-│   │
-│   ├── admin/
-│   │   ├── class-ppa-admin.php
-│   │   ├── class-ppa-admin-assignments.php
-│   │   ├── class-ppa-admin-submissions.php
-│   │   ├── class-ppa-admin-reports.php
-│   │   ├── class-ppa-admin-settings.php
-│   │   ├── class-ppa-admin-categories.php
-│   │   └── class-ppa-onboarding.php
-│   │
-│   ├── frontend/
-│   │   ├── class-ppa-frontend.php
-│   │   ├── class-ppa-shortcodes.php
-│   │   ├── class-ppa-assignment-renderer.php
-│   │   ├── class-ppa-submission-handler.php
-│   │   └── class-ppa-document-viewer.php
-│   │
-│   ├── api/
-│   │   └── class-ppa-rest-controller.php
-│   │
-│   ├── services/
-│   │   ├── class-ppa-grading-service.php
-│   │   ├── class-ppa-file-service.php
-│   │   ├── class-ppa-email-service.php
-│   │   └── class-ppa-statistics-service.php
-│   │
-│   ├── integrations/
-│   │   ├── class-ppa-learndash.php
-│   │   ├── class-ppa-tutorlms.php
-│   │   └── uncanny-automator/
-│   │       ├── class-ppa-automator-loader.php
-│   │       ├── class-ppa-automator-integration.php
-│   │       └── triggers/
-│   │
-│   ├── database/
-│   │   ├── class-ppa-schema.php
-│   │   └── class-ppa-migrator.php
-│   │
-│   └── utilities/
-│       ├── class-ppa-helpers.php
-│       └── class-ppa-capabilities.php
-│
-├── assets/
-│   ├── css/
-│   │   ├── admin.css
-│   │   ├── submission.css
-│   │   ├── grading.css
-│   │   └── themes/
-│   │       ├── default.css
-│   │       ├── modern.css
-│   │       └── minimal.css
-│   │
-│   ├── js/
-│   │   ├── admin.js
-│   │   ├── submission.js
-│   │   ├── document-viewer.js
-│   │   └── grading.js
-│   │
-│   └── images/
-│
-├── blocks/
-│   ├── assignment/
-│   └── my-submissions/
-│
-├── build/                         # Compiled React/JS (generated)
-│
-├── src/                           # React source files
-│   ├── assignment-editor/
-│   ├── grading-interface/
-│   ├── dashboard/
-│   ├── reports/
-│   ├── settings-panel/
-│   └── onboarding/
-│
-├── languages/
-│   └── pressprimer-assignment.pot
-│
-├── vendor/                        # Composer dependencies
-│   └── pdfparser/                 # For text extraction if needed
-│
-└── .wordpress-org/                # WordPress.org assets
+**Color palette:**
+
+| Use Case | Color |
+|----------|-------|
+| Primary/Active border | `#1890ff` |
+| Primary/Active background | `#e6f7ff` |
+| Default border | `#d9d9d9` |
+| Success | `#52c41a` |
+| Warning | `#faad14` |
+| Error/Danger | `#ff4d4f` |
+| Secondary text | `#8c8c8c` |
+| WordPress admin blue | `#2271b1` |
+
+**Button patterns:**
+
+```jsx
+// Primary action
+<Button type="primary" icon={<SaveOutlined />}>
+    {__('Save', 'pressprimer-assignment')}
+</Button>
+
+// Danger action
+<Button danger onClick={handleDelete}>
+    {__('Delete', 'pressprimer-assignment')}
+</Button>
+
+// Loading state
+<Button type="primary" loading={saving}>
+    {saving ? __('Saving...', 'pressprimer-assignment') : __('Save', 'pressprimer-assignment')}
+</Button>
 ```
 
-## Database
+**Empty states:**
 
-- Tables use prefix: `{wp_prefix}ppa_`
-- **Exception:** Groups tables use `{wp_prefix}ppq_` prefix (shared with PressPrimer Quiz)
-- Schema defined in: `includes/database/class-ppa-schema.php`
-- Migrations in: `includes/database/class-ppa-migrator.php`
-- Current DB version: Check `PRESSPRIMER_ASSIGNMENT_DB_VERSION` constant
+```jsx
+<Empty description={__('No submissions yet.', 'pressprimer-assignment')} />
 
----
-
-## Running Code Quality Checks
-
-```bash
-# PHP Syntax check
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" -l path/to/file.php
-
-# PHPCS (WordPress coding standards)
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=phpcs.xml.dist --report=full path/to/file.php
-
-# Security-specific checks
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=WordPress-Extra --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.NonceVerification,WordPress.DB.PreparedSQL --report=full path/to/file.php
-
-# PHP Compatibility (7.4 - 8.4)
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-8.4 --extensions=php path/to/file.php
+// With action
+<Empty description={__('No assignments yet.', 'pressprimer-assignment')}>
+    <Button type="primary">{__('Create Assignment', 'pressprimer-assignment')}</Button>
+</Empty>
 ```
 
 ---
 
-## Building and Releasing
+## Required in Distribution
 
-### Build Plugin ZIP
-```bash
-npm run plugin-zip
+### External Services Disclosure
+
+If the plugin connects to external services (OpenAI, Anthropic, etc.), readme.txt MUST include:
+
 ```
-This creates `dist/pressprimer-assignment.zip`
+== External Services ==
 
-### Release Process
-1. Update version in `pressprimer-assignment.php` and `readme.txt`
-2. Commit to `main`
-3. Create tag: `git tag v1.0.0 && git push origin v1.0.0`
-4. Create GitHub Release from the tag
-5. Workflow automatically deploys to WordPress.org
-
-### GitHub Actions Workflow
-- Location: `.github/workflows/deploy-to-wordpress-org.yml`
-- Triggers on: GitHub Release publish OR manual workflow_dispatch
-- Deploys to: WordPress.org SVN (`/trunk/` and `/tags/{version}`)
-
----
-
-## Branching Strategy
-
-- `main` - Release branch, tagged versions, deploys to WordPress.org
-- `develop` - Default branch for active development (work directly here)
-
-**Note:** Feature branches (`feature/*`, `release/*`) are optional and typically not needed for solo development. Work directly on `develop` and merge to `main` when ready to release.
-
----
-
-## Commit Message Conventions
-
-Use these prefixes for commit messages:
-
-### Changelog-Worthy (User-Facing Changes)
-
-| Prefix | Changelog Shows As | Example |
-|--------|-------------------|---------|
-| `feat:` | **Added** | `feat: add rubric builder` |
-| `fix:` | **Fixed** | `fix: correct file upload validation` |
-| `perf:` | **Improved** | `perf: speed up submission loading` |
-| `refactor:` | **Changed** | `refactor: simplify grading logic` |
-
-### Non-Changelog (Internal/Maintenance)
-
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `docs:` | Documentation changes | `docs: update readme installation steps` |
-| `chore:` | Build, tooling, maintenance | `chore: bump version to 1.0.1` |
-| `wip:` | Work in progress | `wip: grading interface - incomplete` |
-| `test:` | Test changes only | `test: add unit tests for file upload` |
-| `style:` | Code formatting only | `style: fix indentation in submission.js` |
-
-### Writing Good Changelog Entries
-
-Changelog entries will be copied to Knowledge Base articles. Write them as **user-facing descriptions**:
-
-```bash
-# GOOD - User understands the benefit
-git commit -m "feat: add option to set custom due date messages"
-git commit -m "fix: late submissions now correctly apply penalty"
-
-# BAD - Too technical, not user-friendly
-git commit -m "feat: add pressprimer_assignment_due_message filter"
-git commit -m "fix: apply late_penalty_percent to final_score"
+This plugin connects to [Service Name] for [purpose].
+- When: [When data is sent]
+- What data: [What is transmitted]
+- Terms of Service: [URL]
+- Privacy Policy: [URL]
 ```
 
----
+### Files That Must NOT Be in Release ZIP
 
-## Pre-Release Checklist
-
-Before creating a release ZIP:
-
-1. **Prefixes** - Verify ALL globally-registered identifiers use `pressprimer_assignment_` (see Prefix Requirements section)
-2. **SQL** - No variable interpolation in ORDER BY, use `%i` for field names
-3. **Escaping** - No `phpcs:ignore` for EscapeOutput, use `wp_kses()` instead
-4. **Inline code** - No `<script>` or `<style>` tags in PHP
-5. **External services** - All disclosed in readme.txt
-6. **Prohibited files** - No `.git`, `node_modules`, test files in ZIP
-7. **Heredoc** - None used anywhere
-8. **Array sanitization** - All $_POST arrays sanitized element by element
-9. **File uploads** - Extension + MIME type + magic byte validation
+- `.git`, `.gitignore`, `.gitattributes`
+- `node_modules`, `package-lock.json`
+- `.wordpress-org` folder
+- Test directories (`tests/`, `spec/`)
+- Config files (`phpunit.xml`, `phpcs.xml.dist`, `webpack.config.js`)
+- IDE folders (`.idea`, `.vscode`)
+- `.env` files
 
 ---
 
@@ -828,13 +880,232 @@ Verified from Quiz's `themes/default.css` — same values with `--ppa-` prefix.
 
 ---
 
+## File Structure
+
+```
+pressprimer-assignment/
+├── pressprimer-assignment.php     # Main plugin file
+├── uninstall.php                  # Cleanup on uninstall
+├── readme.txt                     # WordPress.org readme
+├── package.json
+├── composer.json
+│
+├── includes/
+│   ├── class-ppa-activator.php
+│   ├── class-ppa-deactivator.php
+│   ├── class-ppa-autoloader.php
+│   ├── class-ppa-plugin.php
+│   ├── class-ppa-addon-manager.php
+│   │
+│   ├── models/
+│   │   ├── class-ppa-assignment.php
+│   │   ├── class-ppa-submission.php
+│   │   ├── class-ppa-submission-file.php
+│   │   ├── class-ppa-category.php
+│   │   └── class-ppa-model.php
+│   │
+│   ├── admin/
+│   │   ├── class-ppa-admin.php
+│   │   ├── class-ppa-admin-assignments.php
+│   │   ├── class-ppa-admin-submissions.php
+│   │   ├── class-ppa-admin-reports.php
+│   │   ├── class-ppa-admin-settings.php
+│   │   ├── class-ppa-admin-categories.php
+│   │   └── class-ppa-onboarding.php
+│   │
+│   ├── frontend/
+│   │   ├── class-ppa-frontend.php
+│   │   ├── class-ppa-shortcodes.php
+│   │   ├── class-ppa-assignment-renderer.php
+│   │   ├── class-ppa-submission-handler.php
+│   │   └── class-ppa-document-viewer.php
+│   │
+│   ├── api/
+│   │   └── class-ppa-rest-controller.php
+│   │
+│   ├── services/
+│   │   ├── class-ppa-grading-service.php
+│   │   ├── class-ppa-file-service.php
+│   │   ├── class-ppa-email-service.php
+│   │   └── class-ppa-statistics-service.php
+│   │
+│   ├── integrations/
+│   │   ├── class-ppa-learndash.php
+│   │   ├── class-ppa-tutorlms.php
+│   │   └── uncanny-automator/
+│   │       ├── class-ppa-automator-loader.php
+│   │       ├── class-ppa-automator-integration.php
+│   │       └── triggers/
+│   │
+│   ├── database/
+│   │   ├── class-ppa-schema.php
+│   │   └── class-ppa-migrator.php
+│   │
+│   └── utilities/
+│       ├── class-ppa-helpers.php
+│       └── class-ppa-capabilities.php
+│
+├── assets/
+│   ├── css/
+│   │   ├── admin.css
+│   │   ├── submission.css
+│   │   ├── grading.css
+│   │   └── themes/
+│   │       ├── default.css
+│   │       ├── modern.css
+│   │       └── minimal.css
+│   │
+│   ├── js/
+│   │   ├── admin.js
+│   │   ├── submission.js
+│   │   ├── document-viewer.js
+│   │   └── grading.js
+│   │
+│   └── images/
+│
+├── blocks/
+│   ├── assignment/
+│   └── my-submissions/
+│
+├── build/                         # Compiled React/JS (generated)
+│
+├── src/                           # React source files
+│   ├── assignment-editor/
+│   ├── grading-interface/
+│   ├── dashboard/
+│   ├── reports/
+│   ├── settings-panel/
+│   └── onboarding/
+│
+├── languages/
+│   └── pressprimer-assignment.pot
+│
+├── vendor/                        # Composer dependencies
+│
+└── .wordpress-org/                # WordPress.org assets
+```
+
+## Database
+
+- Tables use prefix: `{wp_prefix}ppa_`
+- **Exception:** Groups tables use `{wp_prefix}ppq_` prefix (shared with PressPrimer Quiz)
+- Schema defined in: `includes/database/class-ppa-schema.php`
+- Migrations in: `includes/database/class-ppa-migrator.php`
+- Current DB version: Check `PRESSPRIMER_ASSIGNMENT_DB_VERSION` constant
+
+---
+
+## Running Code Quality Checks
+
+```bash
+# PHP Syntax check
+"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" -l path/to/file.php
+
+# PHPCS (WordPress coding standards)
+"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=phpcs.xml.dist --report=full path/to/file.php
+
+# Security-specific checks
+"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=WordPress-Extra --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.NonceVerification,WordPress.DB.PreparedSQL --report=full path/to/file.php
+
+# PHP Compatibility (7.4 - 8.4)
+"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-8.4 --extensions=php path/to/file.php
+```
+
+---
+
+## Building and Releasing
+
+### Build Plugin ZIP
+```bash
+npm run plugin-zip
+```
+This creates `dist/pressprimer-assignment.zip`
+
+### Release Process
+1. Update version in `pressprimer-assignment.php` and `readme.txt`
+2. Commit to `main`
+3. Create tag: `git tag v1.0.0 && git push origin v1.0.0`
+4. Create GitHub Release from the tag
+5. Workflow automatically deploys to WordPress.org
+
+### GitHub Actions Workflow
+- Location: `.github/workflows/deploy-to-wordpress-org.yml`
+- Triggers on: GitHub Release publish OR manual workflow_dispatch
+- Deploys to: WordPress.org SVN (`/trunk/` and `/tags/{version}`)
+
+---
+
+## Branching Strategy
+
+- `main` - Release branch, tagged versions, deploys to WordPress.org
+- `develop` - Default branch for active development (work directly here)
+
+**Note:** Feature branches (`feature/*`, `release/*`) are optional and typically not needed for solo development. Work directly on `develop` and merge to `main` when ready to release.
+
+---
+
+## Commit Message Conventions
+
+Use these prefixes for commit messages:
+
+### Changelog-Worthy (User-Facing Changes)
+
+| Prefix | Changelog Shows As | Example |
+|--------|-------------------|---------| 
+| `feat:` | **Added** | `feat: add rubric builder` |
+| `fix:` | **Fixed** | `fix: correct file upload validation` |
+| `perf:` | **Improved** | `perf: speed up submission loading` |
+| `refactor:` | **Changed** | `refactor: simplify grading logic` |
+
+### Non-Changelog (Internal/Maintenance)
+
+| Prefix | Purpose | Example |
+|--------|---------|---------| 
+| `docs:` | Documentation changes | `docs: update readme installation steps` |
+| `chore:` | Build, tooling, maintenance | `chore: bump version to 1.0.1` |
+| `wip:` | Work in progress | `wip: grading interface - incomplete` |
+| `test:` | Test changes only | `test: add unit tests for file upload` |
+| `style:` | Code formatting only | `style: fix indentation in submission.js` |
+
+### Writing Good Changelog Entries
+
+Changelog entries will be copied to Knowledge Base articles. Write them as **user-facing descriptions**:
+
+```bash
+# GOOD - User understands the benefit
+git commit -m "feat: add option to set custom due date messages"
+git commit -m "fix: late submissions now correctly apply penalty"
+
+# BAD - Too technical, not user-friendly
+git commit -m "feat: add pressprimer_assignment_due_message filter"
+git commit -m "fix: apply late_penalty_percent to final_score"
+```
+
+---
+
+## Pre-Release Checklist
+
+Before creating a release ZIP:
+
+1. **Prefixes** - Search for `ppa_` in transients, wp_localize_script object names, options
+2. **SQL** - No variable interpolation in ORDER BY, use `%i` for field names
+3. **Escaping** - No `phpcs:ignore` for EscapeOutput, use `wp_kses()` instead
+4. **Inline code** - No `<script>` or `<style>` tags in PHP
+5. **External services** - All disclosed in readme.txt
+6. **Prohibited files** - No `.git`, `node_modules`, test files in ZIP
+7. **Heredoc** - None used anywhere
+8. **Array sanitization** - All $_POST arrays sanitized element by element
+9. **File uploads** - Extension + MIME type + magic byte validation
+
+---
+
 ## Important Reminders
 
 1. **Always run PHPCS before committing** - Pre-commit hook does this automatically
 2. **Test with WP_DEBUG enabled** - Catches notices and warnings
 3. **Sanitize early, escape late** - Core WordPress security principle
 4. **No variable interpolation in SQL** - Use placeholders exclusively
-5. **Long prefixes for global identifiers** - See "WordPress.org Prefix Requirements" section below
+5. **4+ character prefixes** - For all global identifiers
 6. **Use CSS classes instead of inline styles** - For elements that need wp_kses
 7. **phpcs:ignore for escaping = REJECTION** - Always use wp_kses() instead
 8. **File upload security** - Validate extension, MIME type, and magic bytes
