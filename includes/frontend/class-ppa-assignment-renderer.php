@@ -409,6 +409,14 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			);
 		}
 
+		$grader_display_name = '';
+		if ( ! empty( $submission->grader_id ) ) {
+			$grader = get_userdata( (int) $submission->grader_id );
+			if ( $grader ) {
+				$grader_display_name = $grader->display_name;
+			}
+		}
+
 		// Check resubmission.
 		$can_resubmit            = $this->can_user_resubmit( $assignment, $submission->user_id, $submission );
 		$resubmissions_remaining = 0;

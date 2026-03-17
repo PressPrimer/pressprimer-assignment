@@ -14,6 +14,7 @@
  * @var array                                       $files                    Array of Submission_File instances.
  * @var string                                      $formatted_submitted_date Formatted submission date.
  * @var string                                      $formatted_graded_date    Formatted graded date.
+ * @var string                                      $grader_display_name      Grader's display name (empty if unavailable).
  * @var bool                                        $can_resubmit             Whether resubmission is allowed.
  * @var int                                         $resubmissions_remaining  Number of resubmissions left.
  * @var array                                       $previous_submissions     Previous submissions array.
@@ -195,11 +196,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php if ( ! empty( $formatted_graded_date ) ) : ?>
 					<p class="ppa-form-hint">
 						<?php
-						printf(
-							/* translators: %s: date the submission was graded */
-							esc_html__( 'Graded on %s', 'pressprimer-assignment' ),
-							esc_html( $formatted_graded_date )
-						);
+						if ( ! empty( $grader_display_name ) ) {
+							printf(
+								/* translators: %1$s: grader's display name, %2$s: date the submission was graded */
+								esc_html__( 'Graded by %1$s on %2$s', 'pressprimer-assignment' ),
+								esc_html( $grader_display_name ),
+								esc_html( $formatted_graded_date )
+							);
+						} else {
+							printf(
+								/* translators: %s: date the submission was graded */
+								esc_html__( 'Graded on %s', 'pressprimer-assignment' ),
+								esc_html( $formatted_graded_date )
+							);
+						}
 						?>
 					</p>
 				<?php endif; ?>
