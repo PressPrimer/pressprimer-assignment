@@ -426,7 +426,8 @@ class PressPrimer_Assignment_Frontend {
 				'maxFilesReached'        => __( 'Maximum number of files reached.', 'pressprimer-assignment' ),
 				/* translators: %1$d: number of files uploaded, %2$d: maximum files allowed */
 				'filesUploaded'          => __( '%1$d of %2$d files uploaded.', 'pressprimer-assignment' ),
-				'fileTooLarge'           => __( 'File is too large.', 'pressprimer-assignment' ),
+				/* translators: %s: maximum file size (e.g., "10 MB") */
+				'fileTooLarge'           => __( 'File is too large. Each file must be smaller than %s.', 'pressprimer-assignment' ),
 				'invalidFileType'        => __( 'File type not allowed.', 'pressprimer-assignment' ),
 				'networkError'           => __( 'A network error occurred. Please try again.', 'pressprimer-assignment' ),
 				'submitAssignment'       => __( 'Submit Assignment', 'pressprimer-assignment' ),

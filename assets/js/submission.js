@@ -305,7 +305,10 @@
 				this.showError(
 					this.escapeHtml( file.name ) +
 						': ' +
-						pressprimerAssignmentFrontend.i18n.fileTooLarge
+						pressprimerAssignmentFrontend.i18n.fileTooLarge.replace(
+							'%s',
+							this.formatSize( this.maxSize )
+						)
 				);
 				return false;
 			}
@@ -853,7 +856,7 @@
 		/**
 		 * Show an inline error message below the upload zone.
 		 *
-		 * Errors auto-dismiss after 5 seconds. Uses role="alert"
+		 * Errors auto-dismiss after 20 seconds. Uses role="alert"
 		 * for screen reader announcement.
 		 *
 		 * @param {string} message The error message to display.
@@ -872,7 +875,7 @@
 				$error.slideUp( 200, function () {
 					$( this ).remove();
 				} );
-			}, 5000 );
+			}, 20000 );
 		},
 
 		/**
