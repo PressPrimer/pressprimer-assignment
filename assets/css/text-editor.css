@@ -31,7 +31,6 @@
 	margin-bottom: var(--ppa-space-md);
 	border: 2px solid var(--ppa-border);
 	border-radius: var(--ppa-radius-md);
-	overflow: hidden;
 	transition: border-color 0.2s ease;
 }
 
@@ -44,11 +43,13 @@
 .ppa-editor-container .mce-toolbar-grp {
 	background: var(--ppa-background-gray, #f6f7f7);
 	border-bottom: 1px solid var(--ppa-border-light, #dcdcde);
+	border-radius: calc(var(--ppa-radius-md) - 2px) calc(var(--ppa-radius-md) - 2px) 0 0;
 }
 
 /* TinyMCE editor body */
 .ppa-editor-container .mce-edit-area {
 	background: var(--ppa-background, #ffffff);
+	border-radius: 0 0 calc(var(--ppa-radius-md) - 2px) calc(var(--ppa-radius-md) - 2px);
 }
 
 .ppa-editor-container .mce-edit-area iframe {
