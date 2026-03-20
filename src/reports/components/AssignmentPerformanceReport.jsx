@@ -150,7 +150,7 @@ const AssignmentPerformanceReport = () => {
 			sortOrder: sortField === 'title' ? sortOrder : null,
 			render: ( title, record ) => (
 				<a
-					href={ `admin.php?page=pressprimer-assignment&action=edit&assignment=${ record.id }` }
+					href={ `admin.php?page=pressprimer-assignment-assignments&action=edit&assignment=${ record.id }` }
 				>
 					{ title }
 				</a>
