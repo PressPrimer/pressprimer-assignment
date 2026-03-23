@@ -840,11 +840,13 @@ class PressPrimer_Assignment_REST_Submissions {
 			);
 		}
 
-		// Send inline headers (no Content-Disposition: attachment).
+		// Determine disposition: attachment when ?download=1, inline otherwise.
+		$disposition = $request->get_param( 'download' ) ? 'attachment' : 'inline';
+
 		nocache_headers();
 		header( 'Content-Type: ' . $file->mime_type );
 		header( 'Content-Length: ' . $file->file_size );
-		header( 'Content-Disposition: inline; filename="' . $file->original_filename . '"' );
+		header( 'Content-Disposition: ' . $disposition . '; filename="' . $file->original_filename . '"' );
 		header( 'X-Content-Type-Options: nosniff' );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Serving file for inline viewing.

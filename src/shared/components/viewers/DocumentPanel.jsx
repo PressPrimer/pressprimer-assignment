@@ -147,7 +147,9 @@ const DocumentPanel = ( {
 				<Button
 					type="primary"
 					icon={ <DownloadOutlined /> }
-					href={ appendNonce( file.download_url ) }
+					href={ appendNonce( file.download_url + '?download=1' ) }
+					target="_blank"
+					rel="noopener noreferrer"
 				>
 					{ __( 'Download File', 'pressprimer-assignment' ) }
 				</Button>
@@ -217,7 +219,11 @@ const DocumentPanel = ( {
 					</span>
 					<Button
 						icon={ <DownloadOutlined /> }
-						href={ appendNonce( currentFile.download_url ) }
+						href={ appendNonce(
+							currentFile.download_url + '?download=1'
+						) }
+						target="_blank"
+						rel="noopener noreferrer"
 						size="small"
 					>
 						{ __( 'Download', 'pressprimer-assignment' ) }
