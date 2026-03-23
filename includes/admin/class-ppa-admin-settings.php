@@ -399,17 +399,20 @@ class PressPrimer_Assignment_Admin_Settings {
 	 * @return array List of "Plugin Name Version" strings.
 	 */
 	private function get_active_plugins_list() {
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$all_plugins    = get_plugins();
 		$active_plugins = get_option( 'active_plugins', [] );
 		$list           = [];
 
 		foreach ( $active_plugins as $plugin_path ) {
-			$plugin_file = WP_PLUGIN_DIR . '/' . $plugin_path;
-
-			if ( ! file_exists( $plugin_file ) ) {
+			if ( ! isset( $all_plugins[ $plugin_path ] ) ) {
 				continue;
 			}
 
-			$plugin_data = get_plugin_data( $plugin_file, false, false );
+			$plugin_data = $all_plugins[ $plugin_path ];
 
 			if ( ! empty( $plugin_data['Name'] ) ) {
 				$version = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : '';

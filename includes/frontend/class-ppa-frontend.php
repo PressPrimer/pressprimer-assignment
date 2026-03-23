@@ -168,6 +168,12 @@ class PressPrimer_Assignment_Frontend {
 		// Apply appearance setting overrides to all themes.
 		$inline_css = $this->generate_appearance_overrides( $themes );
 		if ( $inline_css ) {
+			// Escape CSS for safe output.
+			$inline_css = wp_strip_all_tags( $inline_css );
+			$inline_css = preg_replace( '/(expression|behavior|vbscript)/i', '', $inline_css );
+			$inline_css = preg_replace( '/javascript\s*:/i', '', $inline_css );
+			$inline_css = wp_kses( $inline_css, [] );
+
 			// Attach to the last theme handle so it appears after all theme CSS.
 			$last_theme = end( $themes );
 			wp_add_inline_style( 'ppa-theme-' . $last_theme, $inline_css );

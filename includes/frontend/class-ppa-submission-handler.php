@@ -125,8 +125,11 @@ class PressPrimer_Assignment_Submission_Handler {
 		// final submit time in handle_submit(). This allows users to
 		// upload files while a previous submission is being reviewed.
 
-		// Check file was uploaded.
-		if ( empty( $_FILES['file'] ) ) {
+		// Check file was uploaded and all required keys are present.
+		if (
+			empty( $_FILES['file'] )
+			|| ! isset( $_FILES['file']['name'], $_FILES['file']['type'], $_FILES['file']['tmp_name'], $_FILES['file']['error'], $_FILES['file']['size'] )
+		) {
 			wp_send_json_error(
 				[
 					'code'    => 'no_file',
@@ -136,11 +139,18 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
+		// Sanitize the uploaded file array early.
+		$uploaded_file = [
+			'name'     => sanitize_file_name( wp_unslash( $_FILES['file']['name'] ) ),
+			'type'     => sanitize_mime_type( wp_unslash( $_FILES['file']['type'] ) ),
+			'tmp_name' => $_FILES['file']['tmp_name'], // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- tmp_name is a server-generated temp path, not user input.
+			'error'    => absint( $_FILES['file']['error'] ),
+			'size'     => absint( $_FILES['file']['size'] ),
+		];
+
 		// Validate file.
 		$file_service = $this->get_file_service();
-
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- File validation is handled by validate_file().
-		$validation = $file_service->validate_file( $_FILES['file'], $assignment );
+		$validation   = $file_service->validate_file( $uploaded_file, $assignment );
 
 		if ( is_wp_error( $validation ) ) {
 			wp_send_json_error(
@@ -190,8 +200,7 @@ class PressPrimer_Assignment_Submission_Handler {
 		}
 
 		// Store file.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- File storage is handled by store_file().
-		$file_id = $file_service->store_file( $_FILES['file'], $submission->id );
+		$file_id = $file_service->store_file( $uploaded_file, $submission->id );
 
 		if ( is_wp_error( $file_id ) ) {
 			wp_send_json_error(

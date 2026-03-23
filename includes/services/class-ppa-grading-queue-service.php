@@ -329,59 +329,39 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 	private static function get_accessible_assignment_ids() {
 		global $wpdb;
 
-		$table = $wpdb->prefix . 'ppa_assignments';
+		$table   = $wpdb->prefix . 'ppa_assignments';
+		$user_id = get_current_user_id();
 
 		// Built-in ownership scoping: manage_own users see only their own.
 		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			$user_id = get_current_user_id();
-
-			/**
-			 * Filters the WHERE clause for accessible assignments.
-			 *
-			 * The Educator addon uses this to further restrict teachers
-			 * by appending additional conditions.
-			 *
-			 * @since 1.0.0
-			 *
-			 * @param string $where   SQL WHERE clause (starts with "WHERE").
-			 * @param int    $user_id Current user ID.
-			 */
-			$where = apply_filters(
-				'pressprimer_assignment_accessible_assignments_where',
-				$wpdb->prepare( "WHERE status = 'published' AND author_id = %d", $user_id ),
-				$user_id
-			);
-
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$ids = $wpdb->get_col(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $where from prepare() + trusted filter.
-				"SELECT id FROM {$table} {$where}"
+				$wpdb->prepare(
+					"SELECT id FROM {$table} WHERE status = 'published' AND author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix.
+					$user_id
+				)
 			);
-
-			return array_map( 'intval', $ids );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$ids = $wpdb->get_col(
+				"SELECT id FROM {$table} WHERE status = 'published'" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix.
+			);
 		}
 
+		$ids = array_map( 'intval', $ids );
+
 		/**
-		 * Filters the WHERE clause for accessible assignments.
+		 * Filters the list of accessible assignment IDs.
+		 *
+		 * Addons (e.g., Educator) can use this to further restrict
+		 * which assignments a user can access in the grading queue.
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param string $where   SQL WHERE clause (starts with "WHERE").
-		 * @param int    $user_id Current user ID.
+		 * @param int[] $ids     Array of assignment IDs.
+		 * @param int   $user_id Current user ID.
 		 */
-		$where = apply_filters(
-			'pressprimer_assignment_accessible_assignments_where',
-			"WHERE status = 'published'",
-			get_current_user_id()
-		);
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$ids = $wpdb->get_col(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $where from trusted filter.
-			"SELECT id FROM {$table} {$where}"
-		);
-
-		return array_map( 'intval', $ids );
+		return apply_filters( 'pressprimer_assignment_accessible_assignment_ids', $ids, $user_id );
 	}
 
 	/**
@@ -399,29 +379,21 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 
 		$table = $wpdb->prefix . 'ppa_assignments';
 
-		// Built-in ownership scoping: manage_own users see only their own.
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			$user_id = get_current_user_id();
+		// Reuse the accessible IDs logic (includes ownership scoping + addon filter).
+		$accessible_ids = self::get_accessible_assignment_ids();
 
-			/** This filter is documented in self::get_accessible_assignment_ids() */
-			$where = apply_filters(
-				'pressprimer_assignment_accessible_assignments_where',
-				$wpdb->prepare( "WHERE status = 'published' AND author_id = %d", $user_id ),
-				$user_id
-			);
-		} else {
-			/** This filter is documented in self::get_accessible_assignment_ids() */
-			$where = apply_filters(
-				'pressprimer_assignment_accessible_assignments_where',
-				"WHERE status = 'published'",
-				get_current_user_id()
-			);
+		if ( empty( $accessible_ids ) ) {
+			return [];
 		}
+
+		$placeholders = implode( ',', array_fill( 0, count( $accessible_ids ), '%d' ) );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $where from prepare() + trusted filter.
-			"SELECT id, title FROM {$table} {$where} ORDER BY title ASC"
+			$wpdb->prepare(
+				"SELECT id, title FROM {$table} WHERE id IN ({$placeholders}) ORDER BY title ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $placeholders is a generated string of %d tokens.
+				$accessible_ids
+			)
 		);
 	}
 

@@ -13,6 +13,8 @@
  * Text Domain:       pressprimer-assignment
  * Domain Path:       /languages
  *
+ * Source Code:        https://github.com/PressPrimer/pressprimer-assignment
+ *
  * @package PressPrimer_Assignment
  * @since 1.0.0
  */
