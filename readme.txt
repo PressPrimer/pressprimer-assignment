@@ -1,4 +1,4 @@
-=== PressPrimer Assignment ===
+=== PressPrimer Assignment – Homework Submission, Document Viewer & LMS Grading Workflows ===
 Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
