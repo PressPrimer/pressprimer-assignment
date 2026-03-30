@@ -149,6 +149,42 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 	};
 
 	/**
+	 * Handle validation failure — switch to the tab containing the first error.
+	 *
+	 * @param {Object} errorInfo             Ant Design validation error info.
+	 * @param {Array}  errorInfo.errorFields Array of fields that failed validation.
+	 */
+	const handleFinishFailed = ( { errorFields } ) => {
+		if ( ! errorFields || errorFields.length === 0 ) {
+			return;
+		}
+
+		// Fields that live on the settings tab.
+		const settingsFields = [
+			'title',
+			'description',
+			'instructions',
+			'grading_guidelines',
+			'status',
+			'theme',
+			'submission_type',
+			'max_points',
+			'passing_score',
+			'allow_resubmission',
+			'max_resubmissions',
+			'notification_email',
+		];
+
+		const firstFieldName = errorFields[ 0 ].name[ 0 ];
+
+		if ( settingsFields.includes( firstFieldName ) ) {
+			setActiveTab( 'settings' );
+		} else {
+			setActiveTab( 'file-settings' );
+		}
+	};
+
+	/**
 	 * Handle cancel.
 	 */
 	const handleCancel = () => {
@@ -202,6 +238,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					form={ form }
 					layout="vertical"
 					onFinish={ handleSubmit }
+					onFinishFailed={ handleFinishFailed }
 					initialValues={ {
 						title: '',
 						description: '',
