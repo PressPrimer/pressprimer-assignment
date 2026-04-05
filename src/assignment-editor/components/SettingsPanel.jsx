@@ -5,7 +5,9 @@
  * @since 1.0.0
  */
 
+import { useState, useEffect, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import {
 	Form,
 	Input,
@@ -18,6 +20,7 @@ import {
 	Row,
 	Typography,
 	Tooltip,
+	Radio,
 } from 'antd';
 import {
 	QuestionCircleOutlined,
@@ -26,6 +29,7 @@ import {
 	EditOutlined,
 	MailOutlined,
 	FormatPainterOutlined,
+	LinkOutlined,
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -40,6 +44,50 @@ const { Title, Text } = Typography;
 const SettingsPanel = ( { form } ) => {
 	// Watch allow_resubmission to show/hide max_resubmissions.
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
+
+	// LifterLMS integration state.
+	const adminData = window.pressprimerAssignmentAdmin || {};
+	const lifterlmsActive = adminData.integrations?.lifterlms_active || false;
+	const [ lifterlmsObjects, setLifterlmsObjects ] = useState( [] );
+	const [ lifterlmsLoading, setLifterlmsLoading ] = useState( false );
+
+	/**
+	 * Fetch LifterLMS lessons and courses for the selector.
+	 *
+	 * @param {string} search Optional search term.
+	 */
+	const fetchLifterlmsObjects = useCallback( async ( search = '' ) => {
+		try {
+			setLifterlmsLoading( true );
+			const params = search
+				? `?search=${ encodeURIComponent( search ) }`
+				: '';
+			const response = await apiFetch( {
+				path: `/ppa/v1/lifterlms/objects${ params }`,
+				method: 'GET',
+			} );
+
+			if ( response.success && response.objects ) {
+				setLifterlmsObjects(
+					response.objects.map( ( obj ) => ( {
+						value: obj.id,
+						label: obj.label,
+					} ) )
+				);
+			}
+		} catch {
+			// Silently fail — selector will be empty.
+		} finally {
+			setLifterlmsLoading( false );
+		}
+	}, [] );
+
+	// Load initial LifterLMS objects when integration is active.
+	useEffect( () => {
+		if ( lifterlmsActive ) {
+			fetchLifterlmsObjects();
+		}
+	}, [ lifterlmsActive, fetchLifterlmsObjects ] );
 
 	return (
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
@@ -607,6 +655,126 @@ const SettingsPanel = ( { form } ) => {
 					</Col>
 				</Row>
 			</Card>
+
+			{ /* LifterLMS Integration */ }
+			{ lifterlmsActive && (
+				<Card
+					title={
+						<Space>
+							<Title level={ 4 } style={ { margin: 0 } }>
+								{ __(
+									'LifterLMS Integration',
+									'pressprimer-assignment'
+								) }
+							</Title>
+						</Space>
+					}
+					style={ { marginBottom: 24 } }
+				>
+					<Form.Item
+						label={
+							<Space>
+								<LinkOutlined />
+								<span>
+									{ __(
+										'LifterLMS Lesson or Course',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Link this assignment to a LifterLMS lesson or course. When a student passes, the linked content will be marked complete.',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="ppa_lifterlms_object_id"
+					>
+						<Select
+							showSearch
+							allowClear
+							placeholder={ __(
+								'Select a lesson or course…',
+								'pressprimer-assignment'
+							) }
+							style={ { width: 300 } }
+							size="small"
+							options={ lifterlmsObjects }
+							loading={ lifterlmsLoading }
+							filterOption={ false }
+							onSearch={ fetchLifterlmsObjects }
+							notFoundContent={
+								lifterlmsLoading
+									? __( 'Loading…', 'pressprimer-assignment' )
+									: __(
+											'No lessons or courses found',
+											'pressprimer-assignment'
+									  )
+							}
+						/>
+					</Form.Item>
+
+					<Form.Item
+						label={
+							<Space>
+								<span>
+									{ __(
+										'Completion Type',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Choose whether passing this assignment marks a LifterLMS lesson or an entire course as complete.',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="ppa_lifterlms_completion_type"
+					>
+						<Radio.Group>
+							<Radio value="lesson">
+								{ __(
+									'Lesson complete',
+									'pressprimer-assignment'
+								) }
+							</Radio>
+							<Radio value="course">
+								{ __(
+									'Course complete',
+									'pressprimer-assignment'
+								) }
+							</Radio>
+						</Radio.Group>
+					</Form.Item>
+
+					<Text
+						type="secondary"
+						style={ { fontSize: 12, display: 'block' } }
+					>
+						{ __(
+							'Leave the lesson/course field empty if this assignment should not trigger LifterLMS completion.',
+							'pressprimer-assignment'
+						) }
+					</Text>
+				</Card>
+			) }
 		</Space>
 	);
 };

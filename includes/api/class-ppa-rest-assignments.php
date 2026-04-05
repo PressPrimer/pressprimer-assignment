@@ -456,6 +456,9 @@ class PressPrimer_Assignment_REST_Assignments {
 			$assignment->set_categories( array_map( 'absint', $categories ) );
 		}
 
+		// Handle LifterLMS link.
+		$this->save_lifterlms_link_from_data( $assignment_id, $data );
+
 		// Clear dashboard statistics cache (assignment count changed).
 		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
 			PressPrimer_Assignment_Statistics_Service::clear_all_caches();
@@ -536,6 +539,9 @@ class PressPrimer_Assignment_REST_Assignments {
 		if ( is_array( $categories ) ) {
 			$assignment->set_categories( array_map( 'absint', $categories ) );
 		}
+
+		// Handle LifterLMS link.
+		$this->save_lifterlms_link_from_data( $id, $data );
 
 		// Clear dashboard statistics cache (status or other stats-relevant fields may have changed).
 		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
@@ -769,6 +775,18 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		// LifterLMS integration fields (not stored on the assignment — handled separately).
+		if ( null !== $request->get_param( 'ppa_lifterlms_object_id' ) ) {
+			$data['ppa_lifterlms_object_id'] = absint( $request->get_param( 'ppa_lifterlms_object_id' ) );
+		}
+
+		if ( null !== $request->get_param( 'ppa_lifterlms_completion_type' ) ) {
+			$completion_type = sanitize_text_field( $request->get_param( 'ppa_lifterlms_completion_type' ) );
+			if ( in_array( $completion_type, [ 'lesson', 'course' ], true ) ) {
+				$data['ppa_lifterlms_completion_type'] = $completion_type;
+			}
+		}
+
 		// JSON fields.
 		if ( null !== $request->get_param( 'allowed_file_types' ) ) {
 			$file_types = $request->get_param( 'allowed_file_types' );
@@ -923,6 +941,42 @@ class PressPrimer_Assignment_REST_Assignments {
 	}
 
 	/**
+	 * Save or remove a LifterLMS link based on sanitized data
+	 *
+	 * Extracts the LifterLMS fields from the sanitized assignment data
+	 * and delegates to the LifterLMS integration class.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int   $assignment_id Assignment ID.
+	 * @param array $data          Sanitized assignment data (may contain ppa_lifterlms_* keys).
+	 */
+	private function save_lifterlms_link_from_data( $assignment_id, $data ) {
+		if ( ! class_exists( 'PressPrimer_Assignment_LifterLMS' ) || ! defined( 'LLMS_PLUGIN_FILE' ) ) {
+			return;
+		}
+
+		// Only act if LifterLMS fields were submitted.
+		if ( ! array_key_exists( 'ppa_lifterlms_object_id', $data ) ) {
+			return;
+		}
+
+		$lifterlms = new PressPrimer_Assignment_LifterLMS();
+		$object_id = absint( $data['ppa_lifterlms_object_id'] );
+
+		if ( 0 === $object_id ) {
+			// Clear the link.
+			$lifterlms->remove_lifterlms_link( $assignment_id );
+		} else {
+			$completion_type = isset( $data['ppa_lifterlms_completion_type'] )
+				? $data['ppa_lifterlms_completion_type']
+				: 'lesson';
+
+			$lifterlms->save_lifterlms_link( $assignment_id, $object_id, $completion_type );
+		}
+	}
+
+	/**
 	 * Prepare assignment for REST response
 	 *
 	 * Formats assignment data for the API response.
@@ -971,6 +1025,15 @@ class PressPrimer_Assignment_REST_Assignments {
 			'created_at'         => $assignment->created_at,
 			'updated_at'         => $assignment->updated_at,
 		];
+
+		// Include LifterLMS link data if LifterLMS is active.
+		if ( defined( 'LLMS_PLUGIN_FILE' ) && class_exists( 'PressPrimer_Assignment_LifterLMS' ) ) {
+			$lifterlms  = new PressPrimer_Assignment_LifterLMS();
+			$linked_obj = $lifterlms->get_linked_lifterlms_object( (int) $assignment->id );
+
+			$data['ppa_lifterlms_object_id']       = $linked_obj ? $linked_obj['object_id'] : 0;
+			$data['ppa_lifterlms_completion_type'] = $linked_obj ? $linked_obj['completion_type'] : 'lesson';
+		}
 
 		/**
 		 * Filters the assignment REST response data.

@@ -279,6 +279,26 @@ class PressPrimer_Assignment_LifterLMS {
 				},
 			]
 		);
+
+		register_rest_route(
+			'ppa/v1',
+			'/lifterlms/objects',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'rest_get_objects' ],
+				'permission_callback' => function () {
+					return current_user_can( 'ppa_view_assignments' )
+						|| current_user_can( 'ppa_create_assignments' )
+						|| current_user_can( 'ppa_edit_assignments' );
+				},
+				'args'                => [
+					'search' => [
+						'type'    => 'string',
+						'default' => '',
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -341,6 +361,143 @@ class PressPrimer_Assignment_LifterLMS {
 			],
 			200
 		);
+	}
+
+	/**
+	 * REST handler: Get LifterLMS lessons and courses for assignment editor selector
+	 *
+	 * Returns a list of LifterLMS lessons and courses, optionally filtered by search term.
+	 * Used by the assignment editor's searchable select dropdown.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function rest_get_objects( $request ) {
+		$search = sanitize_text_field( $request->get_param( 'search' ) );
+
+		$args = [
+			'post_type'      => [ 'lesson', 'course' ],
+			'posts_per_page' => 50,
+			'post_status'    => 'publish',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		];
+
+		if ( ! empty( $search ) ) {
+			$args['s'] = $search;
+		}
+
+		$posts   = get_posts( $args );
+		$objects = [];
+
+		foreach ( $posts as $post ) {
+			$type_label = 'lesson' === $post->post_type
+				? __( 'Lesson', 'pressprimer-assignment' )
+				: __( 'Course', 'pressprimer-assignment' );
+
+			$objects[] = [
+				'id'    => $post->ID,
+				'title' => $post->post_title,
+				'type'  => $post->post_type,
+				'label' => sprintf( '[%s] %s', $type_label, $post->post_title ),
+			];
+		}
+
+		return new WP_REST_Response(
+			[
+				'success' => true,
+				'objects' => $objects,
+			],
+			200
+		);
+	}
+
+	// =========================================================================
+	// Per-Assignment Link Management.
+	// =========================================================================
+
+	/**
+	 * Get the LifterLMS object linked to an assignment
+	 *
+	 * Performs a reverse lookup: finds the LifterLMS lesson/course post
+	 * that has the given assignment ID stored in its post meta.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int $assignment_id Assignment ID.
+	 * @return array|null Array with 'object_id' and 'completion_type', or null if not linked.
+	 */
+	public function get_linked_lifterlms_object( $assignment_id ) {
+		$linked_posts = $this->get_lifterlms_posts_for_assignment( $assignment_id );
+
+		if ( empty( $linked_posts ) ) {
+			return null;
+		}
+
+		// Return the first linked post (one-to-one mapping expected).
+		$post            = $linked_posts[0];
+		$completion_type = get_post_meta( $post->ID, self::META_KEY_COMPLETION_TYPE, true );
+
+		if ( ! in_array( $completion_type, [ 'lesson', 'course' ], true ) ) {
+			$completion_type = 'lesson';
+		}
+
+		return [
+			'object_id'       => $post->ID,
+			'completion_type' => $completion_type,
+		];
+	}
+
+	/**
+	 * Save a LifterLMS link for an assignment
+	 *
+	 * Stores the assignment ID and completion type as post meta on the
+	 * LifterLMS lesson/course post. Removes any previous link first.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int    $assignment_id   Assignment ID.
+	 * @param int    $object_id       LifterLMS lesson or course post ID.
+	 * @param string $completion_type 'lesson' or 'course'.
+	 */
+	public function save_lifterlms_link( $assignment_id, $object_id, $completion_type ) {
+		// Validate the LifterLMS post exists and is a lesson or course.
+		$post = get_post( $object_id );
+		if ( ! $post || ! in_array( $post->post_type, [ 'lesson', 'course' ], true ) ) {
+			return;
+		}
+
+		if ( ! in_array( $completion_type, [ 'lesson', 'course' ], true ) ) {
+			$completion_type = 'lesson';
+		}
+
+		// Remove any existing link for this assignment.
+		$this->remove_lifterlms_link( $assignment_id );
+
+		// Save the new link on the LifterLMS post.
+		update_post_meta( $object_id, self::META_KEY_ASSIGNMENT_ID, $assignment_id );
+		update_post_meta( $object_id, self::META_KEY_COMPLETION_TYPE, $completion_type );
+	}
+
+	/**
+	 * Remove the LifterLMS link for an assignment
+	 *
+	 * Finds and removes the assignment ID and completion type meta from
+	 * any LifterLMS posts that reference this assignment.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int $assignment_id Assignment ID.
+	 */
+	public function remove_lifterlms_link( $assignment_id ) {
+		$linked_posts = $this->get_lifterlms_posts_for_assignment( $assignment_id );
+
+		foreach ( $linked_posts as $post ) {
+			delete_post_meta( $post->ID, self::META_KEY_ASSIGNMENT_ID );
+			delete_post_meta( $post->ID, self::META_KEY_COMPLETION_TYPE );
+		}
 	}
 
 	/**

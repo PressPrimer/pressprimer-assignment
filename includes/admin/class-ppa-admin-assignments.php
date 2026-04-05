@@ -419,6 +419,17 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'status'             => $assignment->status,
 					'categories'         => $category_ids,
 				];
+
+				// Include LifterLMS linked object data if LifterLMS is active.
+				if ( defined( 'LLMS_PLUGIN_FILE' ) && class_exists( 'PressPrimer_Assignment_LifterLMS' ) ) {
+					$lifterlms  = new PressPrimer_Assignment_LifterLMS();
+					$linked_obj = $lifterlms->get_linked_lifterlms_object( (int) $assignment->id );
+
+					if ( $linked_obj ) {
+						$assignment_data['ppa_lifterlms_object_id']       = $linked_obj['object_id'];
+						$assignment_data['ppa_lifterlms_completion_type'] = $linked_obj['completion_type'];
+					}
+				}
 			}
 		}
 
@@ -473,13 +484,16 @@ class PressPrimer_Assignment_Admin_Assignments {
 			'ppa-assignment-editor',
 			'pressprimerAssignmentAdmin',
 			[
-				'adminUrl' => admin_url(),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'listUrl'  => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
-				'addons'   => [
+				'adminUrl'     => admin_url(),
+				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'listUrl'      => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				'addons'       => [
 					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
 					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
 					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
+				'integrations' => [
+					'lifterlms_active' => defined( 'LLMS_PLUGIN_FILE' ),
 				],
 			]
 		);

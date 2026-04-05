@@ -60,7 +60,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				parseInt( assignmentData.allow_resubmission, 10 ) === 1;
 			const maxResub = parseInt( assignmentData.max_resubmissions, 10 );
 
-			form.setFieldsValue( {
+			const fieldValues = {
 				title: assignmentData.title || '',
 				description: assignmentData.description || '',
 				instructions: assignmentData.instructions || '',
@@ -87,7 +87,21 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					'png',
 					'gif',
 				],
-			} );
+			};
+
+			// LifterLMS fields.
+			if ( assignmentData.ppa_lifterlms_object_id ) {
+				fieldValues.ppa_lifterlms_object_id = parseInt(
+					assignmentData.ppa_lifterlms_object_id,
+					10
+				);
+			}
+			if ( assignmentData.ppa_lifterlms_completion_type ) {
+				fieldValues.ppa_lifterlms_completion_type =
+					assignmentData.ppa_lifterlms_completion_type;
+			}
+
+			form.setFieldsValue( fieldValues );
 		}
 	}, [ assignmentData, form ] );
 
@@ -111,6 +125,14 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					: 0,
 				categories: selectedCategories,
 			};
+
+			// Normalize LifterLMS object ID: send 0 when cleared.
+			if (
+				'ppa_lifterlms_object_id' in payload &&
+				! payload.ppa_lifterlms_object_id
+			) {
+				payload.ppa_lifterlms_object_id = 0;
+			}
 
 			// Submit via REST API.
 			const endpoint = assignmentId
@@ -265,6 +287,8 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 							'png',
 							'gif',
 						],
+						ppa_lifterlms_object_id: undefined,
+						ppa_lifterlms_completion_type: 'lesson',
 					} }
 				>
 					{ /* Header */ }
