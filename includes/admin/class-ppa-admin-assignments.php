@@ -476,6 +476,11 @@ class PressPrimer_Assignment_Admin_Assignments {
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'listUrl'  => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				'addons'   => [
+					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
 			]
 		);
 	}

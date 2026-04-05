@@ -254,6 +254,11 @@ class PressPrimer_Assignment_Admin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'pressprimer_assignment_admin_nonce' ),
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
+				'addons'  => [
+					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
 				'strings' => [
 					'confirmDelete'      => __( 'Are you sure you want to delete this item?', 'pressprimer-assignment' ),
 					'confirmDeleteTitle' => __( 'Delete Item', 'pressprimer-assignment' ),

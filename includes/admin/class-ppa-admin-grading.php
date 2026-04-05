@@ -310,6 +310,11 @@ class PressPrimer_Assignment_Admin_Grading {
 				'adminUrl'     => admin_url(),
 				'buildUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/',
 				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'addons'       => [
+					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
 			]
 		);
 	}

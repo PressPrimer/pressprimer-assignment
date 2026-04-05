@@ -515,6 +515,31 @@ class PressPrimer_Assignment_Submission_Handler {
 		 */
 		do_action( 'pressprimer_assignment_submission_submitted', $submission, $assignment );
 
+		/**
+		 * Fire audit log event for submission received.
+		 *
+		 * Enterprise addon listens to this and writes to the audit log.
+		 * When Enterprise is not active, this hook fires harmlessly.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $event_type  Event identifier.
+		 * @param string $object_type Object type affected.
+		 * @param int    $object_id   Object ID.
+		 * @param array  $data        Additional context.
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'submission.received',
+			'submission',
+			$submission->id,
+			[
+				'assignment_id'     => $submission->assignment_id,
+				'user_id'           => $submission->user_id,
+				'submission_number' => $submission->submission_number,
+			]
+		);
+
 		wp_send_json_success(
 			[
 				'message'       => __( 'Your assignment has been submitted successfully.', 'pressprimer-assignment' ),

@@ -69,7 +69,7 @@ add_action( 'init', 'pressprimer_assignment_init', 0 );
  * Returns the singleton instance of the addon manager for addon registration
  * and compatibility checking.
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * @return PressPrimer_Assignment_Addon_Manager The addon manager instance.
  */
@@ -87,15 +87,15 @@ function pressprimer_assignment_addon_manager() {
  * add_action( 'pressprimer_assignment_register_addons', function() {
  *     pressprimer_assignment_register_addon( 'ppa-educator', [
  *         'name'     => 'PressPrimer Assignment Educator',
- *         'version'  => '1.0.0',
+ *         'version'  => '2.0.0',
  *         'file'     => __FILE__,
- *         'requires' => '1.0.0',
+ *         'requires' => '2.0.0',
  *         'tier'     => 'educator',
  *     ] );
  * } );
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * @param string $slug   Unique addon identifier.
  * @param array  $config Addon configuration array.
@@ -110,7 +110,7 @@ function pressprimer_assignment_register_addon( $slug, $config ) {
  *
  * Use this to conditionally enable features that depend on premium addons.
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * @param string $slug Addon slug to check.
  * @return bool True if addon is registered and compatible.

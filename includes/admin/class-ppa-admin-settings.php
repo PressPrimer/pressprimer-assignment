@@ -188,18 +188,56 @@ class PressPrimer_Assignment_Admin_Settings {
 		);
 
 		/**
+		 * Filter the mascot image URL used in React admin page headers.
+		 *
+		 * Enterprise addon hooks this to return a replacement image or empty string.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $url Default: the PressPrimer mascot image URL.
+		 */
+		$settings_mascot = apply_filters(
+			'pressprimer_assignment_mascot_url',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/construction-mascot.png'
+		);
+
+		/**
 		 * Filters the settings page header mascot image URL.
 		 *
 		 * Used by Enterprise addon for white-label branding.
+		 * Kept for backward compatibility; prefer pressprimer_assignment_mascot_url.
 		 *
 		 * @since 1.0.0
 		 *
 		 * @param string $mascot_url Default mascot image URL.
 		 */
-		$settings_mascot = apply_filters(
-			'pressprimer_assignment_settings_header_mascot',
-			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/construction-mascot.png'
-		);
+		$settings_mascot = apply_filters( 'pressprimer_assignment_settings_header_mascot', $settings_mascot );
+
+		/**
+		 * Filter the header background color used in React admin page headers.
+		 *
+		 * Enterprise addon hooks this to return a custom hex color.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $color Default: '#334155' (the PressPrimer dark slate).
+		 */
+		$header_bg_color = apply_filters( 'pressprimer_assignment_header_bg_color', '#334155' );
+
+		// Fire per-tab action hooks for addons to register their settings.
+		foreach ( array_keys( $settings_tabs ) as $tab_key ) {
+			/**
+			 * Fires when building settings data for a specific tab.
+			 *
+			 * Addons can use this action to register REST routes or enqueue
+			 * scripts needed for their settings tab content.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param array $settings Current settings values.
+			 */
+			do_action( "pressprimer_assignment_settings_tab_{$tab_key}", $settings );
+		}
 
 		// Collect database table status.
 		$table_status = [];
@@ -211,9 +249,10 @@ class PressPrimer_Assignment_Admin_Settings {
 		$theme        = wp_get_theme();
 		$active_theme = $theme->get( 'Name' ) . ' ' . $theme->get( 'Version' );
 
-		return [
+		$data = [
 			'pluginUrl'      => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 			'settingsMascot' => $settings_mascot,
+			'headerBgColor'  => $header_bg_color,
 			'settings'       => $settings,
 			'settingsTabs'   => $settings_tabs,
 			'defaults'       => [
@@ -234,6 +273,11 @@ class PressPrimer_Assignment_Admin_Settings {
 				'mysqlVersion'             => $this->get_mysql_version(),
 				'isMultisite'              => is_multisite(),
 				'activeTheme'              => $active_theme,
+				'addonVersions'            => [
+					'educator'   => defined( 'PRESSPRIMER_ASSIGNMENT_EDUCATOR_VERSION' ) ? PRESSPRIMER_ASSIGNMENT_EDUCATOR_VERSION : null,
+					'school'     => defined( 'PRESSPRIMER_ASSIGNMENT_SCHOOL_VERSION' ) ? PRESSPRIMER_ASSIGNMENT_SCHOOL_VERSION : null,
+					'enterprise' => defined( 'PRESSPRIMER_ASSIGNMENT_ENTERPRISE_VERSION' ) ? PRESSPRIMER_ASSIGNMENT_ENTERPRISE_VERSION : null,
+				],
 				'totalAssignments'         => $this->get_count( 'ppa_assignments' ),
 				'totalSubmissions'         => $this->get_count( 'ppa_submissions', "status != 'draft'" ),
 				'totalFiles'               => $this->get_count( 'ppa_submission_files' ),
@@ -247,6 +291,17 @@ class PressPrimer_Assignment_Admin_Settings {
 				'repairTables' => wp_create_nonce( 'pressprimer_assignment_repair_tables_nonce' ),
 			],
 		];
+
+		/**
+		 * Filter the settings page localized data before it is sent to React.
+		 *
+		 * Addons can use this to inject additional data for their settings tabs.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param array $data Settings page data.
+		 */
+		return apply_filters( 'pressprimer_assignment_settings_data', $data );
 	}
 
 	/**
@@ -272,6 +327,12 @@ class PressPrimer_Assignment_Admin_Settings {
 		$status['tutorlms'] = [
 			'active'  => defined( 'TUTOR_VERSION' ),
 			'version' => defined( 'TUTOR_VERSION' ) ? TUTOR_VERSION : null,
+		];
+
+		// LifterLMS.
+		$status['lifterlms'] = [
+			'active'  => defined( 'LLMS_PLUGIN_FILE' ),
+			'version' => defined( 'LLMS_PLUGIN_VERSION' ) ? LLMS_PLUGIN_VERSION : null,
 		];
 
 		return $status;

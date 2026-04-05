@@ -147,6 +147,32 @@ class PressPrimer_Assignment_Grading_Service {
 		 */
 		do_action( 'pressprimer_assignment_submission_graded', $submission_id, $score );
 
+		/**
+		 * Fire audit log event for grade saved.
+		 *
+		 * Enterprise addon listens to this and writes to the audit log.
+		 * When Enterprise is not active, this hook fires harmlessly.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $event_type  Event identifier.
+		 * @param string $object_type Object type affected.
+		 * @param int    $object_id   Object ID.
+		 * @param array  $data        Additional context.
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'grade.saved',
+			'submission',
+			$submission_id,
+			[
+				'grader_id'     => $submission->grader_id,
+				'score'         => $score,
+				'passed'        => $passed,
+				'assignment_id' => $submission->assignment_id,
+			]
+		);
+
 		// Fire passed or failed action.
 		if ( $passed ) {
 			/**
@@ -227,6 +253,22 @@ class PressPrimer_Assignment_Grading_Service {
 		 * @param int $submission_id The submission ID.
 		 */
 		do_action( 'pressprimer_assignment_submission_returned', $submission_id );
+
+		/**
+		 * Fire audit log event for grade returned.
+		 *
+		 * @since 2.0.0
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'grade.returned',
+			'submission',
+			$submission_id,
+			[
+				'assignment_id' => $submission->assignment_id,
+				'user_id'       => $submission->user_id,
+			]
+		);
 
 		return true;
 	}

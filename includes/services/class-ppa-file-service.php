@@ -519,6 +519,23 @@ class PressPrimer_Assignment_File_Service {
 			}
 		}
 
+		/**
+		 * Fire audit log event for file download.
+		 *
+		 * @since 2.0.0
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'file.downloaded',
+			'file',
+			$file_id,
+			[
+				'submission_id' => $file->submission_id,
+				'downloader_id' => get_current_user_id(),
+				'file_name'     => $file->original_filename,
+			]
+		);
+
 		// Set headers and output file.
 		$this->send_file_headers( $file );
 

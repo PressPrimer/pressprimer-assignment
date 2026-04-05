@@ -264,6 +264,40 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Scope to current user's assignments for manage_own users.
 		$author_id = $this->get_author_id();
 
+		/**
+		 * Filter the set of user IDs visible to the current user.
+		 *
+		 * Used by the Educator addon to enforce teacher data isolation.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param null|int[] $user_ids        null by default.
+		 * @param int        $current_user_id The user making the request.
+		 */
+		$visible_user_ids = apply_filters(
+			'pressprimer_assignment_visible_user_ids',
+			null,
+			get_current_user_id()
+		);
+
+		if ( null !== $visible_user_ids && empty( $visible_user_ids ) ) {
+			return rest_ensure_response(
+				[
+					'items' => [],
+					'total' => 0,
+					'page'  => $page,
+					'pages' => 0,
+					'stats' => [
+						'total'     => 0,
+						'submitted' => 0,
+						'grading'   => 0,
+						'graded'    => 0,
+						'returned'  => 0,
+					],
+				]
+			);
+		}
+
 		// Build WHERE.
 		$where_clauses = [ 's.status != %s' ];
 		$where_params  = [ 'draft' ];
@@ -271,6 +305,12 @@ class PressPrimer_Assignment_REST_Submissions {
 		if ( null !== $author_id ) {
 			$where_clauses[] = 'a.author_id = %d';
 			$where_params[]  = $author_id;
+		}
+
+		if ( null !== $visible_user_ids ) {
+			$id_placeholders = implode( ',', array_fill( 0, count( $visible_user_ids ), '%d' ) );
+			$where_clauses[] = "s.user_id IN ({$id_placeholders})";
+			$where_params    = array_merge( $where_params, array_map( 'absint', $visible_user_ids ) );
 		}
 
 		if ( $assignment_id > 0 ) {
@@ -380,7 +420,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		);
 
 		// Summary stats (calculated from full result set, not just current page).
-		$stats = $this->get_summary_stats( $assignment_id, $author_id );
+		$stats = $this->get_summary_stats( $assignment_id, $author_id, $visible_user_ids );
 
 		return rest_ensure_response(
 			[
@@ -541,6 +581,29 @@ class PressPrimer_Assignment_REST_Submissions {
 				);
 			}
 
+			/**
+			 * Fire audit log event for grading started.
+			 *
+			 * Enterprise addon listens to this and writes to the audit log.
+			 * When Enterprise is not active, this hook fires harmlessly.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param string $event_type  Event identifier.
+			 * @param string $object_type Object type affected.
+			 * @param int    $object_id   Object ID.
+			 * @param array  $data        Additional context.
+			 */
+			do_action(
+				'pressprimer_assignment_log_event',
+				'grading.started',
+				'submission',
+				$id,
+				[
+					'grader_id' => get_current_user_id(),
+				]
+			);
+
 			return rest_ensure_response( [ 'status' => 'grading' ] );
 		}
 
@@ -695,11 +758,12 @@ class PressPrimer_Assignment_REST_Submissions {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int      $assignment_id Assignment ID (0 for all).
-	 * @param int|null $author_id    Author ID for ownership scoping, or null for all.
+	 * @param int        $assignment_id   Assignment ID (0 for all).
+	 * @param int|null   $author_id       Author ID for ownership scoping, or null for all.
+	 * @param null|int[] $visible_user_ids Visible user IDs constraint, or null for all.
 	 * @return array Stats array with total, pending, grading, graded, returned counts.
 	 */
-	private function get_summary_stats( $assignment_id, $author_id = null ) {
+	private function get_summary_stats( $assignment_id, $author_id = null, $visible_user_ids = null ) {
 		global $wpdb;
 
 		$table     = $wpdb->prefix . 'ppa_submissions';
@@ -718,6 +782,12 @@ class PressPrimer_Assignment_REST_Submissions {
 		if ( null !== $author_id ) {
 			$where   .= ' AND a.author_id = %d';
 			$params[] = $author_id;
+		}
+
+		if ( null !== $visible_user_ids && ! empty( $visible_user_ids ) ) {
+			$id_placeholders = implode( ',', array_fill( 0, count( $visible_user_ids ), '%d' ) );
+			$where          .= " AND s.user_id IN ({$id_placeholders})";
+			$params          = array_merge( $params, array_map( 'absint', $visible_user_ids ) );
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching

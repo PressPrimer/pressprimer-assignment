@@ -212,6 +212,43 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			$can_resubmit = $this->can_user_resubmit( $assignment, $user_id, $user_submission );
 		}
 
+		// Brand filter values — available in templates for white-label support.
+		/**
+		 * Filter the brand name used in student-facing strings.
+		 *
+		 * Enterprise addon hooks this to return the configured organization name.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $name Default: site name from get_bloginfo('name').
+		 */
+		$brand_name = apply_filters( 'pressprimer_assignment_brand_name', get_bloginfo( 'name' ) );
+
+		/**
+		 * Filter the brand logo URL used in student-facing pages.
+		 *
+		 * Enterprise addon hooks this to return the configured logo URL.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $url Default: the PressPrimer logo URL bundled with the plugin.
+		 */
+		$brand_logo_url = apply_filters(
+			'pressprimer_assignment_brand_logo_url',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/logo.png'
+		);
+
+		/**
+		 * Filter the header background color used in assignment headers.
+		 *
+		 * Enterprise addon hooks this to return a custom hex color.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $color Default: '#334155' (the PressPrimer dark slate).
+		 */
+		$header_bg_color = apply_filters( 'pressprimer_assignment_header_bg_color', '#334155' );
+
 		// Start output buffering.
 		ob_start();
 
