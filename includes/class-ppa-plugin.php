@@ -310,6 +310,12 @@ class PressPrimer_Assignment_Plugin {
 			$lifterlms->init();
 		}
 
+		// LearnPress integration (loads unconditionally — the class handles detection).
+		if ( class_exists( 'PressPrimer_Assignment_LearnPress' ) ) {
+			$learnpress = new PressPrimer_Assignment_LearnPress();
+			$learnpress->init();
+		}
+
 		// Uncanny Automator integration.
 		if ( class_exists( 'Uncanny_Automator\Automator_Functions' ) ) {
 			require_once PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'includes/integrations/uncanny-automator/class-ppa-automator-loader.php';

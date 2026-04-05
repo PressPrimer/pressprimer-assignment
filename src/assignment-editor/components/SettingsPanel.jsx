@@ -45,11 +45,14 @@ const SettingsPanel = ( { form } ) => {
 	// Watch allow_resubmission to show/hide max_resubmissions.
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
 
-	// LifterLMS integration state.
+	// LMS integration state.
 	const adminData = window.pressprimerAssignmentAdmin || {};
 	const lifterlmsActive = adminData.integrations?.lifterlms_active || false;
+	const learnpressActive = adminData.integrations?.learnpress_active || false;
 	const [ lifterlmsObjects, setLifterlmsObjects ] = useState( [] );
 	const [ lifterlmsLoading, setLifterlmsLoading ] = useState( false );
+	const [ learnpressObjects, setLearnpressObjects ] = useState( [] );
+	const [ learnpressLoading, setLearnpressLoading ] = useState( false );
 
 	/**
 	 * Fetch LifterLMS lessons and courses for the selector.
@@ -82,12 +85,50 @@ const SettingsPanel = ( { form } ) => {
 		}
 	}, [] );
 
+	/**
+	 * Fetch LearnPress lessons and courses for the selector.
+	 *
+	 * @param {string} search Optional search term.
+	 */
+	const fetchLearnpressObjects = useCallback( async ( search = '' ) => {
+		try {
+			setLearnpressLoading( true );
+			const params = search
+				? `?search=${ encodeURIComponent( search ) }`
+				: '';
+			const response = await apiFetch( {
+				path: `/ppa/v1/learnpress/objects${ params }`,
+				method: 'GET',
+			} );
+
+			if ( response.success && response.objects ) {
+				setLearnpressObjects(
+					response.objects.map( ( obj ) => ( {
+						value: obj.id,
+						label: obj.label,
+					} ) )
+				);
+			}
+		} catch {
+			// Silently fail — selector will be empty.
+		} finally {
+			setLearnpressLoading( false );
+		}
+	}, [] );
+
 	// Load initial LifterLMS objects when integration is active.
 	useEffect( () => {
 		if ( lifterlmsActive ) {
 			fetchLifterlmsObjects();
 		}
 	}, [ lifterlmsActive, fetchLifterlmsObjects ] );
+
+	// Load initial LearnPress objects when integration is active.
+	useEffect( () => {
+		if ( learnpressActive ) {
+			fetchLearnpressObjects();
+		}
+	}, [ learnpressActive, fetchLearnpressObjects ] );
 
 	return (
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
@@ -770,6 +811,126 @@ const SettingsPanel = ( { form } ) => {
 					>
 						{ __(
 							'Leave the lesson/course field empty if this assignment should not trigger LifterLMS completion.',
+							'pressprimer-assignment'
+						) }
+					</Text>
+				</Card>
+			) }
+
+			{ /* LearnPress Integration */ }
+			{ learnpressActive && (
+				<Card
+					title={
+						<Space>
+							<Title level={ 4 } style={ { margin: 0 } }>
+								{ __(
+									'LearnPress Integration',
+									'pressprimer-assignment'
+								) }
+							</Title>
+						</Space>
+					}
+					style={ { marginBottom: 24 } }
+				>
+					<Form.Item
+						label={
+							<Space>
+								<LinkOutlined />
+								<span>
+									{ __(
+										'LearnPress Lesson or Course',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Link this assignment to a LearnPress lesson or course. When a student passes, the linked content will be marked complete.',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="ppa_learnpress_object_id"
+					>
+						<Select
+							showSearch
+							allowClear
+							placeholder={ __(
+								'Select a lesson or course…',
+								'pressprimer-assignment'
+							) }
+							style={ { width: 300 } }
+							size="small"
+							options={ learnpressObjects }
+							loading={ learnpressLoading }
+							filterOption={ false }
+							onSearch={ fetchLearnpressObjects }
+							notFoundContent={
+								learnpressLoading
+									? __( 'Loading…', 'pressprimer-assignment' )
+									: __(
+											'No lessons or courses found',
+											'pressprimer-assignment'
+									  )
+							}
+						/>
+					</Form.Item>
+
+					<Form.Item
+						label={
+							<Space>
+								<span>
+									{ __(
+										'Completion Type',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Choose whether passing this assignment marks a LearnPress lesson or an entire course as complete.',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="ppa_learnpress_completion_type"
+					>
+						<Radio.Group>
+							<Radio value="lesson">
+								{ __(
+									'Lesson complete',
+									'pressprimer-assignment'
+								) }
+							</Radio>
+							<Radio value="course">
+								{ __(
+									'Course complete',
+									'pressprimer-assignment'
+								) }
+							</Radio>
+						</Radio.Group>
+					</Form.Item>
+
+					<Text
+						type="secondary"
+						style={ { fontSize: 12, display: 'block' } }
+					>
+						{ __(
+							'Leave the lesson/course field empty if this assignment should not trigger LearnPress completion.',
 							'pressprimer-assignment'
 						) }
 					</Text>

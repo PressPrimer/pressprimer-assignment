@@ -74,6 +74,17 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 	const [ lifterlmsEnabled, setLifterlmsEnabled ] = useState( false );
 	const [ savingLifterlms, setSavingLifterlms ] = useState( false );
 
+	const [ learnpressStatus, setLearnpressStatus ] = useState(
+		lmsStatus.learnpress?.active
+			? { active: true, version: lmsStatus.learnpress.version }
+			: { active: false }
+	);
+	const [ loadingLearnpress, setLoadingLearnpress ] = useState(
+		lmsStatus.learnpress?.active || false
+	);
+	const [ learnpressEnabled, setLearnpressEnabled ] = useState( false );
+	const [ savingLearnpress, setSavingLearnpress ] = useState( false );
+
 	// Fetch LearnDash extended status only if LearnDash is active.
 	useEffect( () => {
 		if ( ! lmsStatus.learndash?.active ) {
@@ -161,6 +172,36 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 		fetchLifterlmsStatus();
 	}, [ lmsStatus.lifterlms?.active ] );
 
+	// Fetch LearnPress extended status only if LearnPress is active.
+	useEffect( () => {
+		if ( ! lmsStatus.learnpress?.active ) {
+			setLoadingLearnpress( false );
+			return;
+		}
+
+		const fetchLearnpressStatus = async () => {
+			try {
+				const response = await apiFetch( {
+					path: '/ppa/v1/learnpress/status',
+					method: 'GET',
+				} );
+
+				if ( response.success ) {
+					setLearnpressStatus( response.status );
+					if ( response.settings ) {
+						setLearnpressEnabled( response.settings.enabled );
+					}
+				}
+			} catch ( error ) {
+				// Keep the basic status from PHP.
+			} finally {
+				setLoadingLearnpress( false );
+			}
+		};
+
+		fetchLearnpressStatus();
+	}, [ lmsStatus.learnpress?.active ] );
+
 	/**
 	 * Toggle LifterLMS integration enabled/disabled
 	 *
@@ -197,6 +238,45 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 			);
 		} finally {
 			setSavingLifterlms( false );
+		}
+	};
+
+	/**
+	 * Toggle LearnPress integration enabled/disabled
+	 *
+	 * @param {boolean} checked New toggle state.
+	 */
+	const handleToggleLearnpress = async ( checked ) => {
+		try {
+			setSavingLearnpress( true );
+			setLearnpressEnabled( checked );
+			await apiFetch( {
+				path: '/ppa/v1/learnpress/settings',
+				method: 'POST',
+				data: { enabled: checked },
+			} );
+			message.success(
+				checked
+					? __(
+							'LearnPress integration enabled.',
+							'pressprimer-assignment'
+					  )
+					: __(
+							'LearnPress integration disabled.',
+							'pressprimer-assignment'
+					  )
+			);
+		} catch ( error ) {
+			// Revert on failure.
+			setLearnpressEnabled( ! checked );
+			message.error(
+				__(
+					'Failed to save LearnPress settings.',
+					'pressprimer-assignment'
+				)
+			);
+		} finally {
+			setSavingLearnpress( false );
 		}
 	};
 
@@ -499,6 +579,85 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 												>
 													{ __(
 														'When enabled, passing an assignment will automatically mark linked LifterLMS lessons or courses as complete.',
+														'pressprimer-assignment'
+													) }
+												</Paragraph>
+											</Form.Item>
+										</div>
+									),
+								},
+							] }
+						/>
+					) }
+				</div>
+
+				{ /* LearnPress */ }
+				<div
+					className="ppa-lms-integration"
+					style={ { marginTop: 24 } }
+				>
+					<div className="ppa-lms-integration-header">
+						<Text strong>LearnPress</Text>
+					</div>
+
+					{ renderLmsContent(
+						loadingLearnpress,
+						learnpressStatus,
+						__(
+							'LearnPress Not Detected',
+							'pressprimer-assignment'
+						),
+						__(
+							'Install and activate LearnPress to enable this integration. Once active, you can attach PressPrimer assignments to lessons and courses.',
+							'pressprimer-assignment'
+						),
+						<Collapse
+							style={ { marginTop: 16 } }
+							items={ [
+								{
+									key: 'settings',
+									label: (
+										<span>
+											<SettingOutlined
+												style={ {
+													marginRight: 8,
+												} }
+											/>
+											{ __(
+												'LearnPress Settings',
+												'pressprimer-assignment'
+											) }
+										</span>
+									),
+									children: (
+										<div className="ppa-learnpress-settings">
+											<Form.Item
+												label={ __(
+													'Enable completion tracking',
+													'pressprimer-assignment'
+												) }
+												style={ {
+													marginBottom: 16,
+												} }
+											>
+												<Switch
+													checked={
+														learnpressEnabled
+													}
+													onChange={
+														handleToggleLearnpress
+													}
+													loading={ savingLearnpress }
+												/>
+												<Paragraph
+													type="secondary"
+													style={ {
+														marginTop: 8,
+														marginBottom: 0,
+													} }
+												>
+													{ __(
+														'When enabled, passing an assignment will automatically mark linked LearnPress lessons or courses as complete.',
 														'pressprimer-assignment'
 													) }
 												</Paragraph>

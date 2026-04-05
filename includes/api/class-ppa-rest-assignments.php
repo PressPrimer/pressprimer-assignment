@@ -459,6 +459,9 @@ class PressPrimer_Assignment_REST_Assignments {
 		// Handle LifterLMS link.
 		$this->save_lifterlms_link_from_data( $assignment_id, $data );
 
+		// Handle LearnPress link.
+		$this->save_learnpress_link_from_data( $assignment_id, $data );
+
 		// Clear dashboard statistics cache (assignment count changed).
 		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
 			PressPrimer_Assignment_Statistics_Service::clear_all_caches();
@@ -542,6 +545,9 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		// Handle LifterLMS link.
 		$this->save_lifterlms_link_from_data( $id, $data );
+
+		// Handle LearnPress link.
+		$this->save_learnpress_link_from_data( $id, $data );
 
 		// Clear dashboard statistics cache (status or other stats-relevant fields may have changed).
 		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
@@ -787,6 +793,18 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		// LearnPress integration fields (not stored on the assignment — handled separately).
+		if ( null !== $request->get_param( 'ppa_learnpress_object_id' ) ) {
+			$data['ppa_learnpress_object_id'] = absint( $request->get_param( 'ppa_learnpress_object_id' ) );
+		}
+
+		if ( null !== $request->get_param( 'ppa_learnpress_completion_type' ) ) {
+			$completion_type = sanitize_text_field( $request->get_param( 'ppa_learnpress_completion_type' ) );
+			if ( in_array( $completion_type, [ 'lesson', 'course' ], true ) ) {
+				$data['ppa_learnpress_completion_type'] = $completion_type;
+			}
+		}
+
 		// JSON fields.
 		if ( null !== $request->get_param( 'allowed_file_types' ) ) {
 			$file_types = $request->get_param( 'allowed_file_types' );
@@ -977,6 +995,42 @@ class PressPrimer_Assignment_REST_Assignments {
 	}
 
 	/**
+	 * Save or remove a LearnPress link based on sanitized data
+	 *
+	 * Extracts the LearnPress fields from the sanitized assignment data
+	 * and delegates to the LearnPress integration class.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int   $assignment_id Assignment ID.
+	 * @param array $data          Sanitized assignment data (may contain ppa_learnpress_* keys).
+	 */
+	private function save_learnpress_link_from_data( $assignment_id, $data ) {
+		if ( ! class_exists( 'PressPrimer_Assignment_LearnPress' ) || ! defined( 'LEARNPRESS_VERSION' ) ) {
+			return;
+		}
+
+		// Only act if LearnPress fields were submitted.
+		if ( ! array_key_exists( 'ppa_learnpress_object_id', $data ) ) {
+			return;
+		}
+
+		$learnpress = new PressPrimer_Assignment_LearnPress();
+		$object_id  = absint( $data['ppa_learnpress_object_id'] );
+
+		if ( 0 === $object_id ) {
+			// Clear the link.
+			$learnpress->remove_learnpress_link( $assignment_id );
+		} else {
+			$completion_type = isset( $data['ppa_learnpress_completion_type'] )
+				? $data['ppa_learnpress_completion_type']
+				: 'lesson';
+
+			$learnpress->save_learnpress_link( $assignment_id, $object_id, $completion_type );
+		}
+	}
+
+	/**
 	 * Prepare assignment for REST response
 	 *
 	 * Formats assignment data for the API response.
@@ -1033,6 +1087,15 @@ class PressPrimer_Assignment_REST_Assignments {
 
 			$data['ppa_lifterlms_object_id']       = $linked_obj ? $linked_obj['object_id'] : 0;
 			$data['ppa_lifterlms_completion_type'] = $linked_obj ? $linked_obj['completion_type'] : 'lesson';
+		}
+
+		// Include LearnPress link data if LearnPress is active.
+		if ( defined( 'LEARNPRESS_VERSION' ) && class_exists( 'PressPrimer_Assignment_LearnPress' ) ) {
+			$learnpress = new PressPrimer_Assignment_LearnPress();
+			$linked_obj = $learnpress->get_linked_learnpress_object( (int) $assignment->id );
+
+			$data['ppa_learnpress_object_id']       = $linked_obj ? $linked_obj['object_id'] : 0;
+			$data['ppa_learnpress_completion_type'] = $linked_obj ? $linked_obj['completion_type'] : 'lesson';
 		}
 
 		/**

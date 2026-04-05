@@ -335,6 +335,12 @@ class PressPrimer_Assignment_Admin_Settings {
 			'version' => defined( 'LLMS_PLUGIN_VERSION' ) ? LLMS_PLUGIN_VERSION : null,
 		];
 
+		// LearnPress.
+		$status['learnpress'] = [
+			'active'  => defined( 'LEARNPRESS_VERSION' ),
+			'version' => defined( 'LEARNPRESS_VERSION' ) ? LEARNPRESS_VERSION : null,
+		];
+
 		return $status;
 	}
 

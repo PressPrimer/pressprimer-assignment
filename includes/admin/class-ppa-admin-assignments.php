@@ -430,6 +430,17 @@ class PressPrimer_Assignment_Admin_Assignments {
 						$assignment_data['ppa_lifterlms_completion_type'] = $linked_obj['completion_type'];
 					}
 				}
+
+				// Include LearnPress linked object data if LearnPress is active.
+				if ( defined( 'LEARNPRESS_VERSION' ) && class_exists( 'PressPrimer_Assignment_LearnPress' ) ) {
+					$learnpress = new PressPrimer_Assignment_LearnPress();
+					$linked_obj = $learnpress->get_linked_learnpress_object( (int) $assignment->id );
+
+					if ( $linked_obj ) {
+						$assignment_data['ppa_learnpress_object_id']       = $linked_obj['object_id'];
+						$assignment_data['ppa_learnpress_completion_type'] = $linked_obj['completion_type'];
+					}
+				}
 			}
 		}
 
@@ -493,7 +504,8 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
 				],
 				'integrations' => [
-					'lifterlms_active' => defined( 'LLMS_PLUGIN_FILE' ),
+					'lifterlms_active'  => defined( 'LLMS_PLUGIN_FILE' ),
+					'learnpress_active' => defined( 'LEARNPRESS_VERSION' ),
 				],
 			]
 		);
