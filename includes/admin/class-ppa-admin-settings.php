@@ -332,7 +332,7 @@ class PressPrimer_Assignment_Admin_Settings {
 		// LifterLMS.
 		$status['lifterlms'] = [
 			'active'  => defined( 'LLMS_PLUGIN_FILE' ),
-			'version' => defined( 'LLMS_PLUGIN_VERSION' ) ? LLMS_PLUGIN_VERSION : null,
+			'version' => defined( 'LLMS_VERSION' ) ? LLMS_VERSION : null,
 		];
 
 		// LearnPress.

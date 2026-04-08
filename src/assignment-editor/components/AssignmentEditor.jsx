@@ -89,30 +89,6 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				],
 			};
 
-			// LifterLMS fields.
-			if ( assignmentData.ppa_lifterlms_object_id ) {
-				fieldValues.ppa_lifterlms_object_id = parseInt(
-					assignmentData.ppa_lifterlms_object_id,
-					10
-				);
-			}
-			if ( assignmentData.ppa_lifterlms_completion_type ) {
-				fieldValues.ppa_lifterlms_completion_type =
-					assignmentData.ppa_lifterlms_completion_type;
-			}
-
-			// LearnPress fields.
-			if ( assignmentData.ppa_learnpress_object_id ) {
-				fieldValues.ppa_learnpress_object_id = parseInt(
-					assignmentData.ppa_learnpress_object_id,
-					10
-				);
-			}
-			if ( assignmentData.ppa_learnpress_completion_type ) {
-				fieldValues.ppa_learnpress_completion_type =
-					assignmentData.ppa_learnpress_completion_type;
-			}
-
 			form.setFieldsValue( fieldValues );
 		}
 	}, [ assignmentData, form ] );
@@ -137,22 +113,6 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					: 0,
 				categories: selectedCategories,
 			};
-
-			// Normalize LifterLMS object ID: send 0 when cleared.
-			if (
-				'ppa_lifterlms_object_id' in payload &&
-				! payload.ppa_lifterlms_object_id
-			) {
-				payload.ppa_lifterlms_object_id = 0;
-			}
-
-			// Normalize LearnPress object ID: send 0 when cleared.
-			if (
-				'ppa_learnpress_object_id' in payload &&
-				! payload.ppa_learnpress_object_id
-			) {
-				payload.ppa_learnpress_object_id = 0;
-			}
 
 			// Submit via REST API.
 			const endpoint = assignmentId
@@ -307,10 +267,6 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 							'png',
 							'gif',
 						],
-						ppa_lifterlms_object_id: undefined,
-						ppa_lifterlms_completion_type: 'lesson',
-						ppa_learnpress_object_id: undefined,
-						ppa_learnpress_completion_type: 'lesson',
 					} }
 				>
 					{ /* Header */ }
