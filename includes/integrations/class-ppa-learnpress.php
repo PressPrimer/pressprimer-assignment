@@ -548,21 +548,31 @@ class PressPrimer_Assignment_LearnPress {
 			return;
 		}
 
-		$post = get_post();
-		if ( ! $post || ! in_array( $post->post_type, $this->get_supported_post_types(), true ) ) {
+		// Get the current lesson from LearnPress global — NOT get_post(),
+		// because the global $post is the course in LearnPress's lesson view.
+		if ( ! class_exists( 'LP_Global' ) ) {
 			return;
 		}
 
-		$lesson_id     = (int) $post->ID;
+		$lesson = LP_Global::course_item();
+		if ( ! $lesson || ! is_a( $lesson, 'LP_Lesson' ) ) {
+			return;
+		}
+
+		$lesson_id     = $lesson->get_id();
 		$assignment_id = get_post_meta( $lesson_id, self::META_KEY_ASSIGNMENT_ID, true );
 
 		if ( ! $assignment_id ) {
 			return;
 		}
 
-		// Enforce enrollment (bypass for users who can edit the lesson).
-		$course_id = $this->get_lesson_course_id( $lesson_id );
-		if ( ! current_user_can( 'edit_post', $lesson_id ) && ! $this->is_user_enrolled( $course_id ) ) {
+		// Get course context for enrollment check.
+		$course    = function_exists( 'learn_press_get_course' ) ? learn_press_get_course() : null;
+		$course_id = $course ? $course->get_id() : 0;
+
+		// Preview lessons are viewable without enrollment — skip the check.
+		$is_preview = get_post_meta( $lesson_id, '_lp_preview', true );
+		if ( 'yes' !== $is_preview && $course_id && ! $this->is_user_enrolled( $course_id ) ) {
 			return;
 		}
 
@@ -573,9 +583,11 @@ class PressPrimer_Assignment_LearnPress {
 			absint( $assignment_id )
 		);
 
-		echo '<div class="ppa-learnpress-assignment-wrapper">';
-		// do_shortcode() output is escaped by the assignment renderer itself.
-		echo do_shortcode( $assignment_shortcode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		// Hide the "lesson content is empty" notice when we have an assignment.
+		echo '<style>.learn-press-message.notice { display: none; }</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe static CSS.
+
+		echo '<div class="ppa-learnpress-assignment-wrapper" data-lesson-id="' . esc_attr( $lesson_id ) . '" data-course-id="' . esc_attr( $course_id ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe HTML with escaped attributes.
+		echo do_shortcode( $assignment_shortcode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shortcode output is escaped by the assignment renderer.
 		echo '</div>';
 	}
 
@@ -600,12 +612,18 @@ class PressPrimer_Assignment_LearnPress {
 	 * @since 2.0.0
 	 */
 	public function maybe_hide_complete_button() {
-		$post = get_post();
-		if ( ! $post || ! in_array( $post->post_type, $this->get_supported_post_types(), true ) ) {
+		// Get the current lesson from LearnPress global — NOT get_post(),
+		// because the global $post is the course in LearnPress's lesson view.
+		if ( ! class_exists( 'LP_Global' ) ) {
 			return;
 		}
 
-		$lesson_id     = (int) $post->ID;
+		$lesson = LP_Global::course_item();
+		if ( ! $lesson || ! is_a( $lesson, 'LP_Lesson' ) ) {
+			return;
+		}
+
+		$lesson_id     = $lesson->get_id();
 		$assignment_id = get_post_meta( $lesson_id, self::META_KEY_ASSIGNMENT_ID, true );
 		if ( ! $assignment_id ) {
 			return;
@@ -617,18 +635,26 @@ class PressPrimer_Assignment_LearnPress {
 		}
 
 		$user_id = get_current_user_id();
+
+		// If the lesson is already marked complete, don't hide the button.
+		if ( $user_id && function_exists( 'learn_press_get_user' ) ) {
+			$user      = learn_press_get_user( $user_id );
+			$course_id = $this->get_lesson_course_id( $lesson_id );
+			if ( $user && $course_id && method_exists( $user, 'has_completed_item' )
+				&& $user->has_completed_item( $lesson_id, $course_id ) ) {
+				return;
+			}
+		}
+
+		// If the user has already passed, show the button so they can
+		// click Complete to mark the lesson done.
 		if ( $user_id && $this->has_user_passed_assignment( $user_id, (int) $assignment_id ) ) {
-			// User already passed — leave the button alone so they can mark complete.
 			return;
 		}
 
-		// Remove LearnPress's default complete button render callback.
-		if ( ! function_exists( 'learn_press_get_template' ) ) {
-			return;
-		}
-
-		$lp_template = learn_press_get_template( 'single-course' );
-		if ( ! $lp_template || ! method_exists( $lp_template, 'func' ) ) {
+		// Remove LearnPress complete button (added at priority 11).
+		$lp_template = LearnPress::instance()->template( 'course' );
+		if ( ! $lp_template ) {
 			return;
 		}
 
