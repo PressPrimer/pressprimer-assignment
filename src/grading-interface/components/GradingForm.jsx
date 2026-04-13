@@ -42,6 +42,12 @@ import DocumentPanel from '../../shared/components/viewers/DocumentPanel';
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+// RubricPanel is registered globally by the Educator addon's rubric-builder bundle.
+const RubricPanel = window.PPAERubricPanel || null;
+
+// Educator addon localizes rubric data on the grading page.
+const educatorGrading = window.pressprimerAssignmentEducatorGrading || null;
+
 /**
  * Navigate to a grading URL for a given submission ID.
  *
@@ -82,6 +88,9 @@ const GradingForm = ( { submissionId } ) => {
 	const [ scoreWarning, setScoreWarning ] = useState( '' );
 	const [ feedback, setFeedback ] = useState( '' );
 	const [ currentStatus, setCurrentStatus ] = useState( '' );
+
+	// Rubric grading state (Educator addon).
+	const [ rubricScores, setRubricScores ] = useState( [] );
 
 	// Navigation state.
 	const [ siblings, setSiblings ] = useState( { prev: null, next: null } );
@@ -235,6 +244,15 @@ const GradingForm = ( { submissionId } ) => {
 			const gradingTimeDelta = getAndResetGradingTime();
 
 			try {
+				// Save rubric scores first if Educator addon provides them.
+				if ( rubricScores.length > 0 && educatorGrading?.rubric ) {
+					await apiFetch( {
+						path: `/ppae/v1/submissions/${ submissionId }/rubric-scores`,
+						method: 'PUT',
+						data: { scores: rubricScores },
+					} );
+				}
+
 				await apiFetch( {
 					path: `/ppa/v1/submissions/${ submissionId }`,
 					method: 'PUT',
@@ -265,7 +283,14 @@ const GradingForm = ( { submissionId } ) => {
 				savingRef.current = false;
 			}
 		},
-		[ submissionId, score, feedback, assignment, getAndResetGradingTime ]
+		[
+			submissionId,
+			score,
+			feedback,
+			assignment,
+			getAndResetGradingTime,
+			rubricScores,
+		]
 	);
 
 	/**
@@ -300,6 +325,15 @@ const GradingForm = ( { submissionId } ) => {
 
 		setSaving( true );
 		try {
+			// Save rubric scores first if Educator addon provides them.
+			if ( rubricScores.length > 0 && educatorGrading?.rubric ) {
+				await apiFetch( {
+					path: `/ppae/v1/submissions/${ submissionId }/rubric-scores`,
+					method: 'PUT',
+					data: { scores: rubricScores },
+				} );
+			}
+
 			await apiFetch( {
 				path: `/ppa/v1/submissions/${ submissionId }`,
 				method: 'PUT',
@@ -327,7 +361,13 @@ const GradingForm = ( { submissionId } ) => {
 		} finally {
 			setSaving( false );
 		}
-	}, [ submissionId, score, feedback, getAndResetGradingTime ] );
+	}, [
+		submissionId,
+		score,
+		feedback,
+		getAndResetGradingTime,
+		rubricScores,
+	] );
 
 	// Auto-save every 30 seconds when there are unsaved changes.
 	useEffect( () => {
@@ -687,6 +727,28 @@ const GradingForm = ( { submissionId } ) => {
 								</Text>
 							) }
 						</div>
+
+						{ /* Rubric Panel (Educator addon) */ }
+						{ RubricPanel && educatorGrading?.rubric && (
+							<>
+								<Divider />
+								<RubricPanel
+									rubricData={ educatorGrading.rubric }
+									existingScores={
+										educatorGrading.existing_scores || []
+									}
+									onTotalChange={ ( total ) => {
+										setScore( total );
+										setHasChanges( true );
+									} }
+									onScoresChange={ ( scores ) => {
+										setRubricScores( scores );
+										setHasChanges( true );
+									} }
+									disabled={ isReadOnly }
+								/>
+							</>
+						) }
 
 						<Divider />
 

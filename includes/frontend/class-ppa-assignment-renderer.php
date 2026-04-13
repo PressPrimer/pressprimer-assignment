@@ -321,14 +321,32 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			<?php
 		}
 
-		// Grading guidelines.
-		if ( ! empty( $assignment->grading_guidelines ) ) {
-			?>
-			<div class="ppa-assignment-instructions">
-				<h3 class="ppa-instructions-heading"><?php esc_html_e( 'How You\'ll Be Graded', 'pressprimer-assignment' ); ?></h3>
-				<div class="ppa-instructions-content"><?php echo wp_kses_post( wpautop( $assignment->grading_guidelines ) ); ?></div>
-			</div>
-			<?php
+		// Grading guidelines (or rubric, when Educator addon hooks in).
+		if ( ! empty( $assignment->grading_guidelines ) || has_filter( 'pressprimer_assignment_grading_guidelines_output' ) ) {
+			$guidelines_html = '';
+			if ( ! empty( $assignment->grading_guidelines ) ) {
+				$guidelines_html = '<div class="ppa-assignment-instructions">'
+					. '<h3 class="ppa-instructions-heading">' . esc_html__( 'How You\'ll Be Graded', 'pressprimer-assignment' ) . '</h3>'
+					. '<div class="ppa-instructions-content">' . wp_kses_post( wpautop( $assignment->grading_guidelines ) ) . '</div>'
+					. '</div>';
+			}
+
+			/**
+			 * Filters the grading guidelines HTML output.
+			 *
+			 * Allows addons (e.g., Educator's rubric) to replace the guidelines
+			 * with alternative content like a read-only rubric display.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param string $guidelines_html The default grading guidelines HTML.
+			 * @param int    $assignment_id   The assignment ID.
+			 */
+			$guidelines_html = apply_filters( 'pressprimer_assignment_grading_guidelines_output', $guidelines_html, $assignment->id );
+
+			if ( ! empty( $guidelines_html ) ) {
+				echo wp_kses_post( $guidelines_html );
+			}
 		}
 
 		return ob_get_clean();
