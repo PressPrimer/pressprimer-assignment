@@ -45,6 +45,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ selectedCategories, setSelectedCategories ] = useState(
 		assignmentData.categories || []
 	);
+	const [ rubricData, setRubricData ] = useState( null );
 
 	// Defaults from plugin settings (provided for new assignments).
 	const defaults = assignmentData.defaults || {};
@@ -59,6 +60,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			const allowResub =
 				parseInt( assignmentData.allow_resubmission, 10 ) === 1;
 			const maxResub = parseInt( assignmentData.max_resubmissions, 10 );
+
+			const rubricEnabled =
+				parseInt( assignmentData.rubric_enabled, 10 ) === 1;
 
 			const fieldValues = {
 				title: assignmentData.title || '',
@@ -87,9 +91,15 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					'png',
 					'gif',
 				],
+				rubric_enabled: rubricEnabled,
 			};
 
 			form.setFieldsValue( fieldValues );
+
+			// Initialize rubric data from existing rubric structure.
+			if ( assignmentData.rubric ) {
+				setRubricData( assignmentData.rubric );
+			}
 		}
 	}, [ assignmentData, form ] );
 
@@ -104,9 +114,10 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 
 			const assignmentId = currentId || assignmentData.id;
 
-			// Prepare payload.
+			// Prepare payload — exclude rubric_enabled (managed by Educator endpoints).
+			const { rubric_enabled: rubricEnabledValue, ...rest } = values;
 			const payload = {
-				...values,
+				...rest,
 				allow_resubmission: values.allow_resubmission ? 1 : 0,
 				max_resubmissions: values.allow_resubmission
 					? values.max_resubmissions
@@ -126,6 +137,31 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				method,
 				data: payload,
 			} );
+
+			// Resolve the saved assignment ID.
+			const savedId = assignmentId || response.id;
+
+			// Save or delete rubric via Educator endpoints (if addon is active).
+			if (
+				savedId &&
+				window.pressprimerAssignmentAdmin?.addons?.educator
+			) {
+				if ( rubricEnabledValue && rubricData ) {
+					await apiFetch( {
+						path: `/ppae/v1/assignments/${ savedId }/rubric`,
+						method: 'POST',
+						data: { criteria: rubricData },
+					} );
+				} else if ( ! rubricEnabledValue ) {
+					// Delete rubric (sets rubric_enabled = 0).
+					await apiFetch( {
+						path: `/ppae/v1/assignments/${ savedId }/rubric`,
+						method: 'DELETE',
+					} ).catch( () => {
+						// Ignore 404 — no rubric to delete.
+					} );
+				}
+			}
 
 			message.success(
 				__( 'Assignment saved successfully!', 'pressprimer-assignment' )
@@ -175,6 +211,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			'allow_resubmission',
 			'max_resubmissions',
 			'notification_email',
+			'rubric_enabled',
 		];
 
 		const firstFieldName = errorFields[ 0 ].name[ 0 ];
@@ -207,7 +244,13 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 		{
 			key: 'settings',
 			label: __( 'Settings', 'pressprimer-assignment' ),
-			children: <SettingsPanel form={ form } />,
+			children: (
+				<SettingsPanel
+					form={ form }
+					rubricData={ rubricData }
+					onRubricDataChange={ setRubricData }
+				/>
+			),
 		},
 		{
 			key: 'file-settings',
@@ -267,6 +310,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 							'png',
 							'gif',
 						],
+						rubric_enabled: false,
 					} }
 				>
 					{ /* Header */ }

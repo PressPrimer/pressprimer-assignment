@@ -13,6 +13,8 @@ import {
 	Select,
 	Switch,
 	Card,
+	Checkbox,
+	Divider,
 	Space,
 	Col,
 	Row,
@@ -31,15 +33,27 @@ import {
 const { TextArea } = Input;
 const { Title, Text } = Typography;
 
+// Rubric editor is registered globally by the Educator addon.
+const RubricEditor = window.PPAERubricEditor || null;
+
+// Check if the Educator addon is active.
+const educatorActive =
+	window.pressprimerAssignmentAdmin?.addons?.educator || false;
+
 /**
  * Settings Panel Component
  *
- * @param {Object} props      Component props.
- * @param {Object} props.form Ant Design form instance.
+ * @param {Object}   props                    Component props.
+ * @param {Object}   props.form               Ant Design form instance.
+ * @param {Object}   props.rubricData         Current rubric criteria data.
+ * @param {Function} props.onRubricDataChange Callback when rubric data changes.
  */
-const SettingsPanel = ( { form } ) => {
+const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 	// Watch allow_resubmission to show/hide max_resubmissions.
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
+
+	// Watch rubric_enabled to toggle between grading guidelines and rubric editor.
+	const rubricEnabled = Form.useWatch( 'rubric_enabled', form );
 
 	return (
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
@@ -381,39 +395,71 @@ const SettingsPanel = ( { form } ) => {
 					</Col>
 				</Row>
 
-				<Form.Item
-					label={
-						<Space>
-							<span>
+				{ /* Grading guidelines — hidden when rubric is enabled */ }
+				{ ! rubricEnabled && (
+					<Form.Item
+						label={
+							<Space>
+								<span>
+									{ __(
+										'Grading Guidelines',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Internal guidelines for graders (not shown to students)',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="grading_guidelines"
+					>
+						<TextArea
+							rows={ 4 }
+							placeholder={ __(
+								'Grading criteria and rubric notes for graders…',
+								'pressprimer-assignment'
+							) }
+							style={ { maxWidth: 500 } }
+							size="small"
+						/>
+					</Form.Item>
+				) }
+
+				{ /* Rubric section — only when Educator addon is active */ }
+				{ educatorActive && (
+					<>
+						<Divider />
+						<Form.Item
+							name="rubric_enabled"
+							valuePropName="checked"
+							style={ { marginBottom: rubricEnabled ? 16 : 0 } }
+						>
+							<Checkbox>
 								{ __(
-									'Grading Guidelines',
+									'Use rubric for grading',
 									'pressprimer-assignment'
 								) }
-							</span>
-							<Tooltip
-								title={ __(
-									'Internal guidelines for graders (not shown to students)',
-									'pressprimer-assignment'
-								) }
-							>
-								<QuestionCircleOutlined
-									style={ { fontSize: 12, color: '#8c8c8c' } }
-								/>
-							</Tooltip>
-						</Space>
-					}
-					name="grading_guidelines"
-				>
-					<TextArea
-						rows={ 4 }
-						placeholder={ __(
-							'Grading criteria and rubric notes for graders…',
-							'pressprimer-assignment'
+							</Checkbox>
+						</Form.Item>
+
+						{ rubricEnabled && RubricEditor && (
+							<RubricEditor
+								initialData={ rubricData }
+								onDataChange={ onRubricDataChange }
+							/>
 						) }
-						style={ { maxWidth: 500 } }
-						size="small"
-					/>
-				</Form.Item>
+					</>
+				) }
 			</Card>
 
 			{ /* Submission Settings */ }
