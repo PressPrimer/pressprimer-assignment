@@ -428,7 +428,20 @@ class PressPrimer_Assignment_Migrator {
 	public static function get_table_status() {
 		global $wpdb;
 
-		$tables  = self::get_required_tables();
+		$tables = self::get_required_tables();
+
+		/**
+		 * Filter the list of database tables shown on the Status page.
+		 *
+		 * Addons can append their own table names (with $wpdb->prefix)
+		 * so they appear alongside the core tables.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string[] $tables Array of full table names including prefix.
+		 */
+		$tables = apply_filters( 'pressprimer_assignment_status_tables', $tables );
+
 		$results = [];
 
 		foreach ( $tables as $table ) {

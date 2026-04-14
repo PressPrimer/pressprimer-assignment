@@ -28,6 +28,8 @@ const { Title, Paragraph } = Typography;
 const LMS_NAMES = {
 	learndash: 'LearnDash',
 	tutorlms: 'Tutor LMS',
+	lifterlms: 'LifterLMS',
+	learnpress: 'LearnPress',
 };
 
 /**
@@ -109,8 +111,13 @@ const StatusTab = ( { settingsData } ) => {
 	 * @param {string} fullName Full table name with prefix.
 	 */
 	const getShortTableName = ( fullName ) => {
-		const match = fullName.match( /ppa_(.+)$/ );
-		return match ? match[ 1 ] : fullName;
+		const match = fullName.match(
+			/(?:ppae_|ppas_|ppaent_|ppa_|ppq_)(.+)$/
+		);
+		if ( ! match ) {
+			return fullName;
+		}
+		return match[ 0 ];
 	};
 
 	/**
@@ -185,6 +192,16 @@ const StatusTab = ( { settingsData } ) => {
 		lines.push(
 			`Database Version: ${ systemInfo.dbVersion || 'Not set' }`
 		);
+		const addons = systemInfo.addonVersions || {};
+		if ( addons.educator ) {
+			lines.push( `Educator Addon: ${ addons.educator }` );
+		}
+		if ( addons.school ) {
+			lines.push( `School Addon: ${ addons.school }` );
+		}
+		if ( addons.enterprise ) {
+			lines.push( `Enterprise Addon: ${ addons.enterprise }` );
+		}
 		lines.push( '' );
 
 		// WordPress environment.
@@ -404,6 +421,43 @@ const StatusTab = ( { settingsData } ) => {
 										) }
 								</td>
 							</tr>
+							{ systemInfo.addonVersions?.educator && (
+								<tr>
+									<th>
+										{ __(
+											'Educator',
+											'pressprimer-assignment'
+										) }
+									</th>
+									<td>
+										{ systemInfo.addonVersions.educator }
+									</td>
+								</tr>
+							) }
+							{ systemInfo.addonVersions?.school && (
+								<tr>
+									<th>
+										{ __(
+											'School',
+											'pressprimer-assignment'
+										) }
+									</th>
+									<td>{ systemInfo.addonVersions.school }</td>
+								</tr>
+							) }
+							{ systemInfo.addonVersions?.enterprise && (
+								<tr>
+									<th>
+										{ __(
+											'Enterprise',
+											'pressprimer-assignment'
+										) }
+									</th>
+									<td>
+										{ systemInfo.addonVersions.enterprise }
+									</td>
+								</tr>
+							) }
 						</tbody>
 					</table>
 				</div>
