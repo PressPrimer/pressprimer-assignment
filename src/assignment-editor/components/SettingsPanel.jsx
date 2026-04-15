@@ -31,7 +31,7 @@ import {
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 // Rubric editor is registered globally by the Educator addon.
 const RubricEditor = window.PPAERubricEditor || null;
@@ -43,13 +43,18 @@ const educatorActive =
 /**
  * Settings Panel Component
  *
- * @param {Object}   props                      Component props.
- * @param {Object}   props.form                 Ant Design form instance.
- * @param {Object}   props.rubricData           Current rubric criteria data.
- * @param {Function} props.onRubricDataChange   Callback when rubric data changes.
- * @param {Function} props.onRubricTotalChange  Callback when rubric total points changes.
+ * @param {Object}   props                     Component props.
+ * @param {Object}   props.form                Ant Design form instance.
+ * @param {Object}   props.rubricData          Current rubric criteria data.
+ * @param {Function} props.onRubricDataChange  Callback when rubric data changes.
+ * @param {Function} props.onRubricTotalChange Callback when rubric total points changes.
  */
-const SettingsPanel = ( { form, rubricData, onRubricDataChange, onRubricTotalChange } ) => {
+const SettingsPanel = ( {
+	form,
+	rubricData,
+	onRubricDataChange,
+	onRubricTotalChange,
+} ) => {
 	// Watch allow_resubmission to show/hide max_resubmissions.
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
 
@@ -640,9 +645,9 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange, onRubricTotalCha
 							extra={
 								! allowResubmission
 									? __(
-										'When disabled, students can only submit once.',
-										'pressprimer-assignment'
-									)
+											'When disabled, students can only submit once.',
+											'pressprimer-assignment'
+									  )
 									: undefined
 							}
 						>
