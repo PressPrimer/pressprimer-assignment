@@ -236,12 +236,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="ppa-resubmit-section">
 			<p class="ppa-resubmit-info">
 				<?php
-				printf(
-					/* translators: %1$d: remaining resubmissions, %2$d: total max resubmissions */
-					esc_html__( 'You have %1$d of %2$d resubmissions remaining.', 'pressprimer-assignment' ),
-					(int) $resubmissions_remaining,
-					(int) $assignment->max_resubmissions
-				);
+				if ( -1 === (int) $resubmissions_remaining ) {
+					esc_html_e( 'You can resubmit this assignment.', 'pressprimer-assignment' );
+				} else {
+					printf(
+						/* translators: %1$d: remaining resubmissions, %2$d: total max resubmissions */
+						esc_html__( 'You have %1$d of %2$d resubmissions remaining.', 'pressprimer-assignment' ),
+						(int) $resubmissions_remaining,
+						(int) $assignment->max_resubmissions
+					);
+				}
 				?>
 			</p>
 			<button type="button" class="ppa-button ppa-button-secondary" id="ppa-start-resubmit" data-assignment-id="<?php echo esc_attr( $assignment->id ); ?>">

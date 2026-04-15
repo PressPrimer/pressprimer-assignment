@@ -477,7 +477,12 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		$resubmissions_remaining = 0;
 
 		if ( $can_resubmit && $assignment->allow_resubmission ) {
-			$resubmissions_remaining = max( 0, $assignment->max_resubmissions - $submission->submission_number + 1 );
+			if ( 0 === (int) $assignment->max_resubmissions ) {
+				// Unlimited resubmissions — use -1 as sentinel value for template.
+				$resubmissions_remaining = -1;
+			} else {
+				$resubmissions_remaining = max( 0, $assignment->max_resubmissions - $submission->submission_number + 1 );
+			}
 		}
 
 		// Get previous submissions for this user/assignment.
@@ -686,8 +691,8 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			return false;
 		}
 
-		// Check resubmission limit.
-		if ( $user_submission->submission_number >= $assignment->max_resubmissions + 1 ) {
+		// Check resubmission limit (0 = unlimited).
+		if ( (int) $assignment->max_resubmissions > 0 && $user_submission->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return false;
 		}
 

@@ -747,9 +747,9 @@ class PressPrimer_Assignment_Submission_Handler {
 			return true;
 		}
 
-		// Check resubmission count against the limit.
+		// Check resubmission count against the limit (0 = unlimited).
 		// Uses submission_number to match the renderer's can_user_resubmit() logic.
-		if ( $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
+		if ( (int) $assignment->max_resubmissions > 0 && $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return new WP_Error(
 				'pressprimer_assignment_max_resubmissions',
 				__( 'You have reached the maximum number of submissions for this assignment.', 'pressprimer-assignment' )

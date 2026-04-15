@@ -249,6 +249,12 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					form={ form }
 					rubricData={ rubricData }
 					onRubricDataChange={ setRubricData }
+					onRubricTotalChange={ ( total ) => {
+						// Sync assignment max_points to rubric total when rubric is enabled.
+						if ( total > 0 ) {
+							form.setFieldValue( 'max_points', total );
+						}
+					} }
 				/>
 			),
 		},

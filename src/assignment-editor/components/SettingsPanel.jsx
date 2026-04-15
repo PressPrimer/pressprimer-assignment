@@ -43,12 +43,13 @@ const educatorActive =
 /**
  * Settings Panel Component
  *
- * @param {Object}   props                    Component props.
- * @param {Object}   props.form               Ant Design form instance.
- * @param {Object}   props.rubricData         Current rubric criteria data.
- * @param {Function} props.onRubricDataChange Callback when rubric data changes.
+ * @param {Object}   props                      Component props.
+ * @param {Object}   props.form                 Ant Design form instance.
+ * @param {Object}   props.rubricData           Current rubric criteria data.
+ * @param {Function} props.onRubricDataChange   Callback when rubric data changes.
+ * @param {Function} props.onRubricTotalChange  Callback when rubric total points changes.
  */
-const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
+const SettingsPanel = ( { form, rubricData, onRubricDataChange, onRubricTotalChange } ) => {
 	// Watch allow_resubmission to show/hide max_resubmissions.
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
 
@@ -324,10 +325,17 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 										) }
 									</span>
 									<Tooltip
-										title={ __(
-											'The maximum number of points for this assignment',
-											'pressprimer-assignment'
-										) }
+										title={
+											rubricEnabled
+												? __(
+														'Automatically set from rubric criteria totals',
+														'pressprimer-assignment'
+												  )
+												: __(
+														'The maximum number of points for this assignment',
+														'pressprimer-assignment'
+												  )
+										}
 									>
 										<QuestionCircleOutlined
 											style={ {
@@ -339,6 +347,14 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 								</Space>
 							}
 							name="max_points"
+							extra={
+								rubricEnabled
+									? __(
+											'Synced to rubric total.',
+											'pressprimer-assignment'
+									  )
+									: undefined
+							}
 						>
 							<InputNumber
 								min={ 0.01 }
@@ -346,6 +362,7 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 								step={ 1 }
 								style={ { width: 150 } }
 								size="small"
+								disabled={ !! rubricEnabled }
 								addonAfter={ __(
 									'pts',
 									'pressprimer-assignment'
@@ -473,6 +490,7 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 							<RubricEditor
 								initialData={ rubricData }
 								onDataChange={ onRubricDataChange }
+								onTotalChange={ onRubricTotalChange }
 							/>
 						) }
 					</>
@@ -619,6 +637,14 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 							}
 							name="allow_resubmission"
 							valuePropName="checked"
+							extra={
+								! allowResubmission
+									? __(
+										'When disabled, students can only submit once.',
+										'pressprimer-assignment'
+									)
+									: undefined
+							}
 						>
 							<Switch size="small" />
 						</Form.Item>
@@ -649,24 +675,19 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 									</Space>
 								}
 								name="max_resubmissions"
+								extra={ __(
+									'Set to 0 for unlimited resubmissions.',
+									'pressprimer-assignment'
+								) }
 							>
 								<InputNumber
-									min={ 1 }
+									min={ 0 }
 									max={ 100 }
-									style={ { width: 150 } }
+									style={ { width: 300 } }
 									size="small"
 								/>
 							</Form.Item>
 						) }
-						<Text
-							type="secondary"
-							style={ { fontSize: 12, display: 'block' } }
-						>
-							{ __(
-								'When disabled, students can only submit once.',
-								'pressprimer-assignment'
-							) }
-						</Text>
 					</Col>
 				</Row>
 			</Card>
