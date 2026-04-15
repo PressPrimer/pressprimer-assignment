@@ -187,6 +187,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endif; ?>
 		</div>
 
+		<?php
+		/**
+		 * Fires after the grade display on a returned submission, before instructor feedback.
+		 *
+		 * Used by Educator addon to render rubric score breakdown.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param PressPrimer_Assignment_Submission $submission The submission instance.
+		 * @param PressPrimer_Assignment_Assignment $assignment The assignment instance.
+		 */
+		do_action( 'pressprimer_assignment_after_grade_display', $submission, $assignment );
+		?>
+
 		<?php if ( ! empty( $submission->feedback ) ) : ?>
 			<div class="ppa-feedback">
 				<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Instructor Feedback', 'pressprimer-assignment' ); ?></h4>

@@ -445,10 +445,27 @@ const SettingsPanel = ( { form, rubricData, onRubricDataChange } ) => {
 							style={ { marginBottom: rubricEnabled ? 16 : 0 } }
 						>
 							<Checkbox>
-								{ __(
-									'Use rubric for grading',
-									'pressprimer-assignment'
-								) }
+								<Space>
+									<span>
+										{ __(
+											'Use rubric for grading',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Replaces the grading guidelines text box with a structured rubric. Criteria and levels will be visible to students on the assignment page.',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
 							</Checkbox>
 						</Form.Item>
 
