@@ -47,6 +47,14 @@ class PressPrimer_Assignment_PDF_Service {
 	 */
 	const QUICK_CHECK_PAGES = 10;
 
+	/**
+	 * Extraction method identifier
+	 *
+	 * @since 2.0.0
+	 * @var string
+	 */
+	const METHOD = 'smalot-pdf';
+
 	// =========================================================================
 	// Public API.
 	// =========================================================================
@@ -189,6 +197,12 @@ class PressPrimer_Assignment_PDF_Service {
 		$full_path = $file->get_full_path();
 
 		if ( ! file_exists( $full_path ) ) {
+			PressPrimer_Assignment_Extraction_Quality::finalize(
+				$file,
+				'',
+				self::METHOD,
+				__( 'File not found on disk.', 'pressprimer-assignment' )
+			);
 			return;
 		}
 
@@ -197,16 +211,18 @@ class PressPrimer_Assignment_PDF_Service {
 		$text    = $service->extract_text( $full_path, 0 );
 
 		if ( is_wp_error( $text ) ) {
-			// Extraction failed — ensure flag reflects this.
-			$file->text_extractable = 0;
-			$file->save();
+			PressPrimer_Assignment_Extraction_Quality::finalize(
+				$file,
+				'',
+				self::METHOD,
+				$text->get_error_message()
+			);
 			return;
 		}
 
-		// Store the extracted text.
-		$file->extracted_text   = $text;
-		$file->text_extractable = 1;
-		$file->save();
+		// Sanitise and finalise.
+		$text = PressPrimer_Assignment_Extraction_Quality::sanitize( $text );
+		PressPrimer_Assignment_Extraction_Quality::finalize( $file, $text, self::METHOD );
 	}
 
 	// =========================================================================

@@ -3,7 +3,7 @@
         'name' => 'pressprimer/assignment',
         'pretty_version' => 'dev-develop',
         'version' => 'dev-develop',
-        'reference' => '1d25062699f9bcca01fdeb35d672c037ad131373',
+        'reference' => '24dc9dbd6e61c2e56383420d2b3aa8a293c2f051',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -27,6 +27,15 @@
             'install_path' => __DIR__ . '/../doctrine/instantiator',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'henck/rtf-to-html' => array(
+            'pretty_version' => '1.3',
+            'version' => '1.3.0.0',
+            'reference' => '36e4cdcc78d6b4f7075522c93fc41547a0faffe7',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../henck/rtf-to-html',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'myclabs/deep-copy' => array(
             'pretty_version' => '1.13.4',
@@ -166,7 +175,7 @@
         'pressprimer/assignment' => array(
             'pretty_version' => 'dev-develop',
             'version' => 'dev-develop',
-            'reference' => '1d25062699f9bcca01fdeb35d672c037ad131373',
+            'reference' => '24dc9dbd6e61c2e56383420d2b3aa8a293c2f051',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

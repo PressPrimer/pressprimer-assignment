@@ -11,7 +11,7 @@
 
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Tabs, Button, Empty } from 'antd';
+import { Tabs, Button, Empty, Tag, Tooltip, message } from 'antd';
 import {
 	DownloadOutlined,
 	FilePdfOutlined,
@@ -19,7 +19,9 @@ import {
 	FileImageOutlined,
 	FileTextOutlined,
 	EditOutlined,
+	ReloadOutlined,
 } from '@ant-design/icons';
+import apiFetch from '@wordpress/api-fetch';
 import PdfViewer from './PdfViewer';
 import DocxViewer from './DocxViewer';
 import RtfViewer from './RtfViewer';
@@ -28,6 +30,28 @@ import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import TextContentViewer from './TextContentViewer';
 import { appendNonce } from '../../utils/nonce';
+
+/**
+ * Quality score labels and colors for the extraction quality badge.
+ */
+const QUALITY_CONFIG = {
+	0: {
+		label: __( 'Failed', 'pressprimer-assignment' ),
+		color: 'red',
+	},
+	1: {
+		label: __( 'Poor', 'pressprimer-assignment' ),
+		color: 'orange',
+	},
+	2: {
+		label: __( 'OK', 'pressprimer-assignment' ),
+		color: 'gold',
+	},
+	3: {
+		label: __( 'Good', 'pressprimer-assignment' ),
+		color: 'green',
+	},
+};
 
 /**
  * File extension to icon mapping.
@@ -47,17 +71,21 @@ const FILE_ICONS = {
 /**
  * DocumentPanel component
  *
- * @param {Object}      props             Component props.
- * @param {Array}       props.files       Array of file objects from REST API.
- * @param {string|null} props.textContent Text submission content (if any).
- * @param {number|null} props.wordCount   Word count for text submissions.
+ * @param {Object}        props              Component props.
+ * @param {Array}         props.files        Array of file objects from REST API.
+ * @param {string|null}   props.textContent  Text submission content (if any).
+ * @param {number|null}   props.wordCount    Word count for text submissions.
+ * @param {Function|null} props.onFileUpdate Callback when a file's extraction data is updated.
  * @return {JSX.Element} Rendered component.
  */
 const DocumentPanel = ( {
 	files = [],
 	textContent = null,
 	wordCount = null,
+	onFileUpdate = null,
 } ) => {
+	const [ reExtracting, setReExtracting ] = useState( null );
+
 	// Build tab items: text content tab first (if present), then file tabs.
 	const tabItems = [];
 
@@ -192,7 +220,7 @@ const DocumentPanel = ( {
 				/>
 			) }
 
-			{ /* File header with download */ }
+			{ /* File header with download, quality badge, and re-extract */ }
 			{ currentFile && (
 				<div
 					className="ppa-document-header"
@@ -205,29 +233,134 @@ const DocumentPanel = ( {
 						background: '#fafafa',
 					} }
 				>
-					<span style={ { fontWeight: 500, fontSize: 13 } }>
+					<span
+						style={ {
+							fontWeight: 500,
+							fontSize: 13,
+							display: 'flex',
+							alignItems: 'center',
+							gap: 8,
+						} }
+					>
 						{ currentFile.original_filename }
 						<span
 							style={ {
 								color: '#999',
-								marginLeft: 8,
 								fontWeight: 400,
 							} }
 						>
 							{ currentFile.formatted_size || '' }
 						</span>
-					</span>
-					<Button
-						icon={ <DownloadOutlined /> }
-						href={ appendNonce(
-							currentFile.download_url + '?download=1'
+						{ /* Extraction quality badge */ }
+						{ currentFile.extraction_quality !== null &&
+							currentFile.extraction_quality !== undefined && (
+								<Tooltip
+									title={
+										( currentFile.extraction_method
+											? currentFile.extraction_method
+											: '' ) +
+										( currentFile.extraction_error
+											? ' — ' +
+											  currentFile.extraction_error
+											: '' )
+									}
+								>
+									<Tag
+										color={
+											QUALITY_CONFIG[
+												currentFile.extraction_quality
+											]?.color || 'default'
+										}
+										style={ {
+											fontSize: 11,
+											lineHeight: '18px',
+											marginLeft: 0,
+										} }
+									>
+										{ __(
+											'Text:',
+											'pressprimer-assignment'
+										) }{ ' ' }
+										{ QUALITY_CONFIG[
+											currentFile.extraction_quality
+										]?.label ||
+											__(
+												'Unknown',
+												'pressprimer-assignment'
+											) }
+									</Tag>
+								</Tooltip>
+							) }
+						{ currentFile.extraction_quality === null && (
+							<Tag
+								color="default"
+								style={ {
+									fontSize: 11,
+									lineHeight: '18px',
+									marginLeft: 0,
+								} }
+							>
+								{ __(
+									'Text: Unknown',
+									'pressprimer-assignment'
+								) }
+							</Tag>
 						) }
-						target="_blank"
-						rel="noopener noreferrer"
-						size="small"
+					</span>
+					<span
+						style={ {
+							display: 'flex',
+							gap: 8,
+							alignItems: 'center',
+						} }
 					>
-						{ __( 'Download', 'pressprimer-assignment' ) }
-					</Button>
+						<Button
+							icon={ <ReloadOutlined /> }
+							size="small"
+							loading={ reExtracting === currentFile.id }
+							onClick={ async () => {
+								setReExtracting( currentFile.id );
+								try {
+									const result = await apiFetch( {
+										path: `/ppa/v1/files/${ currentFile.id }/re-extract`,
+										method: 'POST',
+									} );
+									message.success(
+										__(
+											'Text re-extracted.',
+											'pressprimer-assignment'
+										)
+									);
+									if ( onFileUpdate ) {
+										onFileUpdate( currentFile.id, result );
+									}
+								} catch ( error ) {
+									message.error(
+										error.message ||
+											__(
+												'Re-extraction failed.',
+												'pressprimer-assignment'
+											)
+									);
+								} finally {
+									setReExtracting( null );
+								}
+							} }
+						>
+							{ __( 'Re-extract', 'pressprimer-assignment' ) }
+						</Button>
+						<Button
+							icon={ <DownloadOutlined /> }
+							href={ appendNonce(
+								currentFile.download_url + '?download=1'
+							) }
+							target="_blank"
+							rel="noopener noreferrer"
+							size="small"
+						>
+							{ __( 'Download', 'pressprimer-assignment' ) }
+						</Button>
+					</span>
 				</div>
 			) }
 

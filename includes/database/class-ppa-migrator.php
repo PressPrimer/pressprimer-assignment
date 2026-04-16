@@ -123,6 +123,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.7.0', '<' ) ) {
 			self::migrate_to_1_7_0();
 		}
+		if ( version_compare( $from_version, '1.8.0', '<' ) ) {
+			self::migrate_to_1_8_0();
+		}
 	}
 
 	/**
@@ -283,6 +286,42 @@ class PressPrimer_Assignment_Migrator {
 	private static function migrate_to_1_7_0() {
 		if ( class_exists( 'PressPrimer_Assignment_Category' ) ) {
 			PressPrimer_Assignment_Category::update_counts( null );
+		}
+	}
+
+	/**
+	 * Migration to 1.8.0
+	 *
+	 * Adds extraction metadata columns to submission_files for
+	 * the server-side text extraction overhaul:
+	 * - extracted_at, extraction_method, extraction_quality,
+	 *   extraction_error, extracted_text_length, extracted_word_count
+	 *
+	 * @since 2.0.0
+	 */
+	private static function migrate_to_1_8_0() {
+		global $wpdb;
+
+		$files_table = $wpdb->prefix . 'ppa_submission_files';
+
+		$new_columns = array(
+			'extracted_at'         => 'DATETIME DEFAULT NULL AFTER extracted_text',
+			'extraction_method'    => 'VARCHAR(32) DEFAULT NULL AFTER extracted_at',
+			'extraction_quality'   => 'TINYINT DEFAULT NULL AFTER extraction_method',
+			'extraction_error'     => 'VARCHAR(255) DEFAULT NULL AFTER extraction_quality',
+			'extracted_text_length' => 'INT UNSIGNED DEFAULT NULL AFTER extraction_error',
+			'extracted_word_count' => 'INT UNSIGNED DEFAULT NULL AFTER extracted_text_length',
+		);
+
+		foreach ( $new_columns as $column_name => $column_def ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+			$column_exists = $wpdb->get_var(
+				$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $files_table, $column_name )
+			);
+			if ( ! $column_exists ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN {$column_name} {$column_def}" );
+			}
 		}
 	}
 

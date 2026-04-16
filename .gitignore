@@ -17,6 +17,7 @@ node_modules/
 /vendor/*
 !/vendor/autoload.php
 !/vendor/composer/
+!/vendor/henck/
 !/vendor/smalot/
 !/vendor/symfony/
 

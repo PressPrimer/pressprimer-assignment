@@ -107,6 +107,61 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 	public $extracted_text = null;
 
 	/**
+	 * When extraction completed
+	 *
+	 * @since 2.0.0
+	 * @var string|null
+	 */
+	public $extracted_at = null;
+
+	/**
+	 * Extraction method identifier
+	 *
+	 * One of: smalot-pdf, native-docx, native-odt, henck-rtf, native-text,
+	 * phpword-docx, phpword-odt, phpword-rtf, pdf-native-attachment, none.
+	 *
+	 * @since 2.0.0
+	 * @var string|null
+	 */
+	public $extraction_method = null;
+
+	/**
+	 * Extraction quality score (0-3)
+	 *
+	 * 0=failed, 1=poor, 2=acceptable, 3=good.
+	 *
+	 * @since 2.0.0
+	 * @var int|null
+	 */
+	public $extraction_quality = null;
+
+	/**
+	 * Extraction error message
+	 *
+	 * Short error message when extraction fails (for grader display).
+	 *
+	 * @since 2.0.0
+	 * @var string|null
+	 */
+	public $extraction_error = null;
+
+	/**
+	 * Character count of extracted text
+	 *
+	 * @since 2.0.0
+	 * @var int|null
+	 */
+	public $extracted_text_length = null;
+
+	/**
+	 * Word count of extracted text
+	 *
+	 * @since 2.0.0
+	 * @var int|null
+	 */
+	public $extracted_word_count = null;
+
+	/**
 	 * Sort order
 	 *
 	 * @since 1.0.0
@@ -152,6 +207,12 @@ class PressPrimer_Assignment_Submission_File extends PressPrimer_Assignment_Mode
 			'file_hash',
 			'text_extractable',
 			'extracted_text',
+			'extracted_at',
+			'extraction_method',
+			'extraction_quality',
+			'extraction_error',
+			'extracted_text_length',
+			'extracted_word_count',
 			'sort_order',
 		];
 	}

@@ -122,6 +122,17 @@ class PressPrimer_Assignment_REST_Submissions {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		// Re-extract text from a submission file.
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/files/(?P<id>\d+)/re-extract',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 're_extract_file_text' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -477,12 +488,17 @@ class PressPrimer_Assignment_REST_Submissions {
 		$file_data = [];
 		foreach ( $files as $file ) {
 			$file_data[] = [
-				'id'                => (int) $file->id,
-				'original_filename' => $file->original_filename,
-				'file_size'         => (int) $file->file_size,
-				'file_extension'    => $file->file_extension,
-				'mime_type'         => $file->mime_type,
-				'download_url'      => $this->get_file_download_url( $file ),
+				'id'                   => (int) $file->id,
+				'original_filename'    => $file->original_filename,
+				'file_size'            => (int) $file->file_size,
+				'formatted_size'       => size_format( $file->file_size ),
+				'file_extension'       => $file->file_extension,
+				'mime_type'            => $file->mime_type,
+				'download_url'         => $this->get_file_download_url( $file ),
+				'extraction_method'    => $file->extraction_method,
+				'extraction_quality'   => null !== $file->extraction_quality ? (int) $file->extraction_quality : null,
+				'extraction_error'     => $file->extraction_error,
+				'extracted_word_count' => null !== $file->extracted_word_count ? (int) $file->extracted_word_count : null,
 			];
 		}
 
@@ -937,5 +953,48 @@ class PressPrimer_Assignment_REST_Submissions {
 	 */
 	private function get_file_download_url( $file ) {
 		return rest_url( self::API_NAMESPACE . '/files/' . $file->id . '/content' );
+	}
+
+	/**
+	 * Re-extract text from a submission file
+	 *
+	 * Runs the extraction dispatcher synchronously for a single file
+	 * and returns the updated quality and method information. Used by
+	 * the admin grading UI's "Re-extract text" button.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response on success, WP_Error on failure.
+	 */
+	public function re_extract_file_text( $request ) {
+		$file_id = absint( $request->get_param( 'id' ) );
+
+		$file = PressPrimer_Assignment_Submission_File::get( $file_id );
+		if ( ! $file ) {
+			return new WP_Error(
+				'pressprimer_assignment_file_not_found',
+				__( 'File not found.', 'pressprimer-assignment' ),
+				[ 'status' => 404 ]
+			);
+		}
+
+		// Verify the file's submission belongs to a user-accessible assignment.
+		$submission = PressPrimer_Assignment_Submission::get( $file->submission_id );
+		if ( ! $submission || ! $this->can_access_submission( $submission ) ) {
+			return new WP_Error(
+				'pressprimer_assignment_forbidden',
+				__( 'You do not have permission to re-extract text from this file.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
+			);
+		}
+
+		$result = PressPrimer_Assignment_Extraction_Dispatcher::re_extract( $file_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( $result );
 	}
 }
