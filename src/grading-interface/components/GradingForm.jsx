@@ -690,43 +690,50 @@ const GradingForm = ( { submissionId } ) => {
 							) }
 						</div>
 
-						{ /* Grading Guidelines */ }
-						<Divider />
-						<div className="ppa-reference-section">
-							<Text
-								strong
-								style={ { display: 'block', marginBottom: 8 } }
-							>
-								{ __(
-									'Grading Guidelines',
-									'pressprimer-assignment'
-								) }
-							</Text>
-							{ assignment.grading_guidelines ? (
-								<div
-									style={ {
-										padding: '12px 16px',
-										background: '#f6f7f7',
-										borderRadius: 4,
-										lineHeight: 1.6,
-									} }
-									dangerouslySetInnerHTML={ {
-										__html: assignment.grading_guidelines,
-									} }
-								/>
-							) : (
-								<Text
-									type="secondary"
-									italic
-									style={ { fontSize: 13 } }
-								>
-									{ __(
-										'No grading guidelines provided.',
-										'pressprimer-assignment'
+						{ /* Grading Guidelines (hidden when a rubric is active) */ }
+						{ ! ( RubricPanel && educatorGrading?.rubric ) && (
+							<>
+								<Divider />
+								<div className="ppa-reference-section">
+									<Text
+										strong
+										style={ {
+											display: 'block',
+											marginBottom: 8,
+										} }
+									>
+										{ __(
+											'Grading Guidelines',
+											'pressprimer-assignment'
+										) }
+									</Text>
+									{ assignment.grading_guidelines ? (
+										<div
+											style={ {
+												padding: '12px 16px',
+												background: '#f6f7f7',
+												borderRadius: 4,
+												lineHeight: 1.6,
+											} }
+											dangerouslySetInnerHTML={ {
+												__html: assignment.grading_guidelines,
+											} }
+										/>
+									) : (
+										<Text
+											type="secondary"
+											italic
+											style={ { fontSize: 13 } }
+										>
+											{ __(
+												'No grading guidelines provided.',
+												'pressprimer-assignment'
+											) }
+										</Text>
 									) }
-								</Text>
-							) }
-						</div>
+								</div>
+							</>
+						) }
 
 						{ /* Rubric Panel (Educator addon) */ }
 						{ RubricPanel && educatorGrading?.rubric && (
