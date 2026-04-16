@@ -34,6 +34,14 @@ const { Title, Paragraph, Text } = Typography;
  * @param {Function} props.updateSetting Function to update a setting
  * @param {Object}   props.settingsData  Full settings data including LMS status
  */
+// School addon (PressPrimer Assignment School) registers its AI Settings
+// component on this global from its own bundle. When the addon is not
+// active the slot stays empty.
+const SchoolAISettings =
+	typeof window !== 'undefined' && window.PPASAISettings
+		? window.PPASAISettings
+		: null;
+
 // eslint-disable-next-line no-unused-vars -- Props passed by SettingsPage to all tabs.
 const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 	// LMS Integration states - use pre-loaded data from PHP.
@@ -470,6 +478,15 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 					) }
 				</div>
 			</div>
+
+			{ /* AI Settings - rendered by the School addon when active. */ }
+			{ SchoolAISettings && (
+				<SchoolAISettings
+					settings={ settings }
+					updateSetting={ updateSetting }
+					settingsData={ settingsData }
+				/>
+			) }
 		</div>
 	);
 };
