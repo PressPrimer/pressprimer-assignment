@@ -40,6 +40,11 @@ const RubricEditor = window.PPAERubricEditor || null;
 const educatorActive =
 	window.pressprimerAssignmentAdmin?.addons?.educator || false;
 
+// Check if the School addon is active and an AI provider is configured.
+const schoolActive = window.pressprimerAssignmentAdmin?.addons?.school || false;
+const schoolProviderConfigured =
+	window.pressprimerAssignmentEditorData?.school_provider_configured || false;
+
 /**
  * Settings Panel Component
  *
@@ -498,6 +503,42 @@ const SettingsPanel = ( {
 								onTotalChange={ onRubricTotalChange }
 							/>
 						) }
+					</>
+				) }
+
+				{ /* Auto-grade — only when School addon is active and provider configured */ }
+				{ schoolActive && schoolProviderConfigured && (
+					<>
+						<Divider />
+						<Form.Item
+							name="ai_auto_grade"
+							valuePropName="checked"
+							style={ { marginBottom: 0 } }
+						>
+							<Checkbox>
+								<Space>
+									<span>
+										{ __(
+											'Auto-grade with AI',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'When enabled, an AI grading suggestion is generated automatically after each student submission. Instructors review and apply the suggestion on the grading page.',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							</Checkbox>
+						</Form.Item>
 					</>
 				) }
 			</Card>

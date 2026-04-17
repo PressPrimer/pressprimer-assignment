@@ -64,6 +64,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			const rubricEnabled =
 				parseInt( assignmentData.rubric_enabled, 10 ) === 1;
 
+			const aiAutoGrade =
+				parseInt( assignmentData.ai_auto_grade, 10 ) === 1;
+
 			const fieldValues = {
 				title: assignmentData.title || '',
 				description: assignmentData.description || '',
@@ -92,6 +95,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					'gif',
 				],
 				rubric_enabled: rubricEnabled,
+				ai_auto_grade: aiAutoGrade,
 			};
 
 			form.setFieldsValue( fieldValues );
@@ -122,6 +126,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				max_resubmissions: values.allow_resubmission
 					? values.max_resubmissions
 					: 0,
+				ai_auto_grade: values.ai_auto_grade ? 1 : 0,
 				categories: selectedCategories,
 			};
 
@@ -212,6 +217,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			'max_resubmissions',
 			'notification_email',
 			'rubric_enabled',
+			'ai_auto_grade',
 		];
 
 		const firstFieldName = errorFields[ 0 ].name[ 0 ];
@@ -317,6 +323,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 							'gif',
 						],
 						rubric_enabled: false,
+						ai_auto_grade: false,
 					} }
 				>
 					{ /* Header */ }
