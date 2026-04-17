@@ -98,6 +98,9 @@ const GradingForm = ( { submissionId } ) => {
 	// Rubric grading state (Educator addon).
 	const [ rubricScores, setRubricScores ] = useState( [] );
 
+	// Key counter to force RubricPanel remount when AI scores are applied.
+	const [ rubricKey, setRubricKey ] = useState( 0 );
+
 	// Navigation state.
 	const [ siblings, setSiblings ] = useState( { prev: null, next: null } );
 
@@ -836,6 +839,11 @@ const GradingForm = ( { submissionId } ) => {
 												} );
 												return merged;
 											} );
+
+											// Force RubricPanel remount so
+											// it re-initializes with the
+											// AI-applied scores.
+											setRubricKey( ( k ) => k + 1 );
 											setHasChanges( true );
 
 											// Sum points for score field.
@@ -869,9 +877,12 @@ const GradingForm = ( { submissionId } ) => {
 							<>
 								<Divider />
 								<RubricPanel
+									key={ rubricKey }
 									rubricData={ educatorGrading.rubric }
 									existingScores={
-										educatorGrading.existing_scores || []
+										rubricScores.length > 0
+											? rubricScores
+											: educatorGrading.existing_scores || []
 									}
 									onTotalChange={ ( total ) => {
 										setScore( total );
