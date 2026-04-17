@@ -148,6 +148,18 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	public $theme = 'default';
 
 	/**
+	 * Whether AI auto-grading is enabled
+	 *
+	 * When enabled and the School addon is active with a configured
+	 * AI provider, new submissions are automatically queued for
+	 * background AI grading suggestions.
+	 *
+	 * @since 2.0.0
+	 * @var int
+	 */
+	public $ai_auto_grade = 0;
+
+	/**
 	 * Author user ID
 	 *
 	 * @since 1.0.0
@@ -241,6 +253,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'submission_type',
 			'status',
 			'theme',
+			'ai_auto_grade',
 			'author_id',
 			'notification_email',
 			'submission_count',

@@ -126,6 +126,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.8.0', '<' ) ) {
 			self::migrate_to_1_8_0();
 		}
+		if ( version_compare( $from_version, '1.9.0', '<' ) ) {
+			self::migrate_to_1_9_0();
+		}
 	}
 
 	/**
@@ -322,6 +325,30 @@ class PressPrimer_Assignment_Migrator {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN {$column_name} {$column_def}" );
 			}
+		}
+	}
+
+	/**
+	 * Migration to 1.9.0
+	 *
+	 * Adds AI auto-grade flag to assignments table. When enabled and
+	 * the School addon is active, new submissions are queued for
+	 * background AI grading suggestions.
+	 *
+	 * @since 2.0.0
+	 */
+	private static function migrate_to_1_9_0() {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $assignments_table, 'ai_auto_grade' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN ai_auto_grade TINYINT(1) NOT NULL DEFAULT 0 AFTER theme" );
 		}
 	}
 

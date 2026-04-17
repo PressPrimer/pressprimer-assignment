@@ -497,6 +497,21 @@ class PressPrimer_Assignment_Submission_Handler {
 		do_action( 'pressprimer_assignment_submission_submitted', $submission, $assignment );
 
 		/**
+		 * Fires after a submission is received and finalized.
+		 *
+		 * Used by addons (e.g. School) to trigger background processing
+		 * such as AI grading suggestions. Distinct from
+		 * pressprimer_assignment_submission_submitted which fires at the
+		 * same point but is intended for the core submission flow.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param PressPrimer_Assignment_Submission $submission The submission instance.
+		 * @param PressPrimer_Assignment_Assignment $assignment The assignment instance.
+		 */
+		do_action( 'pressprimer_assignment_submission_received', $submission, $assignment );
+
+		/**
 		 * Fire audit log event for submission received.
 		 *
 		 * Enterprise addon listens to this and writes to the audit log.

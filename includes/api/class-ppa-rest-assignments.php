@@ -727,6 +727,10 @@ class PressPrimer_Assignment_REST_Assignments {
 			$data['allow_resubmission'] = $request->get_param( 'allow_resubmission' ) ? 1 : 0;
 		}
 
+		if ( null !== $request->get_param( 'ai_auto_grade' ) ) {
+			$data['ai_auto_grade'] = $request->get_param( 'ai_auto_grade' ) ? 1 : 0;
+		}
+
 		// Enum fields - validate against allowed values.
 		if ( null !== $request->get_param( 'status' ) ) {
 			$status = sanitize_text_field( $request->get_param( 'status' ) );
@@ -962,6 +966,7 @@ class PressPrimer_Assignment_REST_Assignments {
 			'max_files'          => (int) $assignment->max_files,
 			'submission_type'    => $assignment->submission_type,
 			'status'             => $assignment->status,
+			'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
 			'author_id'          => (int) $assignment->author_id,
 			'notification_email' => $assignment->notification_email ?? '',
 			'submission_count'   => (int) $assignment->submission_count,
