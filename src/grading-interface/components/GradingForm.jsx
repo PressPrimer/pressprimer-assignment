@@ -773,6 +773,9 @@ const GradingForm = ( { submissionId } ) => {
 									providerConfigured={
 										!! schoolGrading.providerConfigured
 									}
+									preloadedSuggestions={
+										schoolGrading?.aiSuggestions || null
+									}
 									onApplySuggestions={ ( {
 										criteria,
 										overallFeedback,
