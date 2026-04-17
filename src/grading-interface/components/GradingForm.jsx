@@ -773,12 +773,16 @@ const GradingForm = ( { submissionId } ) => {
 									providerConfigured={
 										!! schoolGrading.providerConfigured
 									}
+									aiAutoGrade={
+										!! schoolGrading.aiAutoGrade
+									}
 									preloadedSuggestions={
 										schoolGrading?.aiSuggestions || null
 									}
 									onApplySuggestions={ ( {
 										criteria,
 										overallFeedback,
+										suggestedScore,
 									} ) => {
 										// Apply overall feedback.
 										if ( overallFeedback ) {
@@ -846,6 +850,14 @@ const GradingForm = ( { submissionId } ) => {
 											if ( totalFromAI > 0 ) {
 												setScore( totalFromAI );
 											}
+										} else if (
+											suggestedScore !== null &&
+											suggestedScore !== undefined
+										) {
+											// Non-rubric mode: apply
+											// the suggested overall score.
+											setScore( suggestedScore );
+											setHasChanges( true );
 										}
 									} }
 								/>
