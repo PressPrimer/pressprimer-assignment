@@ -417,6 +417,7 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'notification_email' => $assignment->notification_email ?? '',
 					'submission_type'    => $assignment->submission_type,
 					'status'             => $assignment->status,
+					'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
 					'categories'         => $category_ids,
 				];
 			}
