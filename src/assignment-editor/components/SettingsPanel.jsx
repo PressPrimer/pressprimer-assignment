@@ -20,6 +20,7 @@ import {
 	Row,
 	Typography,
 	Tooltip,
+	Alert,
 } from 'antd';
 import {
 	QuestionCircleOutlined,
@@ -513,11 +514,15 @@ const SettingsPanel = ( {
 						<Form.Item
 							name="ai_auto_grade"
 							valuePropName="checked"
-							style={ { marginBottom: 0 } }
+							style={ { marginBottom: 8 } }
 						>
 							<Checkbox>
 								<Space>
-									<span>
+									<span
+										style={ {
+											fontWeight: 500,
+										} }
+									>
 										{ __(
 											'Auto-grade with AI',
 											'pressprimer-assignment'
@@ -539,6 +544,17 @@ const SettingsPanel = ( {
 								</Space>
 							</Checkbox>
 						</Form.Item>
+						<Alert
+							type="info"
+							showIcon
+							message={ __(
+								'AI grading generates feedback suggestions automatically after each submission. Instructors review, edit, and apply the suggestions before returning grades to students — the AI never grades directly.',
+								'pressprimer-assignment'
+							) }
+							style={ {
+								marginBottom: 0,
+							} }
+						/>
 					</>
 				) }
 			</Card>
