@@ -813,7 +813,7 @@ const GradingForm = ( { submissionId } ) => {
 														level_id:
 															c.suggested_level_id ||
 															null,
-														points_awarded: pts,
+														points: pts,
 														feedback:
 															c.feedback || '',
 													};
@@ -851,7 +851,7 @@ const GradingForm = ( { submissionId } ) => {
 												newScores.reduce(
 													( sum, s ) =>
 														sum +
-														( s.points_awarded ||
+														( s.points ||
 															0 ),
 													0
 												);

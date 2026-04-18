@@ -193,7 +193,7 @@ class PressPrimer_Assignment_REST_Grading_Queue {
 		if ( ! empty( $status ) ) {
 			$args['status'] = [ $status ];
 		} else {
-			$args['status'] = [ 'submitted', 'grading' ];
+			$args['status'] = [ 'submitted', 'grading', 'graded' ];
 		}
 
 		$result = PressPrimer_Assignment_Grading_Queue_Service::get_queue( $args );

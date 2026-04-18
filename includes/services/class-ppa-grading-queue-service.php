@@ -72,7 +72,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 
 		$defaults = [
 			'assignment_id' => null,
-			'status'        => [ 'submitted', 'grading' ],
+			'status'        => [ 'submitted', 'grading', 'graded' ],
 			'search'        => '',
 			'orderby'       => 'submitted_at',
 			'order'         => 'ASC',
@@ -109,7 +109,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$statuses       = array_intersect( $statuses, $valid_statuses );
 
 		if ( empty( $statuses ) ) {
-			$statuses = [ 'submitted', 'grading' ];
+			$statuses = [ 'submitted', 'grading', 'graded' ];
 		}
 
 		$status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
@@ -258,14 +258,14 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$params = array_merge(
 			$assignment_ids,
 			$assignment_ids,
-			[ 'submitted', 'grading' ]
+			[ 'submitted', 'grading', 'graded' ]
 		);
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (int) $wpdb->get_var(
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs for subquery + assignment IDs + 2 status strings for outer WHERE).
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs for subquery + assignment IDs + 3 status strings for outer WHERE).
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status != 'draft' GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN (%s, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
+				"SELECT COUNT(*) FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status != 'draft' GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN (%s, %s, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
 				$params
 			)
 		);

@@ -414,7 +414,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		$args = [
 			'per_page' => $per_page,
 			'page'     => $current_page,
-			'status'   => [ 'submitted', 'grading' ],
+			'status'   => [ 'submitted', 'grading', 'graded' ],
 		];
 
 		// Filter by assignment.
@@ -425,7 +425,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		// Filter by status.
 		$get_status = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : '';
 		if ( '' !== $get_status && 'all' !== $get_status ) {
-			$valid = [ 'submitted', 'grading' ];
+			$valid = [ 'submitted', 'grading', 'graded' ];
 			if ( in_array( $get_status, $valid, true ) ) {
 				$args['status'] = [ $get_status ];
 			}
