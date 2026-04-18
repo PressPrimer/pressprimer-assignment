@@ -51,6 +51,9 @@ const educatorGrading = window.pressprimerAssignmentEducatorGrading || null;
 // AIGradingPanel is registered globally by the School addon's ai-grading bundle.
 const AIGradingPanel = window.PPASAIGradingPanel || null;
 
+// ProofreadingPanel is registered globally by the School addon's ai-grading bundle.
+const ProofreadingPanel = window.PPASProofreadingPanel || null;
+
 // School addon localizes provider configuration on the grading page.
 const schoolGrading = window.pressprimerAssignmentSchoolGrading || null;
 
@@ -609,6 +612,22 @@ const GradingForm = ( { submissionId } ) => {
 							} }
 						/>
 					</Card>
+
+					{ /* Proofreading Panel (School addon) */ }
+					{ ProofreadingPanel && schoolGrading && ! isReadOnly && (
+						<ProofreadingPanel
+							submissionId={ submissionId }
+							providerConfigured={
+								!! schoolGrading.providerConfigured
+							}
+							onInsertFeedback={ ( text ) => {
+								setFeedback( ( prev ) =>
+									prev ? prev + '\n' + text : text
+								);
+								setHasChanges( true );
+							} }
+						/>
+					) }
 				</Col>
 
 				{ /* Grading Panel (right) */ }
@@ -776,9 +795,7 @@ const GradingForm = ( { submissionId } ) => {
 									providerConfigured={
 										!! schoolGrading.providerConfigured
 									}
-									aiAutoGrade={
-										!! schoolGrading.aiAutoGrade
-									}
+									aiAutoGrade={ !! schoolGrading.aiAutoGrade }
 									preloadedSuggestions={
 										schoolGrading?.aiSuggestions || null
 									}
@@ -850,9 +867,7 @@ const GradingForm = ( { submissionId } ) => {
 											const totalFromAI =
 												newScores.reduce(
 													( sum, s ) =>
-														sum +
-														( s.points ||
-															0 ),
+														sum + ( s.points || 0 ),
 													0
 												);
 											if ( totalFromAI > 0 ) {
@@ -882,7 +897,8 @@ const GradingForm = ( { submissionId } ) => {
 									existingScores={
 										rubricScores.length > 0
 											? rubricScores
-											: educatorGrading.existing_scores || []
+											: educatorGrading.existing_scores ||
+											  []
 									}
 									onTotalChange={ ( total ) => {
 										setScore( total );

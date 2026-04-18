@@ -308,12 +308,12 @@ class PressPrimer_Assignment_Migrator {
 		$files_table = $wpdb->prefix . 'ppa_submission_files';
 
 		$new_columns = array(
-			'extracted_at'         => 'DATETIME DEFAULT NULL AFTER extracted_text',
-			'extraction_method'    => 'VARCHAR(32) DEFAULT NULL AFTER extracted_at',
-			'extraction_quality'   => 'TINYINT DEFAULT NULL AFTER extraction_method',
-			'extraction_error'     => 'VARCHAR(255) DEFAULT NULL AFTER extraction_quality',
+			'extracted_at'          => 'DATETIME DEFAULT NULL AFTER extracted_text',
+			'extraction_method'     => 'VARCHAR(32) DEFAULT NULL AFTER extracted_at',
+			'extraction_quality'    => 'TINYINT DEFAULT NULL AFTER extraction_method',
+			'extraction_error'      => 'VARCHAR(255) DEFAULT NULL AFTER extraction_quality',
 			'extracted_text_length' => 'INT UNSIGNED DEFAULT NULL AFTER extraction_error',
-			'extracted_word_count' => 'INT UNSIGNED DEFAULT NULL AFTER extracted_text_length',
+			'extracted_word_count'  => 'INT UNSIGNED DEFAULT NULL AFTER extracted_text_length',
 		);
 
 		foreach ( $new_columns as $column_name => $column_def ) {
