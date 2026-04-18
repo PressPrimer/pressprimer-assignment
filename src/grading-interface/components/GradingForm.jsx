@@ -611,23 +611,27 @@ const GradingForm = ( { submissionId } ) => {
 								);
 							} }
 						/>
-					</Card>
 
-					{ /* Proofreading Panel (School addon) */ }
-					{ ProofreadingPanel && schoolGrading && ! isReadOnly && (
-						<ProofreadingPanel
-							submissionId={ submissionId }
-							providerConfigured={
-								!! schoolGrading.providerConfigured
-							}
-							onInsertFeedback={ ( text ) => {
-								setFeedback( ( prev ) =>
-									prev ? prev + '\n' + text : text
-								);
-								setHasChanges( true );
-							} }
-						/>
-					) }
+						{ /* Proofreading Panel (School addon) */ }
+						{ ProofreadingPanel &&
+							schoolGrading &&
+							! isReadOnly && (
+								<div style={ { padding: '0 16px 16px' } }>
+									<ProofreadingPanel
+										submissionId={ submissionId }
+										providerConfigured={
+											!! schoolGrading.providerConfigured
+										}
+										onInsertFeedback={ ( text ) => {
+											setFeedback( ( prev ) =>
+												prev ? prev + '\n' + text : text
+											);
+											setHasChanges( true );
+										} }
+									/>
+								</div>
+							) }
+					</Card>
 				</Col>
 
 				{ /* Grading Panel (right) */ }
