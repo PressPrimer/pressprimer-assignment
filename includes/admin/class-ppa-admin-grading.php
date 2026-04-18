@@ -572,6 +572,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		$statuses = [
 			'submitted' => __( 'Submitted', 'pressprimer-assignment' ),
 			'grading'   => __( 'Grading', 'pressprimer-assignment' ),
+			'graded'    => __( 'Graded', 'pressprimer-assignment' ),
 		];
 
 		return isset( $statuses[ $item->status ] ) ? esc_html( $statuses[ $item->status ] ) : esc_html( $item->status );
@@ -641,6 +642,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 			'all'       => __( 'All Statuses', 'pressprimer-assignment' ),
 			'submitted' => __( 'Submitted', 'pressprimer-assignment' ),
 			'grading'   => __( 'Grading', 'pressprimer-assignment' ),
+			'graded'    => __( 'Graded', 'pressprimer-assignment' ),
 		];
 
 		?>
