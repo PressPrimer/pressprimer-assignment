@@ -615,6 +615,7 @@ const GradingForm = ( { submissionId } ) => {
 						{ /* Proofreading Panel (School addon) */ }
 						{ ProofreadingPanel &&
 							schoolGrading &&
+							schoolGrading.aiCompatible !== false &&
 							! isReadOnly && (
 								<div style={ { padding: '0 16px 16px' } }>
 									<ProofreadingPanel
@@ -785,111 +786,123 @@ const GradingForm = ( { submissionId } ) => {
 						) }
 
 						{ /* AI Grading Panel (School addon) */ }
-						{ AIGradingPanel && schoolGrading && ! isReadOnly && (
-							<>
-								<Divider />
-								<AIGradingPanel
-									submissionId={ submissionId }
-									hasRubric={
-										!! (
-											RubricPanel &&
-											educatorGrading?.rubric
-										)
-									}
-									providerConfigured={
-										!! schoolGrading.providerConfigured
-									}
-									aiAutoGrade={ !! schoolGrading.aiAutoGrade }
-									preloadedSuggestions={
-										schoolGrading?.aiSuggestions || null
-									}
-									onApplySuggestions={ ( {
-										criteria,
-										overallFeedback,
-										suggestedScore,
-									} ) => {
-										// Apply overall feedback.
-										if ( overallFeedback ) {
-											setFeedback( overallFeedback );
-											setHasChanges( true );
+						{ AIGradingPanel &&
+							schoolGrading &&
+							schoolGrading.aiCompatible !== false &&
+							! isReadOnly && (
+								<>
+									<Divider />
+									<AIGradingPanel
+										submissionId={ submissionId }
+										hasRubric={
+											!! (
+												RubricPanel &&
+												educatorGrading?.rubric
+											)
 										}
-
-										// Apply per-criterion scores to
-										// the rubric panel (if present).
-										if (
-											criteria &&
-											criteria.length > 0 &&
-											educatorGrading?.rubric
-										) {
-											const newScores = criteria.map(
-												( c ) => {
-													const pts =
-														c.suggested_points !==
-														undefined
-															? c.suggested_points
-															: null;
-													return {
-														criterion_id:
-															c.criterion_id,
-														level_id:
-															c.suggested_level_id ||
-															null,
-														points: pts,
-														feedback:
-															c.feedback || '',
-													};
-												}
-											);
-
-											setRubricScores( ( prev ) => {
-												// Merge AI suggestions with
-												// any existing manual scores.
-												const merged = [ ...prev ];
-												newScores.forEach( ( ns ) => {
-													const idx =
-														merged.findIndex(
-															( m ) =>
-																m.criterion_id ===
-																ns.criterion_id
-														);
-													if ( idx >= 0 ) {
-														merged[ idx ] = ns;
-													} else {
-														merged.push( ns );
-													}
-												} );
-												return merged;
-											} );
-
-											// Force RubricPanel remount so
-											// it re-initializes with the
-											// AI-applied scores.
-											setRubricKey( ( k ) => k + 1 );
-											setHasChanges( true );
-
-											// Sum points for score field.
-											const totalFromAI =
-												newScores.reduce(
-													( sum, s ) =>
-														sum + ( s.points || 0 ),
-													0
-												);
-											if ( totalFromAI > 0 ) {
-												setScore( totalFromAI );
+										providerConfigured={
+											!! schoolGrading.providerConfigured
+										}
+										aiAutoGrade={
+											!! schoolGrading.aiAutoGrade
+										}
+										preloadedSuggestions={
+											schoolGrading?.aiSuggestions || null
+										}
+										onApplySuggestions={ ( {
+											criteria,
+											overallFeedback,
+											suggestedScore,
+										} ) => {
+											// Apply overall feedback.
+											if ( overallFeedback ) {
+												setFeedback( overallFeedback );
+												setHasChanges( true );
 											}
-										} else if (
-											suggestedScore !== null &&
-											suggestedScore !== undefined
-										) {
-											// Non-rubric mode: apply
-											// the suggested overall score.
-											setScore( suggestedScore );
-											setHasChanges( true );
-										}
-									} }
-								/>
-							</>
-						) }
+
+											// Apply per-criterion scores to
+											// the rubric panel (if present).
+											if (
+												criteria &&
+												criteria.length > 0 &&
+												educatorGrading?.rubric
+											) {
+												const newScores = criteria.map(
+													( c ) => {
+														const pts =
+															c.suggested_points !==
+															undefined
+																? c.suggested_points
+																: null;
+														return {
+															criterion_id:
+																c.criterion_id,
+															level_id:
+																c.suggested_level_id ||
+																null,
+															points: pts,
+															feedback:
+																c.feedback ||
+																'',
+														};
+													}
+												);
+
+												setRubricScores( ( prev ) => {
+													// Merge AI suggestions with
+													// any existing manual scores.
+													const merged = [ ...prev ];
+													newScores.forEach(
+														( ns ) => {
+															const idx =
+																merged.findIndex(
+																	( m ) =>
+																		m.criterion_id ===
+																		ns.criterion_id
+																);
+															if ( idx >= 0 ) {
+																merged[ idx ] =
+																	ns;
+															} else {
+																merged.push(
+																	ns
+																);
+															}
+														}
+													);
+													return merged;
+												} );
+
+												// Force RubricPanel remount so
+												// it re-initializes with the
+												// AI-applied scores.
+												setRubricKey( ( k ) => k + 1 );
+												setHasChanges( true );
+
+												// Sum points for score field.
+												const totalFromAI =
+													newScores.reduce(
+														( sum, s ) =>
+															sum +
+															( s.points || 0 ),
+														0
+													);
+												if ( totalFromAI > 0 ) {
+													setScore( totalFromAI );
+												}
+											} else if (
+												suggestedScore !== null &&
+												suggestedScore !== undefined
+											) {
+												// Non-rubric mode: apply
+												// the suggested overall score.
+												setScore( suggestedScore );
+												setHasChanges( true );
+											}
+										} }
+									/>
+								</>
+							) }
 
 						{ /* Rubric Panel (Educator addon) */ }
 						{ RubricPanel && educatorGrading?.rubric && (
