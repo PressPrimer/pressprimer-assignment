@@ -146,6 +146,18 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			// Resolve the saved assignment ID.
 			const savedId = assignmentId || response.id;
 
+			// Update state and URL immediately after creation so that
+			// subsequent saves use PUT (update) instead of POST (create),
+			// even if the rubric save below fails.
+			if ( ! assignmentId && response.id ) {
+				setCurrentId( response.id );
+				window.history.replaceState(
+					{},
+					'',
+					`${ window.pressprimerAssignmentAdmin.adminUrl }admin.php?page=pressprimer-assignment-assignments&action=edit&assignment=${ response.id }`
+				);
+			}
+
 			// Save or delete rubric via Educator endpoints (if addon is active).
 			if (
 				savedId &&
@@ -171,16 +183,6 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			message.success(
 				__( 'Assignment saved successfully!', 'pressprimer-assignment' )
 			);
-
-			// Update URL if this was a new assignment.
-			if ( ! assignmentId && response.id ) {
-				window.history.replaceState(
-					{},
-					'',
-					`${ window.pressprimerAssignmentAdmin.adminUrl }admin.php?page=pressprimer-assignment-assignments&action=edit&assignment=${ response.id }`
-				);
-				setCurrentId( response.id );
-			}
 		} catch ( error ) {
 			message.error(
 				error.message ||
