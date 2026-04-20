@@ -610,6 +610,16 @@ class PressPrimer_Assignment_REST_Submissions {
 			 * @param int    $object_id   Object ID.
 			 * @param array  $data        Additional context.
 			 */
+			/**
+			 * Fires when grading is started on a submission.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param int $id        Submission ID.
+			 * @param int $grader_id The user ID of the grader.
+			 */
+			do_action( 'pressprimer_assignment_submission_grading_started', $id, get_current_user_id() );
+
 			do_action(
 				'pressprimer_assignment_log_event',
 				'grading.started',

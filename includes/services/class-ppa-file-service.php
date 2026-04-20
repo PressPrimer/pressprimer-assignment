@@ -520,10 +520,16 @@ class PressPrimer_Assignment_File_Service {
 		}
 
 		/**
-		 * Fire audit log event for file download.
+		 * Fires when a submission file is downloaded.
 		 *
 		 * @since 2.0.0
+		 *
+		 * @param int    $file_id       The file ID.
+		 * @param int    $submission_id The submission ID.
+		 * @param object $file          The file object.
 		 */
+		do_action( 'pressprimer_assignment_file_downloaded', $file_id, $file->submission_id, $file );
+
 		do_action(
 			'pressprimer_assignment_log_event',
 			'file.downloaded',

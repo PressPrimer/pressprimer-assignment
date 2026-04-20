@@ -546,7 +546,16 @@ class PressPrimer_Assignment_REST_Assignments {
 		$new_status = $assignment->status;
 
 		if ( $old_status !== $new_status && 'published' === $new_status ) {
-			// Fire audit log event for assignment published.
+			/**
+			 * Fires when an assignment is published.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param int                            $id         Assignment ID.
+			 * @param PressPrimer_Assignment_Assignment $assignment The assignment object.
+			 */
+			do_action( 'pressprimer_assignment_published', $id, $assignment );
+
 			do_action(
 				'pressprimer_assignment_log_event',
 				'assignment.published',
@@ -555,7 +564,16 @@ class PressPrimer_Assignment_REST_Assignments {
 				[ 'title' => $assignment->title ]
 			);
 		} elseif ( $old_status !== $new_status && 'archived' === $new_status ) {
-			// Fire audit log event for assignment archived.
+			/**
+			 * Fires when an assignment is archived.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param int                            $id         Assignment ID.
+			 * @param PressPrimer_Assignment_Assignment $assignment The assignment object.
+			 */
+			do_action( 'pressprimer_assignment_archived', $id, $assignment );
+
 			do_action(
 				'pressprimer_assignment_log_event',
 				'assignment.archived',

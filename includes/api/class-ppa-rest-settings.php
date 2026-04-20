@@ -327,6 +327,16 @@ class PressPrimer_Assignment_REST_Settings {
 			 * @param int    $object_id   Object ID (0 for settings).
 			 * @param array  $data        Additional context.
 			 */
+			/**
+			 * Fires when plugin settings are saved.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param array $changed_keys List of setting keys that changed.
+			 * @param array $merged       The full merged settings array after save.
+			 */
+			do_action( 'pressprimer_assignment_settings_saved', $changed_keys, $merged );
+
 			do_action(
 				'pressprimer_assignment_log_event',
 				'settings.changed',
