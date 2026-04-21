@@ -418,6 +418,24 @@ class PressPrimer_Assignment_Admin {
 	 */
 	private function localize_reports_data() {
 		/**
+		 * Filters the list of addon report cards shown on the Reports page.
+		 *
+		 * Each report definition should contain:
+		 * - key: Unique string identifier
+		 * - title: Display title
+		 * - description: Brief description
+		 * - iconType: Ant Design icon name (e.g., 'AuditOutlined')
+		 * - color: Background color for the icon (e.g., '#722ed1')
+		 * - available: Boolean, whether the report is active
+		 * - href: URL to the report page
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param array $addon_reports Array of addon report definitions.
+		 */
+		$addon_reports = apply_filters( 'pressprimer_assignment_reports_addon_reports', [] );
+
+		/**
 		 * Filters the reports mascot image URL.
 		 *
 		 * Used by Enterprise addon for white-label branding.
@@ -437,6 +455,7 @@ class PressPrimer_Assignment_Admin {
 			[
 				'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 				'reportsMascot' => $reports_mascot,
+				'addonReports'  => $addon_reports,
 			]
 		);
 	}
