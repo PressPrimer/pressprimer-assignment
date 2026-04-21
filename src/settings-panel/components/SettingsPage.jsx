@@ -7,7 +7,7 @@
  * @since 1.0.0
  */
 
-import { useState, useCallback, useMemo } from '@wordpress/element';
+import { useState, useCallback, useEffect, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, message, Spin } from 'antd';
@@ -148,6 +148,19 @@ const SettingsPage = ( { settingsData = {} } ) => {
 	const activeTabConfig = allTabs.find( ( tab ) => tab.id === activeTab );
 	const isAddonTab = activeTabConfig?.isAddon ?? false;
 	const isReadOnly = READ_ONLY_TABS.includes( activeTab );
+
+	/**
+	 * Dispatch custom event when addon tab becomes active.
+	 * Addon scripts can listen for this to mount their React components.
+	 */
+	useEffect( () => {
+		if ( isAddonTab ) {
+			const event = new CustomEvent( 'ppa-settings-addon-tab-active', {
+				detail: { tab: activeTab },
+			} );
+			window.dispatchEvent( event );
+		}
+	}, [ activeTab, isAddonTab ] );
 
 	/**
 	 * Update a setting value.
