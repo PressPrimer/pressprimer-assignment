@@ -445,7 +445,7 @@ class PressPrimer_Assignment_Admin {
 		 * @param string $mascot_url Default mascot URL.
 		 */
 		$reports_mascot = apply_filters(
-			'pressprimer_assignment_reports_mascot',
+			'pressprimer_assignment_reports_header_mascot',
 			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/reports-mascot.png'
 		);
 
