@@ -19,6 +19,8 @@ import {
 	ApiOutlined,
 	BgColorsOutlined,
 	InfoCircleOutlined,
+	SkinOutlined,
+	AuditOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
@@ -27,6 +29,15 @@ import EmailTab from './EmailTab';
 import IntegrationsTab from './IntegrationsTab';
 import AdvancedTab from './AdvancedTab';
 import StatusTab from './StatusTab';
+
+/**
+ * Icon map for addon tabs
+ */
+const ADDON_ICONS = {
+	'white-label': <SkinOutlined />,
+	'audit-log': <AuditOutlined />,
+	default: <SettingOutlined />,
+};
 
 /**
  * Core tab configuration (built into free plugin).
@@ -128,7 +139,7 @@ const SettingsPage = ( { settingsData = {} } ) => {
 				combined.push( {
 					id,
 					label: tabConfig.label || id,
-					icon: <SettingOutlined />,
+					icon: ADDON_ICONS[ id ] || ADDON_ICONS.default,
 					component: null,
 					order: tabConfig.order ?? 50,
 					isAddon: true,
