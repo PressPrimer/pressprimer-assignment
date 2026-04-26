@@ -1526,11 +1526,20 @@
 				);
 				if ( $uploadContainer.length ) {
 					window.PPA.Upload.init( $uploadContainer );
+					window.PPA.Upload.announceToScreenReader(
+						pressprimerAssignmentFrontend.i18n.dragDropHere
+					);
 				}
 
-				window.PPA.Upload.announceToScreenReader(
-					pressprimerAssignmentFrontend.i18n.dragDropHere
-				);
+				// Initialize text editor if needed.
+				const $textForm = $wrapper.find( '#ppa-text-submission-form' );
+				if (
+					$textForm.length &&
+					window.PPA.TextEditor &&
+					! window.PPA.TextEditor.editor
+				) {
+					window.PPA.TextEditor.init();
+				}
 			}
 		},
 	};
