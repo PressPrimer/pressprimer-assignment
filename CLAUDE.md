@@ -256,8 +256,20 @@ wp_localize_script( 'ppa-submission', 'ppaData', $data );
 - All user meta and post meta keys
 - All shortcode names
 - **All wp_localize_script object names** (commonly missed!)
+- **All capability names** (commonly missed — they are global identifiers checked via `current_user_can()` from anywhere on the site, including from addons; using a short prefix produces orphan caps that addons end up checking against the wrong name)
 
-**Short `ppa_` prefix is acceptable for:** CSS classes, JavaScript namespace (`PPA`), REST API namespace (`ppa/v1`), database table names (`wp_ppa_`), nonces, capabilities — these are not globally registered PHP identifiers.
+**Short `ppa_` prefix is acceptable for:** CSS classes, JavaScript namespace (`PPA`), REST API namespace (`ppa/v1`), database table names (`wp_ppa_`), nonces — these are not globally registered PHP identifiers.
+
+**The free plugin's actual capabilities** (defined in `class-ppa-capabilities.php`):
+
+| Capability | Holder | Purpose |
+|---|---|---|
+| `pressprimer_assignment_manage_all` | Admin | Full data access; bypasses ownership checks |
+| `pressprimer_assignment_manage_own` | Admin + Teacher | Baseline access — Dashboard, Assignments, Submissions, Grading, Categories, Tags |
+| `pressprimer_assignment_view_reports` | Admin + Teacher | View Reports page |
+| `pressprimer_assignment_manage_settings` | Admin only | Settings page |
+
+Addons should reuse these caps for free-plugin pages and REST endpoints. Addons that introduce their own pages (e.g., Groups, Rubrics) may define addon-scoped caps using their own full prefix (e.g., `pressprimer_assignment_educator_manage_own_groups`) — never short prefixes.
 
 ---
 
