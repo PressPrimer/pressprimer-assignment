@@ -1003,8 +1003,10 @@ class PressPrimer_Assignment_LearnPress {
 	/**
 	 * Map LearnPress Instructor capabilities to PPA teacher capabilities
 	 *
-	 * Grants LearnPress Instructors (lp_teacher role) the ability
-	 * to manage assignments and grade submissions.
+	 * Grants own-tier assignment management capabilities to the lp_teacher
+	 * role so instructors can create and manage their own assignments.
+	 * Matches the TutorLMS / LearnDash integration pattern of granting
+	 * _own capabilities, not _all.
 	 *
 	 * @since 2.0.0
 	 */
@@ -1014,7 +1016,14 @@ class PressPrimer_Assignment_LearnPress {
 			return;
 		}
 
-		$ppa_caps = [
+		// Remove legacy manage_all if previously granted.
+		if ( $role->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			$role->remove_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+		}
+
+		// Remove legacy short-prefix caps that earlier builds of this
+		// integration granted but nothing in the codebase ever checked.
+		$legacy_orphan_caps = [
 			'ppa_view_assignments',
 			'ppa_create_assignments',
 			'ppa_edit_assignments',
@@ -1023,11 +1032,18 @@ class PressPrimer_Assignment_LearnPress {
 			'ppa_view_submissions',
 			'ppa_view_reports',
 		];
-
-		foreach ( $ppa_caps as $cap ) {
-			if ( ! $role->has_cap( $cap ) ) {
-				$role->add_cap( $cap );
+		foreach ( $legacy_orphan_caps as $legacy_cap ) {
+			if ( $role->has_cap( $legacy_cap ) ) {
+				$role->remove_cap( $legacy_cap );
 			}
+		}
+
+		// Grant own-tier capabilities.
+		if ( ! $role->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			$role->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN );
+		}
+		if ( ! $role->has_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS ) ) {
+			$role->add_cap( PressPrimer_Assignment_Capabilities::PPA_CAP_VIEW_REPORTS );
 		}
 	}
 
