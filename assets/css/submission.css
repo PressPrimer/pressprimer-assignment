@@ -531,6 +531,7 @@
 	border-radius: var(--ppa-radius-full);
 	overflow: hidden;
 	margin-top: var(--ppa-space-xs);
+	margin-left: var(--ppa-space-xl);
 }
 
 .ppa-file-progress-bar {
@@ -2005,6 +2006,11 @@
 [dir="rtl"] .ppa-file-size {
 	margin-left: 0;
 	margin-right: var(--ppa-space-sm);
+}
+
+[dir="rtl"] .ppa-file-progress {
+	margin-left: 0;
+	margin-right: var(--ppa-space-xl);
 }
 
 /* File actions alignment */
