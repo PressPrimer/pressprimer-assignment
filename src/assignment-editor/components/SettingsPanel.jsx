@@ -407,6 +407,39 @@ const SettingsPanel = ( {
 								</Space>
 							}
 							name="passing_score"
+							dependencies={ [ 'max_points' ] }
+							rules={ [
+								( { getFieldValue } ) => ( {
+									validator( _, value ) {
+										if (
+											value === null ||
+											value === undefined ||
+											value === ''
+										) {
+											return Promise.resolve();
+										}
+										const max = parseFloat(
+											getFieldValue( 'max_points' )
+										);
+										const score = parseFloat( value );
+										if (
+											! isNaN( max ) &&
+											! isNaN( score ) &&
+											score > max
+										) {
+											return Promise.reject(
+												new Error(
+													__(
+														'Passing score cannot be greater than maximum points.',
+														'pressprimer-assignment'
+													)
+												)
+											);
+										}
+										return Promise.resolve();
+									},
+								} ),
+							] }
 						>
 							<InputNumber
 								min={ 0 }

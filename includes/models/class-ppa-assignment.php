@@ -322,6 +322,20 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 * @return bool|WP_Error True on success, WP_Error on failure.
 	 */
 	public function save() {
+		// Cross-field validation on the live instance. The REST update
+		// path skips validate_data(), so this guards updates as well as
+		// any non-REST save() call. Both fields exist as properties on
+		// the instance, so we always have something to compare.
+		$validation = self::validate_data(
+			array(
+				'max_points'    => $this->max_points,
+				'passing_score' => $this->passing_score,
+			)
+		);
+		if ( is_wp_error( $validation ) ) {
+			return $validation;
+		}
+
 		$result = parent::save();
 
 		// Fire action hook for addons.
@@ -393,6 +407,19 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 				return new WP_Error(
 					'pressprimer_assignment_invalid_passing_score',
 					__( 'Passing score must be between 0 and 100,000.', 'pressprimer-assignment' )
+				);
+			}
+		}
+
+		// Cross-field: passing_score must not exceed max_points. Only
+		// enforced when both fields are present in $data, so partial
+		// updates that touch only one of the two still validate against
+		// their own bounds without false positives.
+		if ( isset( $data['max_points'] ) && isset( $data['passing_score'] ) ) {
+			if ( floatval( $data['passing_score'] ) > floatval( $data['max_points'] ) ) {
+				return new WP_Error(
+					'pressprimer_assignment_passing_score_exceeds_max',
+					__( 'Passing score cannot be greater than maximum points.', 'pressprimer-assignment' )
 				);
 			}
 		}
