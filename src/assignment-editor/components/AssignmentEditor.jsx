@@ -204,6 +204,17 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			return;
 		}
 
+		// Show a viewport-pinned toast so the user sees feedback even
+		// when they clicked Save from the bottom of a long form. The
+		// inline field errors remain visible after the tab switch, so
+		// the user can scroll up to see exactly what needs fixing.
+		message.error(
+			__(
+				'Could not save: please correct the highlighted fields and try again.',
+				'pressprimer-assignment'
+			)
+		);
+
 		// Fields that live on the settings tab.
 		const settingsFields = [
 			'title',
