@@ -233,6 +233,9 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 * Fixed: Download button now triggers a file download instead of opening the file inline in the browser
 * Fixed: Resubmitted assignments no longer resurface old submissions in the grading queue
 * Fixed: Thin border-radius rendering on the text editor container
+* Fixed: Save Draft, Submit, and word counter now work correctly when retaking a text-only assignment after a failed submission
+* Fixed: File upload progress bar no longer overlaps the file type icon during upload
+* Fixed: When an assignment save is rejected by validation, an error notification appears at the top of the screen so the message is visible regardless of where the Save button was clicked
 * Improved: Inline CSS injection uses wp_strip_all_tags() and wp_kses() sanitization
 * Improved: All WP_Error codes use the full pressprimer_assignment_ prefix
 
