@@ -3,7 +3,7 @@
         'name' => 'pressprimer/assignment',
         'pretty_version' => 'dev-develop',
         'version' => 'dev-develop',
-        'reference' => 'fdb1cad11a3ad8635caf42502225b89506d8efa6',
+        'reference' => '503acf729bec8d1de1c5e42748e81ff25feb80a4',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -175,7 +175,7 @@
         'pressprimer/assignment' => array(
             'pretty_version' => 'dev-develop',
             'version' => 'dev-develop',
-            'reference' => 'fdb1cad11a3ad8635caf42502225b89506d8efa6',
+            'reference' => '503acf729bec8d1de1c5e42748e81ff25feb80a4',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
