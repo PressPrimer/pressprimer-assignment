@@ -417,6 +417,7 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'notification_email' => $assignment->notification_email ?? '',
 					'submission_type'    => $assignment->submission_type,
 					'status'             => $assignment->status,
+					'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
 					'categories'         => $category_ids,
 				];
 			}
@@ -476,6 +477,11 @@ class PressPrimer_Assignment_Admin_Assignments {
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'listUrl'  => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				'addons'   => [
+					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
 			]
 		);
 	}

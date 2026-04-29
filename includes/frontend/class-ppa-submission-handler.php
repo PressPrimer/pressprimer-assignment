@@ -222,35 +222,16 @@ class PressPrimer_Assignment_Submission_Handler {
 			'type' => $file->mime_type,
 		];
 
-		// Check PDF text extraction if this is a PDF file.
-		if ( 'pdf' === strtolower( $file->file_extension ) && class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
-			$full_path   = $file->get_full_path();
-			$pdf_service = new PressPrimer_Assignment_PDF_Service();
-			$pdf_check   = $pdf_service->check_text_extractable( $full_path );
+		// Run text extraction via the dispatcher (handles all file types).
+		$extraction_result = PressPrimer_Assignment_Extraction_Dispatcher::handle_upload(
+			$file->id,
+			$file->file_extension
+		);
 
-			// Store result on the file record.
-			$file->text_extractable = $pdf_check['extractable'] ? 1 : 0;
-			$file->save();
+		$response_data['text_extractable'] = $extraction_result['extractable'];
 
-			// Include in response for the frontend preview.
-			$response_data['text_extractable'] = $pdf_check['extractable'];
-
-			// Include extracted text preview (first 3 pages, truncated for display).
-			if ( $pdf_check['extractable'] ) {
-				$preview_text = $pdf_service->extract_text( $full_path, PressPrimer_Assignment_PDF_Service::QUICK_CHECK_PAGES );
-
-				if ( ! is_wp_error( $preview_text ) && ! empty( trim( $preview_text ) ) ) {
-					// Truncate to 1000 characters for the frontend preview.
-					$preview_text = trim( $preview_text );
-					if ( mb_strlen( $preview_text ) > 1000 ) {
-						$preview_text = mb_substr( $preview_text, 0, 1000 );
-					}
-					$response_data['text_preview'] = $preview_text;
-				}
-			}
-
-			// Schedule full text extraction via WP Cron.
-			PressPrimer_Assignment_PDF_Service::schedule_full_extraction( $file->id );
+		if ( ! empty( $extraction_result['text_preview'] ) ) {
+			$response_data['text_preview'] = $extraction_result['text_preview'];
 		}
 
 		wp_send_json_success( $response_data );
@@ -515,6 +496,46 @@ class PressPrimer_Assignment_Submission_Handler {
 		 */
 		do_action( 'pressprimer_assignment_submission_submitted', $submission, $assignment );
 
+		/**
+		 * Fires after a submission is received and finalized.
+		 *
+		 * Used by addons (e.g. School) to trigger background processing
+		 * such as AI grading suggestions. Distinct from
+		 * pressprimer_assignment_submission_submitted which fires at the
+		 * same point but is intended for the core submission flow.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param PressPrimer_Assignment_Submission $submission The submission instance.
+		 * @param PressPrimer_Assignment_Assignment $assignment The assignment instance.
+		 */
+		do_action( 'pressprimer_assignment_submission_received', $submission, $assignment );
+
+		/**
+		 * Fire audit log event for submission received.
+		 *
+		 * Enterprise addon listens to this and writes to the audit log.
+		 * When Enterprise is not active, this hook fires harmlessly.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $event_type  Event identifier.
+		 * @param string $object_type Object type affected.
+		 * @param int    $object_id   Object ID.
+		 * @param array  $data        Additional context.
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'submission.received',
+			'submission',
+			$submission->id,
+			[
+				'assignment_id'     => $submission->assignment_id,
+				'user_id'           => $submission->user_id,
+				'submission_number' => $submission->submission_number,
+			]
+		);
+
 		wp_send_json_success(
 			[
 				'message'       => __( 'Your assignment has been submitted successfully.', 'pressprimer-assignment' ),
@@ -722,9 +743,9 @@ class PressPrimer_Assignment_Submission_Handler {
 			return true;
 		}
 
-		// Check resubmission count against the limit.
+		// Check resubmission count against the limit (0 = unlimited).
 		// Uses submission_number to match the renderer's can_user_resubmit() logic.
-		if ( $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
+		if ( (int) $assignment->max_resubmissions > 0 && $latest->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return new WP_Error(
 				'pressprimer_assignment_max_resubmissions',
 				__( 'You have reached the maximum number of submissions for this assignment.', 'pressprimer-assignment' )

@@ -7,7 +7,7 @@
  * @since 1.0.0
  */
 
-import { useState, useCallback, useMemo } from '@wordpress/element';
+import { useState, useCallback, useEffect, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, message, Spin } from 'antd';
@@ -19,6 +19,8 @@ import {
 	ApiOutlined,
 	BgColorsOutlined,
 	InfoCircleOutlined,
+	SkinOutlined,
+	AuditOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
@@ -27,6 +29,15 @@ import EmailTab from './EmailTab';
 import IntegrationsTab from './IntegrationsTab';
 import AdvancedTab from './AdvancedTab';
 import StatusTab from './StatusTab';
+
+/**
+ * Icon map for addon tabs
+ */
+const ADDON_ICONS = {
+	'white-label': <SkinOutlined />,
+	'audit-log': <AuditOutlined />,
+	default: <SettingOutlined />,
+};
 
 /**
  * Core tab configuration (built into free plugin).
@@ -128,7 +139,7 @@ const SettingsPage = ( { settingsData = {} } ) => {
 				combined.push( {
 					id,
 					label: tabConfig.label || id,
-					icon: <SettingOutlined />,
+					icon: ADDON_ICONS[ id ] || ADDON_ICONS.default,
 					component: null,
 					order: tabConfig.order ?? 50,
 					isAddon: true,
@@ -148,6 +159,19 @@ const SettingsPage = ( { settingsData = {} } ) => {
 	const activeTabConfig = allTabs.find( ( tab ) => tab.id === activeTab );
 	const isAddonTab = activeTabConfig?.isAddon ?? false;
 	const isReadOnly = READ_ONLY_TABS.includes( activeTab );
+
+	/**
+	 * Dispatch custom event when addon tab becomes active.
+	 * Addon scripts can listen for this to mount their React components.
+	 */
+	useEffect( () => {
+		if ( isAddonTab ) {
+			const event = new CustomEvent( 'ppa-settings-addon-tab-active', {
+				detail: { tab: activeTab },
+			} );
+			window.dispatchEvent( event );
+		}
+	}, [ activeTab, isAddonTab ] );
 
 	/**
 	 * Update a setting value.

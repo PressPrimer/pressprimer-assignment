@@ -131,22 +131,11 @@ These rules govern how AI assistants work on this codebase.
 
 ### Testing After Merges
 
-**After merging to main, verify the release works:**
-
-1. Build a fresh zip from main branch
-2. Test installation on a clean WordPress site
-3. Test upgrade from previous version
-4. Verify all features work as expected
+After merging to main: build fresh zip, test clean install, test upgrade from previous version, verify all features work.
 
 ### Coordinated Releases
 
-**When changes span multiple plugins:**
-
-1. Make changes to free plugin first
-2. Test that addon still works with updated free plugin
-3. Release free plugin
-4. Then release addon updates
-5. Document in both changelogs that versions are coordinated
+When changes span multiple plugins: make free plugin changes first → test addon compatibility → release free plugin → release addon → document in both changelogs.
 
 ### Cross-Plugin Investigation Required
 
@@ -267,8 +256,20 @@ wp_localize_script( 'ppa-submission', 'ppaData', $data );
 - All user meta and post meta keys
 - All shortcode names
 - **All wp_localize_script object names** (commonly missed!)
+- **All capability names** (commonly missed — they are global identifiers checked via `current_user_can()` from anywhere on the site, including from addons; using a short prefix produces orphan caps that addons end up checking against the wrong name)
 
-**Short `ppa_` prefix is acceptable for:** CSS classes, JavaScript namespace (`PPA`), REST API namespace (`ppa/v1`), database table names (`wp_ppa_`), nonces, capabilities — these are not globally registered PHP identifiers.
+**Short `ppa_` prefix is acceptable for:** CSS classes, JavaScript namespace (`PPA`), REST API namespace (`ppa/v1`), database table names (`wp_ppa_`), nonces — these are not globally registered PHP identifiers.
+
+**The free plugin's actual capabilities** (defined in `class-ppa-capabilities.php`):
+
+| Capability | Holder | Purpose |
+|---|---|---|
+| `pressprimer_assignment_manage_all` | Admin | Full data access; bypasses ownership checks |
+| `pressprimer_assignment_manage_own` | Admin + Teacher | Baseline access — Dashboard, Assignments, Submissions, Grading, Categories, Tags |
+| `pressprimer_assignment_view_reports` | Admin + Teacher | View Reports page |
+| `pressprimer_assignment_manage_settings` | Admin only | Settings page |
+
+Addons should reuse these caps for free-plugin pages and REST endpoints. Addons that introduce their own pages (e.g., Groups, Rubrics) may define addon-scoped caps using their own full prefix (e.g., `pressprimer_assignment_educator_manage_own_groups`) — never short prefixes.
 
 ---
 
@@ -441,39 +442,22 @@ wp_add_inline_style( 'ppa-submission', $css );
 
 ### Always Validate Before Processing
 
-```php
-// WRONG - Passing $_FILES directly
-$result = $this->store_file( $_FILES['submission_file'] ); // REJECTED
+Never pass `$_FILES` directly to processing functions. Validate upload error, extension, and MIME type first:
 
-// CORRECT - Validate first, then pass
+```php
+// 1. Check upload succeeded
 if ( ! isset( $_FILES['submission_file'] ) || $_FILES['submission_file']['error'] !== UPLOAD_ERR_OK ) {
     wp_send_json_error( [ 'message' => __( 'Upload failed.', 'pressprimer-assignment' ) ] );
 }
 
-$allowed_types = [
-    'pdf'  => 'application/pdf',
-    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-];
-$file_type = wp_check_filetype( $_FILES['submission_file']['name'], $allowed_types );
-
-if ( ! $file_type['ext'] ) {
-    wp_send_json_error( [ 'message' => __( 'Invalid file type.', 'pressprimer-assignment' ) ] );
-}
-
-// Then also validate MIME type via finfo (see full validation in SECURITY.md)
-```
-
-### Validate File Types Thoroughly
-
-```php
-// Check extension
+// 2. Check extension against whitelist
 $allowed_extensions = [ 'pdf', 'docx', 'txt', 'rtf', 'jpg', 'jpeg', 'png', 'gif' ];
-$extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+$extension = strtolower( pathinfo( $_FILES['submission_file']['name'], PATHINFO_EXTENSION ) );
 if ( ! in_array( $extension, $allowed_extensions, true ) ) {
-    return new WP_Error( 'invalid_extension', __( 'File type not allowed.', 'pressprimer-assignment' ) );
+    wp_send_json_error( [ 'message' => __( 'File type not allowed.', 'pressprimer-assignment' ) ] );
 }
 
-// Check MIME type
+// 3. Verify actual MIME type via finfo (magic bytes)
 $allowed_mimes = [
     'pdf'  => 'application/pdf',
     'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -485,11 +469,11 @@ $allowed_mimes = [
     'gif'  => 'image/gif',
 ];
 $finfo = finfo_open( FILEINFO_MIME_TYPE );
-$mime = finfo_file( $finfo, $tmp_path );
+$mime = finfo_file( $finfo, $_FILES['submission_file']['tmp_name'] );
 finfo_close( $finfo );
 
 if ( ! in_array( $mime, array_values( $allowed_mimes ), true ) ) {
-    return new WP_Error( 'invalid_mime', __( 'File content does not match allowed types.', 'pressprimer-assignment' ) );
+    wp_send_json_error( [ 'message' => __( 'File content does not match allowed types.', 'pressprimer-assignment' ) ] );
 }
 ```
 
@@ -995,24 +979,6 @@ pressprimer-assignment/
 
 ---
 
-## Running Code Quality Checks
-
-```bash
-# PHP Syntax check
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" -l path/to/file.php
-
-# PHPCS (WordPress coding standards)
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=phpcs.xml.dist --report=full path/to/file.php
-
-# Security-specific checks
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=WordPress-Extra --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.NonceVerification,WordPress.DB.PreparedSQL --report=full path/to/file.php
-
-# PHP Compatibility (7.4 - 8.4)
-"/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-8.4 --extensions=php path/to/file.php
-```
-
----
-
 ## Building and Releasing
 
 ### Build Plugin ZIP
@@ -1035,41 +1001,9 @@ This creates `dist/pressprimer-assignment.zip`
 
 ---
 
-## Branching Strategy
-
-- `main` - Release branch, tagged versions, deploys to WordPress.org
-- `develop` - Default branch for active development (work directly here)
-
-**Note:** Feature branches (`feature/*`, `release/*`) are optional and typically not needed for solo development. Work directly on `develop` and merge to `main` when ready to release.
-
----
-
 ## Commit Message Conventions
 
-Use these prefixes for commit messages:
-
-### Changelog-Worthy (User-Facing Changes)
-
-| Prefix | Changelog Shows As | Example |
-|--------|-------------------|---------| 
-| `feat:` | **Added** | `feat: add rubric builder` |
-| `fix:` | **Fixed** | `fix: correct file upload validation` |
-| `perf:` | **Improved** | `perf: speed up submission loading` |
-| `refactor:` | **Changed** | `refactor: simplify grading logic` |
-
-### Non-Changelog (Internal/Maintenance)
-
-| Prefix | Purpose | Example |
-|--------|---------|---------| 
-| `docs:` | Documentation changes | `docs: update readme installation steps` |
-| `chore:` | Build, tooling, maintenance | `chore: bump version to 1.0.1` |
-| `wip:` | Work in progress | `wip: grading interface - incomplete` |
-| `test:` | Test changes only | `test: add unit tests for file upload` |
-| `style:` | Code formatting only | `style: fix indentation in submission.js` |
-
-### Writing Good Changelog Entries
-
-Changelog entries will be copied to Knowledge Base articles. Write them as **user-facing descriptions**:
+Use the prefixes from the **Changelog Discipline** table above (`feat:`, `fix:`, `perf:`, `refactor:`, `docs:`, `chore:`, `wip:`, `test:`, `style:`). Write changelog-worthy entries as **user-facing descriptions** for Knowledge Base articles:
 
 ```bash
 # GOOD - User understands the benefit

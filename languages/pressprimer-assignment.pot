@@ -2,28 +2,30 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: PressPrimer Assignment 1.0.0\n"
-"Report-Msgid-Bugs-To: https://pressprimer.com/support/\n"
+"Project-Id-Version: PressPrimer Assignment 2.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/pressprimer-assignment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-03-01T16:26:40+00:00\n"
+"POT-Creation-Date: 2026-04-29T01:43:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pressprimer-assignment\n"
 
 #. Plugin Name of the plugin
 #: pressprimer-assignment.php
-#: includes/admin/class-ppa-admin.php:337
-#: includes/admin/class-ppa-onboarding.php:265
+#: includes/admin/class-ppa-admin.php:358
+#: includes/admin/class-ppa-onboarding.php:269
 #: includes/blocks/class-ppa-blocks.php:63
-#: includes/integrations/class-ppa-learndash.php:116
-#: includes/integrations/class-ppa-learndash.php:510
-#: includes/integrations/class-ppa-tutorlms.php:132
-#: includes/integrations/class-ppa-tutorlms.php:509
-#: assets/js/learndash-editor.js:295
+#: includes/integrations/class-ppa-learndash.php:120
+#: includes/integrations/class-ppa-learndash.php:514
+#: includes/integrations/class-ppa-learnpress.php:163
+#: includes/integrations/class-ppa-lifterlms.php:131
+#: includes/integrations/class-ppa-tutorlms.php:136
+#: includes/integrations/class-ppa-tutorlms.php:513
+#: assets/js/learndash-editor.js:296
 #: assets/js/tutorlms-editor.js:309
 msgid "PressPrimer Assignment"
 msgstr ""
@@ -77,22 +79,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: includes/admin/class-ppa-admin-assignments.php:243
-#: includes/admin/class-ppa-admin-categories.php:48
+#: includes/admin/class-ppa-admin-categories.php:89
 #: includes/admin/class-ppa-admin-grading.php:167
 #: includes/admin/class-ppa-admin-reports.php:47
 #: includes/admin/class-ppa-admin-settings.php:65
 #: includes/admin/class-ppa-admin-submissions.php:191
-#: includes/admin/class-ppa-admin.php:435
-#: includes/admin/class-ppa-admin.php:496
+#: includes/admin/class-ppa-admin.php:475
+#: includes/admin/class-ppa-admin.php:547
 msgid "You do not have permission to access this page."
 msgstr ""
 
 #: includes/admin/class-ppa-admin-assignments.php:273
-#: includes/admin/class-ppa-admin-categories.php:295
-#: includes/admin/class-ppa-admin-categories.php:601
-#: includes/admin/class-ppa-admin.php:99
-#: includes/admin/class-ppa-admin.php:126
-#: includes/admin/class-ppa-admin.php:127
+#: includes/admin/class-ppa-admin-categories.php:363
+#: includes/admin/class-ppa-admin-categories.php:756
+#: includes/admin/class-ppa-admin.php:105
+#: includes/admin/class-ppa-admin.php:132
+#: includes/admin/class-ppa-admin.php:133
+#: src/settings-panel/components/StatusTab.jsx:628
 msgid "Assignments"
 msgstr ""
 
@@ -105,288 +108,377 @@ msgid "Search Assignments"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-assignments.php:305
-#: includes/admin/class-ppa-admin-assignments.php:485
+#: includes/admin/class-ppa-admin-assignments.php:510
 #: includes/api/class-ppa-rest-assignments.php:411
-#: includes/api/class-ppa-rest-assignments.php:477
-#: includes/api/class-ppa-rest-assignments.php:533
+#: includes/api/class-ppa-rest-assignments.php:498
+#: includes/api/class-ppa-rest-assignments.php:616
 #: includes/frontend/class-ppa-shortcodes.php:136
-#: includes/integrations/class-ppa-tutorlms.php:1360
+#: includes/integrations/class-ppa-tutorlms.php:1404
 msgid "Assignment not found."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:471
-#: includes/admin/class-ppa-admin-categories.php:465
+#: includes/admin/class-ppa-admin-assignments.php:496
+#: includes/admin/class-ppa-admin-categories.php:555
 #: includes/admin/class-ppa-admin-submissions.php:341
-#: includes/frontend/class-ppa-frontend.php:535
+#: includes/frontend/class-ppa-frontend.php:553
 msgid "Invalid request."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:478
-#: includes/admin/class-ppa-admin-assignments.php:534
+#: includes/admin/class-ppa-admin-assignments.php:503
+#: includes/admin/class-ppa-admin-assignments.php:559
 msgid "You do not have permission to delete assignments."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:568
+#: includes/admin/class-ppa-admin-assignments.php:593
 msgid "You do not have permission to publish assignments."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:603
+#: includes/admin/class-ppa-admin-assignments.php:628
 msgid "You do not have permission to change assignment status."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:662
-#: includes/admin/class-ppa-admin-grading.php:353
+#: includes/admin/class-ppa-admin-assignments.php:687
+#: includes/admin/class-ppa-admin-grading.php:358
 #: includes/admin/class-ppa-admin-submissions.php:457
+#: src/submission-detail/components/SubmissionDetail.jsx:273
 msgid "ID"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:663
+#: includes/admin/class-ppa-admin-assignments.php:688
 msgid "Title"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:664
+#: includes/admin/class-ppa-admin-assignments.php:689
+#: includes/admin/class-ppa-admin-categories.php:127
+#: includes/admin/class-ppa-admin.php:162
+#: includes/admin/class-ppa-admin.php:163
+#: src/assignment-editor/components/AssignmentEditor.jsx:287
+#: src/assignment-editor/components/CategoriesPanel.jsx:208
+#: src/settings-panel/components/StatusTab.jsx:664
+msgid "Categories"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-assignments.php:690
 #: includes/admin/class-ppa-admin-submissions.php:218
-#: includes/admin/class-ppa-admin.php:136
-#: includes/admin/class-ppa-admin.php:137
+#: includes/admin/class-ppa-admin.php:142
+#: includes/admin/class-ppa-admin.php:143
+#: src/dashboard/components/ActivityChart.jsx:230
+#: src/reports/components/AssignmentPerformanceReport.jsx:160
+#: src/reports/components/Reports.jsx:414
+#: src/settings-panel/components/StatusTab.jsx:641
 msgid "Submissions"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:665
-#: includes/admin/class-ppa-admin-grading.php:356
+#: includes/admin/class-ppa-admin-assignments.php:691
+#: includes/admin/class-ppa-admin-grading.php:361
 #: includes/admin/class-ppa-admin-settings.php:180
 #: includes/admin/class-ppa-admin-submissions.php:460
+#: includes/class-ppa-privacy.php:150
 #: templates/dashboard/my-submissions.php:63
 #: templates/dashboard/my-submissions.php:102
+#: src/assignment-editor/components/SettingsPanel.jsx:204
+#: src/dashboard/components/RecentActivity.jsx:143
+#: src/settings-panel/components/IntegrationsTab.jsx:251
+#: src/settings-panel/components/SettingsPage.jsx:77
+#: src/settings-panel/components/StatusTab.jsx:842
+#: src/submission-detail/components/SubmissionDetail.jsx:305
 msgid "Status"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:666
+#: includes/admin/class-ppa-admin-assignments.php:692
 msgid "Date"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:694
+#: includes/admin/class-ppa-admin-assignments.php:720
 msgid "Publish"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:695
+#: includes/admin/class-ppa-admin-assignments.php:721
 msgid "Move to Draft"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:696
-#: includes/admin/class-ppa-admin-assignments.php:866
-#: includes/admin/class-ppa-admin-categories.php:629
-#: includes/admin/class-ppa-admin-categories.php:821
+#: includes/admin/class-ppa-admin-assignments.php:722
+#: includes/admin/class-ppa-admin-assignments.php:909
+#: includes/admin/class-ppa-admin-categories.php:785
+#: includes/admin/class-ppa-admin-categories.php:995
 #: includes/admin/class-ppa-admin-submissions.php:491
-#: includes/admin/class-ppa-admin-submissions.php:683
-#: includes/admin/class-ppa-admin.php:246
-#: includes/frontend/class-ppa-frontend.php:439
+#: includes/admin/class-ppa-admin-submissions.php:732
+#: includes/admin/class-ppa-admin.php:267
+#: includes/frontend/class-ppa-frontend.php:457
+#: src/submission-detail/components/SubmissionDetail.jsx:139
 msgid "Delete"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:846
-#: includes/admin/class-ppa-admin-categories.php:820
+#: includes/admin/class-ppa-admin-assignments.php:889
+#: includes/admin/class-ppa-admin-categories.php:994
 msgid "Edit"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:865
+#: includes/admin/class-ppa-admin-assignments.php:908
 msgid "Are you sure you want to delete this assignment?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:870
+#: includes/admin/class-ppa-admin-assignments.php:913
 msgid "(no title)"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:915
-#: includes/admin/class-ppa-admin-assignments.php:986
-#: includes/admin/class-ppa-admin-submissions.php:716
-#: includes/frontend/class-ppa-assignment-renderer.php:682
-#: includes/frontend/class-ppa-submissions-renderer.php:221
+#: includes/admin/class-ppa-admin-assignments.php:993
+#: includes/admin/class-ppa-admin-assignments.php:1065
+#: includes/admin/class-ppa-admin-submissions.php:765
+#: includes/frontend/class-ppa-assignment-renderer.php:750
+#: includes/frontend/class-ppa-submissions-renderer.php:237
+#: src/assignment-editor/components/SettingsPanel.jsx:232
+#: src/dashboard/components/RecentActivity.jsx:91
+#: src/submission-detail/components/SubmissionDetail.jsx:46
 msgid "Draft"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:916
-#: includes/admin/class-ppa-admin-assignments.php:987
+#: includes/admin/class-ppa-admin-assignments.php:994
+#: includes/admin/class-ppa-admin-assignments.php:1066
+#: src/assignment-editor/components/SettingsPanel.jsx:239
 msgid "Published"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:917
-#: includes/admin/class-ppa-admin-assignments.php:988
+#: includes/admin/class-ppa-admin-assignments.php:995
+#: includes/admin/class-ppa-admin-assignments.php:1067
+#: src/assignment-editor/components/SettingsPanel.jsx:246
 msgid "Archived"
 msgstr ""
 
 #. translators: %s: human-readable time difference
-#: includes/admin/class-ppa-admin-assignments.php:946
-#: includes/admin/class-ppa-admin-grading.php:596
-#: includes/admin/class-ppa-admin-submissions.php:775
+#: includes/admin/class-ppa-admin-assignments.php:1024
+#: includes/admin/class-ppa-admin-grading.php:602
+#: includes/admin/class-ppa-admin-submissions.php:824
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:969
-#: includes/admin/class-ppa-admin-grading.php:620
-#: includes/admin/class-ppa-admin-submissions.php:799
+#: includes/admin/class-ppa-admin-assignments.php:1048
+#: includes/admin/class-ppa-admin-grading.php:626
+#: includes/admin/class-ppa-admin-submissions.php:848
 msgid "Filter"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:985
-#: includes/admin/class-ppa-admin-grading.php:636
-#: includes/admin/class-ppa-admin-submissions.php:815
+#: includes/admin/class-ppa-admin-assignments.php:1064
+#: includes/admin/class-ppa-admin-grading.php:642
+#: includes/admin/class-ppa-admin-submissions.php:864
 msgid "All Statuses"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:992
-#: includes/admin/class-ppa-admin-grading.php:642
-#: includes/admin/class-ppa-admin-submissions.php:823
+#: includes/admin/class-ppa-admin-assignments.php:1071
+#: includes/admin/class-ppa-admin-grading.php:649
+#: includes/admin/class-ppa-admin-submissions.php:872
 msgid "Filter by status"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:49
+#: includes/admin/class-ppa-admin-assignments.php:1109
+msgid "Filter by category"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-assignments.php:1111
+msgid "All Categories"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:90
 #: includes/admin/class-ppa-admin-reports.php:48
 #: includes/admin/class-ppa-admin-settings.php:66
-#: includes/admin/class-ppa-admin.php:436
-#: includes/admin/class-ppa-admin.php:497
+#: includes/admin/class-ppa-admin.php:476
+#: includes/admin/class-ppa-admin.php:548
 msgid "Permission Denied"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:79
-#: includes/admin/class-ppa-admin.php:156
-#: includes/admin/class-ppa-admin.php:157
-msgid "Categories"
+#: includes/admin/class-ppa-admin-categories.php:126
+#: includes/admin/class-ppa-admin.php:172
+#: includes/admin/class-ppa-admin.php:173
+#: src/assignment-editor/components/CategoriesPanel.jsx:304
+msgid "Tags"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:86
-#: includes/admin/class-ppa-admin-categories.php:161
+#: includes/admin/class-ppa-admin-categories.php:129
+msgid "Add New Tag"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:130
 msgid "Add New Category"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:95
-#: includes/admin/class-ppa-admin-categories.php:221
-#: includes/admin/class-ppa-admin-categories.php:597
+#: includes/admin/class-ppa-admin-categories.php:151
+#: includes/admin/class-ppa-admin-categories.php:287
+#: includes/admin/class-ppa-admin-categories.php:746
 msgid "Name"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:105
+#: includes/admin/class-ppa-admin-categories.php:161
 msgid "The name is how it appears on your site."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:111
-#: includes/admin/class-ppa-admin-categories.php:239
-#: includes/admin/class-ppa-admin-categories.php:600
+#: includes/admin/class-ppa-admin-categories.php:167
+#: includes/admin/class-ppa-admin-categories.php:305
+#: includes/admin/class-ppa-admin-categories.php:755
 msgid "Slug"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:119
+#: includes/admin/class-ppa-admin-categories.php:175
 msgid "The \"slug\" is the URL-friendly version of the name. It is usually all lowercase and contains only letters, numbers, and hyphens."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:125
-#: includes/admin/class-ppa-admin-categories.php:256
+#: includes/admin/class-ppa-admin-categories.php:182
+#: includes/admin/class-ppa-admin-categories.php:323
 msgid "Parent Category"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:127
-#: includes/admin/class-ppa-admin-categories.php:260
+#: includes/admin/class-ppa-admin-categories.php:184
+#: includes/admin/class-ppa-admin-categories.php:327
 msgid "None"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:141
+#: includes/admin/class-ppa-admin-categories.php:198
 msgid "Categories can have a hierarchy. You might have a Writing category, and under that have children for Essays and Reports. Optional."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:147
-#: includes/admin/class-ppa-admin-categories.php:279
-#: includes/admin/class-ppa-admin-categories.php:599
+#: includes/admin/class-ppa-admin-categories.php:205
+#: includes/admin/class-ppa-admin-categories.php:347
+#: includes/admin/class-ppa-admin-categories.php:754
+#: src/assignment-editor/components/SettingsPanel.jsx:127
 msgid "Description"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:155
+#: includes/admin/class-ppa-admin-categories.php:213
 msgid "The description is not prominent by default; however, some themes may show it."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:198
-#: includes/admin/class-ppa-admin-categories.php:425
-#: includes/admin/class-ppa-admin-categories.php:492
-#: includes/api/class-ppa-rest-categories.php:259
-#: includes/api/class-ppa-rest-categories.php:308
-#: includes/api/class-ppa-rest-categories.php:382
+#: includes/admin/class-ppa-admin-categories.php:256
+msgid "Tag not found."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:257
+#: includes/admin/class-ppa-admin-categories.php:508
+#: includes/admin/class-ppa-admin-categories.php:584
+#: includes/api/class-ppa-rest-categories.php:291
+#: includes/api/class-ppa-rest-categories.php:340
+#: includes/api/class-ppa-rest-categories.php:422
 msgid "Category not found."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:199
-#: includes/frontend/class-ppa-frontend.php:516
-#: includes/frontend/class-ppa-frontend.php:525
-#: includes/frontend/class-ppa-frontend.php:536
-#: includes/frontend/class-ppa-frontend.php:549
+#: includes/admin/class-ppa-admin-categories.php:260
+#: includes/frontend/class-ppa-frontend.php:534
+#: includes/frontend/class-ppa-frontend.php:543
+#: includes/frontend/class-ppa-frontend.php:554
+#: includes/frontend/class-ppa-frontend.php:567
+#: src/dashboard/components/Dashboard.jsx:138
+#: src/reports/components/AssignmentPerformanceReport.jsx:258
+#: src/reports/components/Reports.jsx:293
 msgid "Error"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:208
+#: includes/admin/class-ppa-admin-categories.php:268
+msgid "Edit Tag"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:269
 msgid "Edit Category"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:299
+#: includes/admin/class-ppa-admin-categories.php:367
 msgid "assignments"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:307
+#: includes/admin/class-ppa-admin-categories.php:375
 msgid "Update"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:310
-#: includes/admin/class-ppa-admin.php:247
-#: includes/frontend/class-ppa-frontend.php:430
+#: includes/admin/class-ppa-admin-categories.php:378
+#: includes/admin/class-ppa-admin.php:268
+#: includes/frontend/class-ppa-frontend.php:448
+#: src/assignment-editor/components/AssignmentEditor.jsx:368
+#: src/assignment-editor/components/AssignmentEditor.jsx:455
+#: src/submission-detail/components/SubmissionDetail.jsx:141
 msgid "Cancel"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:388
-#: includes/admin/class-ppa-admin-categories.php:477
-#: includes/admin/class-ppa-admin-categories.php:715
-#: includes/admin/class-ppa-admin-settings.php:433
-#: includes/frontend/class-ppa-frontend.php:515
-#: includes/frontend/class-ppa-submission-handler.php:743
-#: includes/integrations/class-ppa-learndash.php:846
-#: includes/integrations/class-ppa-tutorlms.php:632
+#: includes/admin/class-ppa-admin-categories.php:461
+#: includes/admin/class-ppa-admin-categories.php:567
+#: includes/admin/class-ppa-admin-categories.php:878
+#: includes/admin/class-ppa-admin-settings.php:503
+#: includes/frontend/class-ppa-frontend.php:533
+#: includes/frontend/class-ppa-submission-handler.php:773
+#: includes/integrations/class-ppa-learndash.php:850
+#: includes/integrations/class-ppa-learnpress.php:487
+#: includes/integrations/class-ppa-lifterlms.php:455
+#: includes/integrations/class-ppa-tutorlms.php:636
 msgid "Security check failed."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:393
-#: includes/admin/class-ppa-admin-categories.php:482
+#: includes/admin/class-ppa-admin-categories.php:468
+#: includes/admin/class-ppa-admin-categories.php:574
 msgid "You do not have permission to perform this action."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:486
+#: includes/admin/class-ppa-admin-categories.php:515
+#: includes/api/class-ppa-rest-categories.php:348
+msgid "You do not have permission to edit this category."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:578
 msgid "Invalid ID."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:542
+#: includes/admin/class-ppa-admin-categories.php:591
+#: includes/api/class-ppa-rest-categories.php:430
+msgid "You do not have permission to delete this category."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:649
+msgid "Tag added successfully."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:650
 msgid "Category added successfully."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:545
+#: includes/admin/class-ppa-admin-categories.php:654
+msgid "Tag updated successfully."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:655
 msgid "Category updated successfully."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:548
+#: includes/admin/class-ppa-admin-categories.php:659
+msgid "Tag deleted successfully."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:660
 msgid "Category deleted successfully."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:598
+#: includes/admin/class-ppa-admin-categories.php:751
 msgid "Parent"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:821
+#: includes/admin/class-ppa-admin-categories.php:989
+msgid "Are you sure you want to delete this tag?"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:990
 msgid "Are you sure you want to delete this category?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:836
+#: includes/admin/class-ppa-admin-categories.php:1010
 msgid "(none)"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:841
+#: includes/admin/class-ppa-admin-categories.php:1015
 msgid "(unknown)"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-categories.php:853
+#: includes/admin/class-ppa-admin-categories.php:1028
+#: src/assignment-editor/components/CategoriesPanel.jsx:344
+msgid "No tags found."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-categories.php:1030
+#: src/assignment-editor/components/CategoriesPanel.jsx:251
 msgid "No categories found."
 msgstr ""
 
@@ -414,125 +506,158 @@ msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:221
 #: includes/admin/class-ppa-admin-submissions.php:245
-#: includes/frontend/class-ppa-submission-handler.php:752
+#: includes/frontend/class-ppa-submission-handler.php:782
 msgid "Invalid submission."
 msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:227
 #: includes/admin/class-ppa-admin-submissions.php:251
 #: includes/admin/class-ppa-admin-submissions.php:354
-#: includes/api/class-ppa-rest-submissions.php:414
-#: includes/api/class-ppa-rest-submissions.php:513
-#: includes/api/class-ppa-rest-submissions.php:650
-#: includes/frontend/class-ppa-submission-handler.php:319
-#: includes/frontend/class-ppa-submission-handler.php:761
-#: includes/services/class-ppa-file-service.php:457
-#: includes/services/class-ppa-grading-service.php:50
-#: includes/services/class-ppa-grading-service.php:192
+#: includes/api/class-ppa-rest-submissions.php:465
+#: includes/api/class-ppa-rest-submissions.php:569
+#: includes/api/class-ppa-rest-submissions.php:747
+#: includes/frontend/class-ppa-submission-handler.php:309
+#: includes/frontend/class-ppa-submission-handler.php:791
+#: includes/services/class-ppa-file-service.php:469
+#: includes/services/class-ppa-grading-service.php:51
+#: includes/services/class-ppa-grading-service.php:226
+#: src/grading-interface/components/GradingForm.jsx:496
+#: src/submission-detail/components/SubmissionDetail.jsx:176
 msgid "Submission not found."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:354
+#: includes/admin/class-ppa-admin-grading.php:359
 #: includes/admin/class-ppa-admin-submissions.php:458
+#: src/dashboard/components/RecentActivity.jsx:107
+#: src/submission-detail/components/SubmissionDetail.jsx:295
 msgid "Student"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:355
+#: includes/admin/class-ppa-admin-grading.php:360
 #: includes/admin/class-ppa-admin-submissions.php:459
-#: includes/frontend/class-ppa-frontend.php:443
-#: includes/integrations/class-ppa-learndash.php:555
+#: includes/class-ppa-privacy.php:140
+#: includes/frontend/class-ppa-frontend.php:461
+#: includes/integrations/class-ppa-learndash.php:559
 #: includes/integrations/uncanny-automator/triggers/class-ppa-assignment-failed.php:82
 #: includes/integrations/uncanny-automator/triggers/class-ppa-assignment-graded.php:82
 #: includes/integrations/uncanny-automator/triggers/class-ppa-assignment-passed.php:82
 #: includes/integrations/uncanny-automator/triggers/class-ppa-assignment-submitted.php:82
 #: templates/dashboard/my-submissions.php:58
 #: templates/dashboard/my-submissions.php:74
+#: src/dashboard/components/RecentActivity.jsx:120
+#: src/reports/components/AssignmentPerformanceReport.jsx:146
+#: src/submission-detail/components/SubmissionDetail.jsx:278
 msgid "Assignment"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:357
-#: includes/admin/class-ppa-admin-grading.php:568
-#: includes/admin/class-ppa-admin-grading.php:637
+#: includes/admin/class-ppa-admin-grading.php:362
+#: includes/admin/class-ppa-admin-grading.php:573
+#: includes/admin/class-ppa-admin-grading.php:643
 #: includes/admin/class-ppa-admin-submissions.php:463
-#: includes/admin/class-ppa-admin-submissions.php:717
-#: includes/admin/class-ppa-admin-submissions.php:816
-#: includes/frontend/class-ppa-submissions-renderer.php:222
+#: includes/admin/class-ppa-admin-submissions.php:766
+#: includes/admin/class-ppa-admin-submissions.php:865
+#: includes/frontend/class-ppa-submissions-renderer.php:238
 #: templates/dashboard/my-submissions.php:60
 #: templates/dashboard/my-submissions.php:90
+#: src/dashboard/components/RecentActivity.jsx:75
+#: src/submission-detail/components/SubmissionDetail.jsx:48
+#: src/submission-detail/components/SubmissionDetail.jsx:312
 msgid "Submitted"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:392
+#: includes/admin/class-ppa-admin-grading.php:397
 msgid "No submissions awaiting grading."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:506
-#: includes/admin/class-ppa-admin-submissions.php:636
+#: includes/admin/class-ppa-admin-grading.php:511
+#: includes/admin/class-ppa-admin-submissions.php:685
 msgid "Unknown User"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:523
+#: includes/admin/class-ppa-admin-grading.php:528
 msgid "Grade"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:569
-#: includes/admin/class-ppa-admin-grading.php:638
-#: includes/admin/class-ppa-admin-submissions.php:718
-#: includes/admin/class-ppa-admin-submissions.php:817
-#: includes/admin/class-ppa-admin.php:146
-#: includes/admin/class-ppa-admin.php:147
+#: includes/admin/class-ppa-admin-grading.php:574
+#: includes/admin/class-ppa-admin-grading.php:644
+#: includes/admin/class-ppa-admin-submissions.php:767
+#: includes/admin/class-ppa-admin-submissions.php:866
+#: includes/admin/class-ppa-admin.php:152
+#: includes/admin/class-ppa-admin.php:153
+#: src/assignment-editor/components/SettingsPanel.jsx:320
+#: src/dashboard/components/RecentActivity.jsx:79
+#: src/submission-detail/components/SubmissionDetail.jsx:52
 msgid "Grading"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:665
-#: includes/admin/class-ppa-admin-submissions.php:852
+#: includes/admin/class-ppa-admin-grading.php:575
+#: includes/admin/class-ppa-admin-grading.php:645
+#: includes/admin/class-ppa-admin-submissions.php:768
+#: includes/admin/class-ppa-admin-submissions.php:867
+#: includes/frontend/class-ppa-assignment-renderer.php:753
+#: includes/frontend/class-ppa-submissions-renderer.php:240
+#: src/dashboard/components/RecentActivity.jsx:83
+#: src/submission-detail/components/SubmissionDetail.jsx:56
+#: src/submission-detail/components/SubmissionDetail.jsx:334
+msgid "Graded"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-grading.php:672
+#: includes/admin/class-ppa-admin-submissions.php:906
 msgid "Filter by assignment"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:667
-#: includes/admin/class-ppa-admin-submissions.php:854
+#: includes/admin/class-ppa-admin-grading.php:674
+#: includes/admin/class-ppa-admin-submissions.php:908
 msgid "All Assignments"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-settings.php:164
+#: src/settings-panel/components/SettingsPage.jsx:49
 msgid "General"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-settings.php:168
+#: src/settings-panel/components/SettingsPage.jsx:56
 msgid "Appearance"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-settings.php:172
+#: src/settings-panel/components/SettingsPage.jsx:63
 msgid "Email"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-settings.php:176
+#: src/settings-panel/components/SettingsPage.jsx:70
 msgid "Integrations"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-settings.php:184
+#: src/settings-panel/components/SettingsPage.jsx:84
 msgid "Advanced"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:438
-#: includes/database/class-ppa-migrator.php:426
-#: includes/integrations/class-ppa-learndash.php:851
-#: includes/integrations/class-ppa-tutorlms.php:637
-#: includes/integrations/class-ppa-tutorlms.php:1346
+#: includes/admin/class-ppa-admin-settings.php:508
+#: includes/database/class-ppa-migrator.php:577
+#: includes/integrations/class-ppa-learndash.php:855
+#: includes/integrations/class-ppa-learnpress.php:492
+#: includes/integrations/class-ppa-lifterlms.php:460
+#: includes/integrations/class-ppa-tutorlms.php:641
+#: includes/integrations/class-ppa-tutorlms.php:1390
 msgid "Permission denied."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:443
+#: includes/admin/class-ppa-admin-settings.php:513
 msgid "Migrator class not available."
 msgstr ""
 
 #. translators: %d: number of tables repaired
-#: includes/admin/class-ppa-admin-settings.php:461
+#: includes/admin/class-ppa-admin-settings.php:531
 #, php-format
 msgid "%d table(s) repaired successfully."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:471
+#: includes/admin/class-ppa-admin-settings.php:541
 msgid "Some tables could not be repaired."
 msgstr ""
 
@@ -550,87 +675,91 @@ msgid "You do not have permission to delete submissions."
 msgstr ""
 
 #: includes/admin/class-ppa-admin-submissions.php:461
-#: includes/frontend/class-ppa-frontend.php:444
+#: includes/frontend/class-ppa-frontend.php:462
+#: src/settings-panel/components/StatusTab.jsx:654
 msgid "Files"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-submissions.php:462
+#: includes/class-ppa-privacy.php:170
 #: templates/dashboard/my-submissions.php:66
 #: templates/dashboard/my-submissions.php:110
+#: src/dashboard/components/RecentActivity.jsx:132
+#: src/grading-interface/components/GradingForm.jsx:945
+#: src/submission-detail/components/SubmissionDetail.jsx:422
 msgid "Score"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:664
+#: includes/admin/class-ppa-admin-submissions.php:713
 #: templates/dashboard/my-submissions.php:138
 msgid "View"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:682
+#: includes/admin/class-ppa-admin-submissions.php:731
 msgid "Are you sure you want to delete this submission?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:719
-#: includes/admin/class-ppa-admin-submissions.php:818
-#: includes/frontend/class-ppa-assignment-renderer.php:685
-#: includes/frontend/class-ppa-submissions-renderer.php:224
-msgid "Graded"
-msgstr ""
-
-#: includes/admin/class-ppa-admin-submissions.php:720
-#: includes/admin/class-ppa-admin-submissions.php:819
+#: includes/admin/class-ppa-admin-submissions.php:769
+#: includes/admin/class-ppa-admin-submissions.php:868
+#: src/dashboard/components/RecentActivity.jsx:87
+#: src/submission-detail/components/SubmissionDetail.jsx:60
+#: src/submission-detail/components/SubmissionDetail.jsx:342
 msgid "Returned"
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:116
-#: includes/admin/class-ppa-admin.php:117
+#: includes/admin/class-ppa-admin.php:122
+#: includes/admin/class-ppa-admin.php:123
 msgid "Dashboard"
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:166
-#: includes/admin/class-ppa-admin.php:167
+#: includes/admin/class-ppa-admin.php:182
+#: includes/admin/class-ppa-admin.php:183
+#: src/reports/components/Reports.jsx:275
 msgid "Reports"
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:176
-#: includes/admin/class-ppa-admin.php:177
+#: includes/admin/class-ppa-admin.php:192
+#: includes/admin/class-ppa-admin.php:193
+#: src/assignment-editor/components/AssignmentEditor.jsx:265
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:242
+#: includes/admin/class-ppa-admin.php:263
 msgid "Are you sure you want to delete this item?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:243
+#: includes/admin/class-ppa-admin.php:264
 msgid "Delete Item"
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:244
+#: includes/admin/class-ppa-admin.php:265
+#: src/settings-panel/components/StatusTab.jsx:98
 msgid "An error occurred. Please try again."
 msgstr ""
 
-#: includes/admin/class-ppa-admin.php:245
+#: includes/admin/class-ppa-admin.php:266
 msgid "Changes saved successfully."
 msgstr ""
 
 #. translators: %s: plugin name
-#: includes/admin/class-ppa-admin.php:367
+#: includes/admin/class-ppa-admin.php:388
 #, php-format
 msgid "Welcome to %s! Here's an overview of recent assignment activity."
 msgstr ""
 
-#: includes/admin/class-ppa-onboarding.php:284
+#: includes/admin/class-ppa-onboarding.php:288
 msgid "Welcome back! Let's continue the tour."
 msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:162
 #: includes/api/class-ppa-rest-grading-queue.php:130
-#: includes/api/class-ppa-rest-submissions.php:195
+#: includes/api/class-ppa-rest-submissions.php:206
 msgid "Current page of the collection."
 msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:168
 #: includes/api/class-ppa-rest-grading-queue.php:136
-#: includes/api/class-ppa-rest-submissions.php:201
+#: includes/api/class-ppa-rest-submissions.php:212
 msgid "Maximum number of items to return."
 msgstr ""
 
@@ -644,13 +773,13 @@ msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:186
 #: includes/api/class-ppa-rest-grading-queue.php:159
-#: includes/api/class-ppa-rest-submissions.php:224
+#: includes/api/class-ppa-rest-submissions.php:235
 msgid "Field to order by."
 msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:192
 #: includes/api/class-ppa-rest-grading-queue.php:165
-#: includes/api/class-ppa-rest-submissions.php:230
+#: includes/api/class-ppa-rest-submissions.php:241
 msgid "Sort direction."
 msgstr ""
 
@@ -662,58 +791,59 @@ msgstr ""
 msgid "You do not have permission to access this assignment."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:485
+#: includes/api/class-ppa-rest-assignments.php:506
 msgid "You do not have permission to edit this assignment."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:541
+#: includes/api/class-ppa-rest-assignments.php:624
 msgid "You do not have permission to delete this assignment."
 msgstr ""
 
-#: includes/api/class-ppa-rest-categories.php:138
+#: includes/api/class-ppa-rest-categories.php:158
 msgid "Filter by taxonomy type."
 msgstr ""
 
-#: includes/api/class-ppa-rest-categories.php:144
+#: includes/api/class-ppa-rest-categories.php:164
 msgid "Search term for filtering by name."
 msgstr ""
 
-#: includes/api/class-ppa-rest-categories.php:149
+#: includes/api/class-ppa-rest-categories.php:169
 msgid "Filter by parent category ID."
 msgstr ""
 
-#: includes/api/class-ppa-rest-categories.php:347
+#: includes/api/class-ppa-rest-categories.php:387
 msgid "A category cannot be its own parent."
 msgstr ""
 
 #: includes/api/class-ppa-rest-grading-queue.php:143
-#: includes/api/class-ppa-rest-submissions.php:208
+#: includes/api/class-ppa-rest-submissions.php:219
 msgid "Filter by assignment ID."
 msgstr ""
 
 #: includes/api/class-ppa-rest-grading-queue.php:148
-#: includes/api/class-ppa-rest-submissions.php:213
+#: includes/api/class-ppa-rest-submissions.php:224
 msgid "Filter by submission status."
 msgstr ""
 
 #: includes/api/class-ppa-rest-grading-queue.php:154
-#: includes/api/class-ppa-rest-submissions.php:219
+#: includes/api/class-ppa-rest-submissions.php:230
 msgid "Search by student name or email."
 msgstr ""
 
-#: includes/api/class-ppa-rest-settings.php:334
+#: includes/api/class-ppa-rest-settings.php:379
 msgid "Please enter a valid email address."
 msgstr ""
 
-#: includes/api/class-ppa-rest-settings.php:344
+#: includes/api/class-ppa-rest-settings.php:389
 msgid "Email service is not available."
 msgstr ""
 
-#: includes/api/class-ppa-rest-settings.php:356
+#: includes/api/class-ppa-rest-settings.php:401
+#: src/settings-panel/components/EmailTab.jsx:205
 msgid "Test email sent successfully!"
 msgstr ""
 
-#: includes/api/class-ppa-rest-settings.php:365
+#: includes/api/class-ppa-rest-settings.php:410
 msgid "Failed to send test email. Please check your WordPress email configuration."
 msgstr ""
 
@@ -725,46 +855,53 @@ msgstr ""
 msgid "Number of submissions to return."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:372
-#: includes/api/class-ppa-rest-submissions.php:472
-#: includes/services/class-ppa-grading-queue-service.php:462
-#: includes/services/class-ppa-statistics-service.php:866
+#: includes/api/class-ppa-rest-submissions.php:423
+#: includes/api/class-ppa-rest-submissions.php:528
+#: includes/services/class-ppa-grading-queue-service.php:439
+#: includes/services/class-ppa-statistics-service.php:883
+#: src/dashboard/components/RecentActivity.jsx:114
+#: src/shared/components/viewers/DocumentPanel.jsx:287
 msgid "Unknown"
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:422
+#: includes/api/class-ppa-rest-submissions.php:473
 msgid "You do not have permission to view this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:521
+#: includes/api/class-ppa-rest-submissions.php:577
 msgid "You do not have permission to grade this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:613
+#: includes/api/class-ppa-rest-submissions.php:710
 msgid "No valid changes provided."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:634
+#: includes/api/class-ppa-rest-submissions.php:731
 msgid "No submission IDs provided."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:658
+#: includes/api/class-ppa-rest-submissions.php:755
 msgid "You do not have permission to return this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:809
-#: includes/frontend/class-ppa-submission-handler.php:306
-#: includes/services/class-ppa-file-service.php:448
+#: includes/api/class-ppa-rest-submissions.php:913
+#: includes/api/class-ppa-rest-submissions.php:987
+#: includes/frontend/class-ppa-submission-handler.php:296
+#: includes/services/class-ppa-file-service.php:460
 msgid "File not found."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:819
+#: includes/api/class-ppa-rest-submissions.php:923
 msgid "You do not have permission to view this file."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:830
-#: includes/services/class-ppa-file-service.php:498
+#: includes/api/class-ppa-rest-submissions.php:934
+#: includes/services/class-ppa-file-service.php:510
 msgid "File not found on server."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:997
+msgid "You do not have permission to re-extract text from this file."
 msgstr ""
 
 #: includes/blocks/class-ppa-blocks.php:133
@@ -800,247 +937,337 @@ msgid "My Submissions renderer not available."
 msgstr ""
 
 #: includes/class-ppa-activator.php:211
-#: includes/frontend/class-ppa-shortcodes.php:427
+#: includes/frontend/class-ppa-shortcodes.php:429
 msgid "My Submissions"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:281
+#: includes/class-ppa-privacy.php:59
+#: includes/class-ppa-privacy.php:76
+msgid "PressPrimer Assignment Submissions"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:141
+msgid "(Deleted)"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:145
+msgid "Submission Number"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:156
+#: src/submission-detail/components/SubmissionDetail.jsx:354
+msgid "Student Notes"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:163
+#: src/shared/components/viewers/DocumentPanel.jsx:98
+#: src/shared/components/viewers/TextContentViewer.jsx:94
+msgid "Text Submission"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:177
+#: src/grading-interface/components/GradingForm.jsx:1114
+#: src/submission-detail/components/SubmissionDetail.jsx:478
+msgid "Feedback"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:184
+#: includes/services/class-ppa-email-service.php:149
+#: includes/services/class-ppa-email-service.php:821
+#: templates/assignment/submission-status.php:181
+#: src/settings-panel/components/AppearanceTab.jsx:629
+msgid "Passed"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:185
+#: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:123
+#: blocks/my-submissions/index.js:151
+#: blocks/my-submissions/index.js:159
+#: blocks/my-submissions/index.js:167
+#: src/settings-panel/components/StatusTab.jsx:510
+msgid "Yes"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:185
+#: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:124
+#: blocks/my-submissions/index.js:152
+#: blocks/my-submissions/index.js:160
+#: blocks/my-submissions/index.js:168
+#: src/settings-panel/components/StatusTab.jsx:517
+msgid "No"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:191
+msgid "Submitted At"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:198
+msgid "Graded At"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:227
+msgid "Uploaded Files"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:234
+msgid "Assignment Submissions"
+msgstr ""
+
+#: includes/class-ppa-privacy.php:235
+msgid "Submissions and grades from PressPrimer Assignment."
+msgstr ""
+
+#: includes/frontend/class-ppa-assignment-renderer.php:318
+#: src/assignment-editor/components/SettingsPanel.jsx:164
+#: src/settings-panel/components/AppearanceTab.jsx:465
 msgid "Instructions"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:291
+#: includes/frontend/class-ppa-assignment-renderer.php:329
 msgid "How You'll Be Graded"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:488
+#: includes/frontend/class-ppa-assignment-renderer.php:556
 msgid "Points"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:494
+#: includes/frontend/class-ppa-assignment-renderer.php:562
+#: src/assignment-editor/components/SettingsPanel.jsx:389
 msgid "Passing Score"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:502
+#: includes/frontend/class-ppa-assignment-renderer.php:570
 msgid "Max File Size"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:507
+#: includes/frontend/class-ppa-assignment-renderer.php:575
 msgid "Max Files"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:683
+#: includes/frontend/class-ppa-assignment-renderer.php:751
 msgid "Submitted - Awaiting Review"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:684
-#: includes/frontend/class-ppa-submissions-renderer.php:223
+#: includes/frontend/class-ppa-assignment-renderer.php:752
+#: includes/frontend/class-ppa-submissions-renderer.php:239
 msgid "Being Reviewed"
 msgstr ""
 
-#: includes/frontend/class-ppa-assignment-renderer.php:686
-#: includes/frontend/class-ppa-submissions-renderer.php:225
+#: includes/frontend/class-ppa-assignment-renderer.php:754
+#: includes/frontend/class-ppa-submissions-renderer.php:241
 msgid "Graded & Returned"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:409
+#: includes/frontend/class-ppa-frontend.php:424
 msgid "Uploading..."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:410
+#: includes/frontend/class-ppa-frontend.php:425
 msgid "Upload complete."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:411
+#: includes/frontend/class-ppa-frontend.php:426
 msgid "Upload failed. Please try again."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:412
+#: includes/frontend/class-ppa-frontend.php:427
 msgid "Submitting..."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:413
+#: includes/frontend/class-ppa-frontend.php:428
 msgid "Submission complete."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:414
+#: includes/frontend/class-ppa-frontend.php:429
 msgid "Are you sure you want to submit? This action cannot be undone."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:415
+#: includes/frontend/class-ppa-frontend.php:430
 msgid "Remove file"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:416
+#: includes/frontend/class-ppa-frontend.php:431
 msgid "Drag and drop files here or click to browse"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:417
-#: includes/frontend/class-ppa-submission-handler.php:186
+#: includes/frontend/class-ppa-frontend.php:432
+#: includes/frontend/class-ppa-submission-handler.php:196
 msgid "Maximum number of files reached."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:418
-msgid "File is too large."
+#. translators: %1$d: number of files uploaded, %2$d: maximum files allowed
+#: includes/frontend/class-ppa-frontend.php:434
+#, php-format
+msgid "%1$d of %2$d files uploaded."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:419
+#. translators: %s: maximum file size (e.g., "10 MB")
+#: includes/frontend/class-ppa-frontend.php:436
+#, php-format
+msgid "File is too large. Each file must be smaller than %s."
+msgstr ""
+
+#: includes/frontend/class-ppa-frontend.php:437
 msgid "File type not allowed."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:420
+#: includes/frontend/class-ppa-frontend.php:438
 msgid "A network error occurred. Please try again."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:421
+#: includes/frontend/class-ppa-frontend.php:439
 #: templates/assignment/submission-form.php:142
 #: templates/assignment/text-editor.php:128
+#: src/settings-panel/components/AppearanceTab.jsx:613
 msgid "Submit Assignment"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:422
+#: includes/frontend/class-ppa-frontend.php:440
 msgid "Change submission type"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:423
+#: includes/frontend/class-ppa-frontend.php:441
 msgid "Ready to submit?"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:424
+#: includes/frontend/class-ppa-frontend.php:442
 msgid "Once submitted, your assignment will be sent for review."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:425
+#: includes/frontend/class-ppa-frontend.php:443
 msgid "Once submitted, your assignment will be sent for review. You can submit again if needed."
 msgstr ""
 
 #. translators: %d: number of submissions remaining
-#: includes/frontend/class-ppa-frontend.php:427
+#: includes/frontend/class-ppa-frontend.php:445
 #, php-format
 msgid "%d submission remaining"
 msgstr ""
 
 #. translators: %d: number of submissions remaining
-#: includes/frontend/class-ppa-frontend.php:429
+#: includes/frontend/class-ppa-frontend.php:447
 #, php-format
 msgid "%d submissions remaining"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:431
+#: includes/frontend/class-ppa-frontend.php:449
 #: templates/assignment/text-editor.php:116
 msgid "Draft saved"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:432
+#: includes/frontend/class-ppa-frontend.php:450
 msgid "Saving..."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:433
+#: includes/frontend/class-ppa-frontend.php:451
+#: src/grading-interface/components/GradingForm.jsx:553
 msgid "Unsaved changes"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:434
+#: includes/frontend/class-ppa-frontend.php:452
 msgid "Save failed"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:435
+#: includes/frontend/class-ppa-frontend.php:453
 #: includes/frontend/class-ppa-text-handler.php:342
 msgid "Please write something before submitting."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:436
+#: includes/frontend/class-ppa-frontend.php:454
 #: templates/assignment/text-editor.php:124
 msgid "Save Draft"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:437
+#: includes/frontend/class-ppa-frontend.php:455
 msgid "Are you sure you want to delete this submission? This cannot be undone."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:438
+#: includes/frontend/class-ppa-frontend.php:456
+#: src/submission-detail/components/SubmissionDetail.jsx:520
 msgid "Delete Submission"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:440
+#: includes/frontend/class-ppa-frontend.php:458
 msgid "Review Your Submission"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:441
+#: includes/frontend/class-ppa-frontend.php:459
 msgid "Go Back & Edit"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:442
+#: includes/frontend/class-ppa-frontend.php:460
 msgid "Confirm & Submit"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:445
+#: includes/frontend/class-ppa-frontend.php:463
 msgid "Total size"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:446
-#: templates/assignment/submission-status.php:62
+#: includes/frontend/class-ppa-frontend.php:464
+#: templates/assignment/submission-status.php:63
 msgid "Your Notes"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:447
-#: templates/assignment/submission-status.php:36
-#: templates/assignment/submission-status.php:103
+#: includes/frontend/class-ppa-frontend.php:465
+#: templates/assignment/submission-status.php:37
+#: templates/assignment/submission-status.php:104
 msgid "Your Submission"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:448
+#: includes/frontend/class-ppa-frontend.php:466
 msgid "Word count"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:449
+#: includes/frontend/class-ppa-frontend.php:467
 msgid "Extracted Text Preview"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:450
+#: includes/frontend/class-ppa-frontend.php:468
 msgid "Show preview"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:451
+#: includes/frontend/class-ppa-frontend.php:469
 msgid "Hide preview"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:452
+#: includes/frontend/class-ppa-frontend.php:470
 msgid "This is the beginning of the text extracted from your file. It is provided so you can verify the content was captured correctly."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:453
+#: includes/frontend/class-ppa-frontend.php:471
 msgid "Text extraction issue"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:454
+#: includes/frontend/class-ppa-frontend.php:472
 msgid "Text Extraction Issue"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:455
+#: includes/frontend/class-ppa-frontend.php:473
 msgid "We could not extract readable text from one or more PDF files. If the assignment is text-based, your instructor may have trouble extracting the text for review."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:456
+#: includes/frontend/class-ppa-frontend.php:474
 msgid "Why does this matter?"
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:457
+#: includes/frontend/class-ppa-frontend.php:475
 msgid "Some PDFs are scanned images without embedded text. For best results, consider using the text editor or uploading a DOCX file instead."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:458
+#: includes/frontend/class-ppa-frontend.php:476
 msgid "Upload at least one file to enable submission."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:459
+#: includes/frontend/class-ppa-frontend.php:477
 msgid "Text could not be extracted from this file. It may be a scanned document or contain only images."
 msgstr ""
 
-#: includes/frontend/class-ppa-frontend.php:524
+#: includes/frontend/class-ppa-frontend.php:542
 msgid "You must be logged in to access files."
 msgstr ""
 
 #: includes/frontend/class-ppa-shortcodes.php:121
-#: includes/models/class-ppa-submission.php:316
+#: includes/models/class-ppa-submission.php:327
 msgid "Assignment ID is required."
 msgstr ""
 
@@ -1049,12 +1276,12 @@ msgid "This assignment is not available."
 msgstr ""
 
 #: includes/frontend/class-ppa-shortcodes.php:290
-#: templates/assignment/single.php:82
+#: templates/assignment/single.php:85
 msgid "You need to be logged in to submit this assignment. Please log in to continue."
 msgstr ""
 
 #: includes/frontend/class-ppa-shortcodes.php:291
-#: templates/assignment/single.php:86
+#: templates/assignment/single.php:89
 msgid "Log In to Submit"
 msgstr ""
 
@@ -1068,32 +1295,32 @@ msgstr ""
 
 #. translators: %s: registration link
 #: includes/frontend/class-ppa-shortcodes.php:322
-#: templates/assignment/single.php:99
+#: templates/assignment/single.php:102
 #, php-format
 msgid "Don't have an account? %s"
 msgstr ""
 
 #: includes/frontend/class-ppa-shortcodes.php:323
-#: templates/assignment/single.php:100
+#: templates/assignment/single.php:103
 msgid "Register here"
 msgstr ""
 
-#: includes/frontend/class-ppa-shortcodes.php:377
+#: includes/frontend/class-ppa-shortcodes.php:379
 msgid "Max Points:"
 msgstr ""
 
-#: includes/frontend/class-ppa-shortcodes.php:430
+#: includes/frontend/class-ppa-shortcodes.php:432
 msgid "You have no submissions yet."
 msgstr ""
 
-#: includes/frontend/class-ppa-shortcodes.php:436
+#: includes/frontend/class-ppa-shortcodes.php:438
 #: includes/frontend/class-ppa-submissions-renderer.php:62
 msgid "Unknown Assignment"
 msgstr ""
 
 #: includes/frontend/class-ppa-submission-handler.php:87
-#: includes/frontend/class-ppa-submission-handler.php:270
-#: includes/frontend/class-ppa-submission-handler.php:388
+#: includes/frontend/class-ppa-submission-handler.php:260
+#: includes/frontend/class-ppa-submission-handler.php:378
 #: includes/frontend/class-ppa-text-handler.php:60
 #: includes/frontend/class-ppa-text-handler.php:246
 msgid "Security check failed. Please refresh the page and try again."
@@ -1104,82 +1331,83 @@ msgid "You must be logged in to upload files."
 msgstr ""
 
 #: includes/frontend/class-ppa-submission-handler.php:115
-#: includes/frontend/class-ppa-submission-handler.php:416
+#: includes/frontend/class-ppa-submission-handler.php:406
 #: includes/frontend/class-ppa-text-handler.php:274
 msgid "This assignment is not accepting submissions."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:133
-#: includes/services/class-ppa-file-service.php:556
+#: includes/frontend/class-ppa-submission-handler.php:136
+#: includes/services/class-ppa-file-service.php:591
 msgid "No file was uploaded."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:281
+#: includes/frontend/class-ppa-submission-handler.php:271
 msgid "You must be logged in to remove files."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:293
+#: includes/frontend/class-ppa-submission-handler.php:283
+#: includes/services/class-ppa-extraction-dispatcher.php:203
 msgid "Invalid file ID."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:330
+#: includes/frontend/class-ppa-submission-handler.php:320
 msgid "You do not have permission to remove this file."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:341
+#: includes/frontend/class-ppa-submission-handler.php:331
 msgid "Files can only be removed from draft submissions."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:363
+#: includes/frontend/class-ppa-submission-handler.php:353
 msgid "File removed."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:399
+#: includes/frontend/class-ppa-submission-handler.php:389
 #: includes/frontend/class-ppa-text-handler.php:257
 msgid "You must be logged in to submit."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:446
+#: includes/frontend/class-ppa-submission-handler.php:436
 msgid "No draft submission found. Please upload files first."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:459
+#: includes/frontend/class-ppa-submission-handler.php:449
 msgid "Please upload at least one file before submitting."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:490
+#: includes/frontend/class-ppa-submission-handler.php:480
 #: includes/frontend/class-ppa-text-handler.php:360
 msgid "Failed to save submission. Please try again."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:511
+#: includes/frontend/class-ppa-submission-handler.php:541
 #: includes/frontend/class-ppa-text-handler.php:381
 msgid "Your assignment has been submitted successfully."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:688
+#: includes/frontend/class-ppa-submission-handler.php:718
 #: includes/frontend/class-ppa-text-handler.php:520
 msgid "Resubmission is not allowed for this assignment."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:721
+#: includes/frontend/class-ppa-submission-handler.php:751
 #: includes/frontend/class-ppa-text-handler.php:553
 msgid "You have reached the maximum number of submissions for this assignment."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:770
+#: includes/frontend/class-ppa-submission-handler.php:800
 msgid "You do not have permission to delete this submission."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:783
+#: includes/frontend/class-ppa-submission-handler.php:813
 msgid "Graded submissions cannot be deleted."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:799
+#: includes/frontend/class-ppa-submission-handler.php:829
 msgid "Submission deleted."
 msgstr ""
 
-#: includes/frontend/class-ppa-submission-handler.php:803
+#: includes/frontend/class-ppa-submission-handler.php:833
 msgid "Failed to delete submission."
 msgstr ""
 
@@ -1208,121 +1436,126 @@ msgstr ""
 msgid "This assignment does not accept text submissions."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:147
-#: includes/integrations/class-ppa-tutorlms.php:164
+#: includes/integrations/class-ppa-learndash.php:151
+#: includes/integrations/class-ppa-learnpress.php:195
+#: includes/integrations/class-ppa-lifterlms.php:163
+#: includes/integrations/class-ppa-tutorlms.php:168
 msgid "Select Assignment:"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:155
-#: includes/integrations/class-ppa-tutorlms.php:172
-#: includes/integrations/class-ppa-tutorlms.php:511
+#: includes/integrations/class-ppa-learndash.php:159
+#: includes/integrations/class-ppa-learnpress.php:203
+#: includes/integrations/class-ppa-lifterlms.php:171
+#: includes/integrations/class-ppa-tutorlms.php:176
+#: includes/integrations/class-ppa-tutorlms.php:515
 msgid "Click to browse or type to search..."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:168
-#: includes/integrations/class-ppa-learndash.php:215
-#: includes/integrations/class-ppa-tutorlms.php:185
-#: includes/integrations/class-ppa-tutorlms.php:240
+#: includes/integrations/class-ppa-learndash.php:172
+#: includes/integrations/class-ppa-learndash.php:219
+#: includes/integrations/class-ppa-learnpress.php:216
+#: includes/integrations/class-ppa-learnpress.php:270
+#: includes/integrations/class-ppa-lifterlms.php:184
+#: includes/integrations/class-ppa-lifterlms.php:238
+#: includes/integrations/class-ppa-tutorlms.php:189
+#: includes/integrations/class-ppa-tutorlms.php:244
 #: assets/js/learndash-editor.js:150
 #: assets/js/tutorlms-editor.js:150
 msgid "Remove assignment"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:175
-#: includes/integrations/class-ppa-learndash.php:514
-#: assets/js/learndash-editor.js:281
+#: includes/integrations/class-ppa-learndash.php:179
+#: includes/integrations/class-ppa-learndash.php:518
+#: assets/js/learndash-editor.js:282
 msgid "The assignment will appear at the end of this content. Users must pass to mark it complete."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:214
-#: includes/integrations/class-ppa-tutorlms.php:239
-#: includes/integrations/class-ppa-tutorlms.php:565
+#: includes/integrations/class-ppa-learndash.php:218
+#: includes/integrations/class-ppa-learnpress.php:269
+#: includes/integrations/class-ppa-lifterlms.php:237
+#: includes/integrations/class-ppa-tutorlms.php:243
+#: includes/integrations/class-ppa-tutorlms.php:569
 #: assets/js/learndash-editor.js:213
 #: assets/js/tutorlms-editor.js:213
 msgid "No assignments found"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:460
+#: includes/integrations/class-ppa-learndash.php:464
 msgid "You do not have permission to edit this post."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:474
+#: includes/integrations/class-ppa-learndash.php:478
 msgid "PressPrimer Assignment ID"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:511
-#: includes/integrations/class-ppa-tutorlms.php:510
-#: assets/js/learndash-editor.js:262
+#: includes/integrations/class-ppa-learndash.php:515
+#: includes/integrations/class-ppa-tutorlms.php:514
+#: assets/js/learndash-editor.js:263
 #: assets/js/tutorlms-editor.js:262
 #: blocks/assignment/index.js:244
 msgid "Select Assignment"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:512
+#: includes/integrations/class-ppa-learndash.php:516
 msgid "Search for an assignment..."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:513
-#: includes/integrations/class-ppa-tutorlms.php:512
+#: includes/integrations/class-ppa-learndash.php:517
+#: includes/integrations/class-ppa-tutorlms.php:516
 msgid "No assignment selected"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:559
+#: includes/integrations/class-ppa-learndash.php:563
+#: src/settings-panel/components/IntegrationsTab.jsx:374
 msgid "Complete all topics in this lesson to unlock the assignment."
 msgstr ""
 
-#: includes/integrations/class-ppa-tutorlms.php:199
-#: includes/integrations/class-ppa-tutorlms.php:513
+#: includes/integrations/class-ppa-learnpress.php:230
+#: includes/integrations/class-ppa-lifterlms.php:198
+#: includes/integrations/class-ppa-tutorlms.php:203
+#: includes/integrations/class-ppa-tutorlms.php:517
 #: assets/js/tutorlms-editor.js:280
 msgid "Require passing grade to complete lesson"
 msgstr ""
 
-#: includes/integrations/class-ppa-tutorlms.php:203
-#: includes/integrations/class-ppa-tutorlms.php:514
+#: includes/integrations/class-ppa-learnpress.php:234
+#: includes/integrations/class-ppa-lifterlms.php:202
+#: includes/integrations/class-ppa-tutorlms.php:207
+#: includes/integrations/class-ppa-tutorlms.php:518
 #: assets/js/tutorlms-editor.js:296
 msgid "When enabled, students must pass this assignment to mark the lesson complete."
 msgstr ""
 
-#: includes/integrations/class-ppa-tutorlms.php:564
-msgid "Search assignments..."
-msgstr ""
-
-#: includes/integrations/class-ppa-tutorlms.php:566
-msgid "Error loading assignments"
-msgstr ""
-
-#: includes/integrations/class-ppa-tutorlms.php:721
+#: includes/integrations/class-ppa-lifterlms.php:584
+#: includes/integrations/class-ppa-lifterlms.php:655
+#: includes/integrations/class-ppa-tutorlms.php:725
 msgid "Enroll in this course to access the assignment."
 msgstr ""
 
-#: includes/integrations/class-ppa-tutorlms.php:1313
+#: includes/integrations/class-ppa-tutorlms.php:568
+msgid "Search assignments..."
+msgstr ""
+
+#: includes/integrations/class-ppa-tutorlms.php:570
+msgid "Error loading assignments"
+msgstr ""
+
+#: includes/integrations/class-ppa-tutorlms.php:1357
 msgid "Please save the lesson first before attaching an assignment."
 msgstr ""
 
-#: includes/integrations/class-ppa-tutorlms.php:1327
+#: includes/integrations/class-ppa-tutorlms.php:1371
 msgid "Invalid lesson."
 msgstr ""
 
 #: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:106
+#: src/dashboard/components/RecentActivity.jsx:164
 msgid "Text"
 msgstr ""
 
 #: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:108
+#: src/dashboard/components/RecentActivity.jsx:169
 msgid "File"
-msgstr ""
-
-#: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:123
-#: blocks/my-submissions/index.js:151
-#: blocks/my-submissions/index.js:159
-#: blocks/my-submissions/index.js:167
-msgid "Yes"
-msgstr ""
-
-#: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:124
-#: blocks/my-submissions/index.js:152
-#: blocks/my-submissions/index.js:160
-#: blocks/my-submissions/index.js:168
-msgid "No"
 msgstr ""
 
 #: includes/integrations/uncanny-automator/class-ppa-automator-helpers.php:193
@@ -1440,36 +1673,41 @@ msgstr ""
 msgid "A user submits {{an assignment}}"
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:332
+#: includes/models/class-ppa-assignment.php:371
 msgid "Assignment title cannot be empty."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:341
+#: includes/models/class-ppa-assignment.php:380
 msgid "Invalid submission type. Must be file, text, or either."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:349
+#: includes/models/class-ppa-assignment.php:388
 msgid "Invalid status. Must be draft, published, or archived."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:359
+#: includes/models/class-ppa-assignment.php:398
 msgid "Max points must be between 0.01 and 100,000."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:370
+#: includes/models/class-ppa-assignment.php:409
 msgid "Passing score must be between 0 and 100,000."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:381
+#: includes/models/class-ppa-assignment.php:422
+#: src/assignment-editor/components/SettingsPanel.jsx:432
+msgid "Passing score cannot be greater than maximum points."
+msgstr ""
+
+#: includes/models/class-ppa-assignment.php:433
 msgid "Max file size must be between 1 KB and 100 MB."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:392
+#: includes/models/class-ppa-assignment.php:444
 msgid "Max files must be between 1 and 50."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:403
-msgid "Max resubmissions must be between 1 and 100."
+#: includes/models/class-ppa-assignment.php:455
+msgid "Max resubmissions must be between 0 and 100."
 msgstr ""
 
 #: includes/models/class-ppa-category.php:136
@@ -1525,45 +1763,69 @@ msgid "Record not found in database."
 msgstr ""
 
 #. translators: %s: field name
-#: includes/models/class-ppa-submission-file.php:194
+#: includes/models/class-ppa-submission-file.php:255
 #, php-format
 msgid "Required field \"%s\" is missing."
 msgstr ""
 
-#: includes/models/class-ppa-submission-file.php:204
+#: includes/models/class-ppa-submission-file.php:265
 #: includes/services/class-ppa-file-service.php:225
 msgid "Invalid submission ID."
 msgstr ""
 
-#: includes/models/class-ppa-submission-file.php:213
+#: includes/models/class-ppa-submission-file.php:274
 msgid "File size must be greater than zero."
 msgstr ""
 
-#: includes/models/class-ppa-submission-file.php:221
+#: includes/models/class-ppa-submission-file.php:282
 msgid "File hash must be a valid SHA-256 hash."
 msgstr ""
 
-#: includes/models/class-ppa-submission-file.php:300
+#: includes/models/class-ppa-submission-file.php:361
+#: includes/services/class-ppa-docx-service.php:207
+#: includes/services/class-ppa-odt-service.php:215
+#: includes/services/class-ppa-pdf-service.php:204
+#: includes/services/class-ppa-rtf-service.php:180
+#: includes/services/class-ppa-text-service.php:200
 msgid "File not found on disk."
 msgstr ""
 
-#: includes/models/class-ppa-submission-file.php:309
+#: includes/models/class-ppa-submission-file.php:370
 msgid "File integrity check failed. The file may have been modified."
 msgstr ""
 
-#: includes/models/class-ppa-submission.php:324
+#: includes/models/class-ppa-submission.php:335
 msgid "Invalid submission status."
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:90
-#: includes/services/class-ppa-email-service.php:824
-msgid "View Submission Status"
+#: includes/services/class-ppa-docx-service.php:70
+msgid "DOCX file not found or not readable."
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:149
-#: includes/services/class-ppa-email-service.php:784
-#: templates/assignment/submission-status.php:180
-msgid "Passed"
+#: includes/services/class-ppa-docx-service.php:77
+#: includes/services/class-ppa-odt-service.php:85
+msgid "ZipArchive extension is not available."
+msgstr ""
+
+#: includes/services/class-ppa-docx-service.php:84
+msgid "DOMDocument extension is not available."
+msgstr ""
+
+#: includes/services/class-ppa-docx-service.php:94
+msgid "Failed to open DOCX file. It may be corrupt or password-protected."
+msgstr ""
+
+#: includes/services/class-ppa-docx-service.php:104
+msgid "DOCX file does not contain word/document.xml. It may be corrupt."
+msgstr ""
+
+#: includes/services/class-ppa-docx-service.php:113
+msgid "Unable to extract readable text from this DOCX file."
+msgstr ""
+
+#: includes/services/class-ppa-email-service.php:90
+#: includes/services/class-ppa-email-service.php:861
+msgid "View Submission Status"
 msgstr ""
 
 #: includes/services/class-ppa-email-service.php:150
@@ -1571,12 +1833,12 @@ msgid "Did not pass"
 msgstr ""
 
 #: includes/services/class-ppa-email-service.php:168
-#: includes/services/class-ppa-email-service.php:788
+#: includes/services/class-ppa-email-service.php:825
 msgid "View Your Grade & Feedback"
 msgstr ""
 
 #: includes/services/class-ppa-email-service.php:260
-#: includes/services/class-ppa-email-service.php:806
+#: includes/services/class-ppa-email-service.php:843
 msgid "Grade This Submission"
 msgstr ""
 
@@ -1632,39 +1894,53 @@ msgid ""
 "{grade_url}"
 msgstr ""
 
-#. translators: %s: site name
-#: includes/services/class-ppa-email-service.php:571
+#. translators: %s: site name or brand name
+#: includes/services/class-ppa-email-service.php:608
 #, php-format
 msgid "This email was sent from %s"
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:612
-#: includes/services/class-ppa-email-service.php:638
+#: includes/services/class-ppa-email-service.php:649
+#: includes/services/class-ppa-email-service.php:675
 msgid "PASSED"
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:613
+#: includes/services/class-ppa-email-service.php:650
 msgid "DID NOT PASS"
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:780
-#: includes/services/class-ppa-email-service.php:801
-#: includes/services/class-ppa-email-service.php:820
+#: includes/services/class-ppa-email-service.php:817
+#: includes/services/class-ppa-email-service.php:838
+#: includes/services/class-ppa-email-service.php:857
 msgid "Test Student"
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:781
-#: includes/services/class-ppa-email-service.php:803
-#: includes/services/class-ppa-email-service.php:821
+#: includes/services/class-ppa-email-service.php:818
+#: includes/services/class-ppa-email-service.php:840
+#: includes/services/class-ppa-email-service.php:858
 msgid "Sample Assignment"
 msgstr ""
 
-#: includes/services/class-ppa-email-service.php:831
+#: includes/services/class-ppa-email-service.php:868
 msgid "TEST"
 msgstr ""
 
+#: includes/services/class-ppa-extraction-dispatcher.php:106
+msgid "Image files do not contain extractable text."
+msgstr ""
+
+#: includes/services/class-ppa-extraction-dispatcher.php:109
+#: includes/services/class-ppa-extraction-dispatcher.php:230
+msgid "This file type does not support text extraction."
+msgstr ""
+
+#: includes/services/class-ppa-extraction-dispatcher.php:212
+#: includes/services/class-ppa-file-service.php:419
+msgid "File record not found."
+msgstr ""
+
 #: includes/services/class-ppa-file-service.php:141
-#: includes/services/class-ppa-file-service.php:532
+#: includes/services/class-ppa-file-service.php:567
 msgid "Invalid file upload."
 msgstr ""
 
@@ -1689,110 +1965,159 @@ msgid "The uploaded file is empty."
 msgstr ""
 
 #: includes/services/class-ppa-file-service.php:249
-#: includes/services/class-ppa-file-service.php:367
+#: includes/services/class-ppa-file-service.php:379
 msgid "Failed to create upload directory."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:267
+#: includes/services/class-ppa-file-service.php:273
+msgid "Failed to read uploaded file."
+msgstr ""
+
+#: includes/services/class-ppa-file-service.php:280
 msgid "Failed to move uploaded file."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:282
+#: includes/services/class-ppa-file-service.php:294
 msgid "Failed to calculate file hash."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:407
-msgid "File record not found."
-msgstr ""
-
-#: includes/services/class-ppa-file-service.php:488
+#: includes/services/class-ppa-file-service.php:500
 msgid "You do not have permission to access this file."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:544
+#: includes/services/class-ppa-file-service.php:579
 msgid "The uploaded file exceeds the server upload limit."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:550
+#: includes/services/class-ppa-file-service.php:585
 msgid "The file was only partially uploaded. Please try again."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:563
+#: includes/services/class-ppa-file-service.php:598
 msgid "Server configuration error. Please contact the administrator."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:569
+#: includes/services/class-ppa-file-service.php:604
 msgid "File upload was blocked by a server extension."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:575
+#: includes/services/class-ppa-file-service.php:610
 msgid "An unknown upload error occurred."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:607
-#: includes/services/class-ppa-file-service.php:617
+#: includes/services/class-ppa-file-service.php:642
+#: includes/services/class-ppa-file-service.php:652
 msgid "File contains a potentially dangerous extension."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:650
+#: includes/services/class-ppa-file-service.php:685
 msgid "Unable to verify file content type."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:658
+#: includes/services/class-ppa-file-service.php:693
 msgid "File content does not match an allowed type."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:668
+#: includes/services/class-ppa-file-service.php:703
 msgid "File content does not match the file extension."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:715
+#: includes/services/class-ppa-file-service.php:750
 msgid "Unable to determine file type."
 msgstr ""
 
-#: includes/services/class-ppa-grading-service.php:59
+#: includes/services/class-ppa-grading-service.php:60
 msgid "Assignment not found for this submission."
 msgstr ""
 
 #. translators: %s: maximum points value
-#: includes/services/class-ppa-grading-service.php:70
+#: includes/services/class-ppa-grading-service.php:71
 #, php-format
 msgid "Score must be between 0 and %s."
 msgstr ""
 
-#: includes/services/class-ppa-grading-service.php:200
+#: includes/services/class-ppa-grading-service.php:234
 msgid "Submission must be graded before it can be returned."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:91
+#: includes/services/class-ppa-odt-service.php:78
+msgid "ODT file not found or not readable."
+msgstr ""
+
+#: includes/services/class-ppa-odt-service.php:92
+msgid "XMLReader extension is not available."
+msgstr ""
+
+#: includes/services/class-ppa-odt-service.php:102
+msgid "Failed to open ODT file. It may be corrupt or password-protected."
+msgstr ""
+
+#: includes/services/class-ppa-odt-service.php:112
+msgid "ODT file does not contain content.xml. It may be corrupt."
+msgstr ""
+
+#: includes/services/class-ppa-odt-service.php:121
+msgid "Unable to extract readable text from this ODT file."
+msgstr ""
+
+#: includes/services/class-ppa-pdf-service.php:78
 msgid "PDF file not found or not readable."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:102
+#: includes/services/class-ppa-pdf-service.php:89
 msgid "File is not a valid PDF."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:126
+#: includes/services/class-ppa-pdf-service.php:96
+msgid "PDF text extraction library is not available."
+msgstr ""
+
+#: includes/services/class-ppa-pdf-service.php:108
 msgid "Unable to extract readable text from this PDF. The file may be a scanned image or use embedded fonts that cannot be read."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:300
-msgid "pdftotext command not available."
+#: includes/services/class-ppa-rtf-service.php:68
+msgid "RTF file not found or not readable."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:335
-msgid "pdftotext command failed."
+#: includes/services/class-ppa-rtf-service.php:75
+msgid "RTF text extraction library is not available."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:343
-msgid "pdftotext did not produce output."
+#: includes/services/class-ppa-rtf-service.php:86
+msgid "File is not a valid RTF document."
 msgstr ""
 
-#: includes/services/class-ppa-pdf-service.php:356
-msgid "Could not read pdftotext output."
+#: includes/services/class-ppa-rtf-service.php:227
+msgid "Failed to read RTF file content."
 msgstr ""
 
-#: templates/assignment/single.php:219
+#: includes/services/class-ppa-rtf-service.php:241
+#: includes/services/class-ppa-rtf-service.php:254
+msgid "Unable to extract readable text from this RTF file."
+msgstr ""
+
+#: includes/services/class-ppa-text-service.php:78
+msgid "Text file not found or not readable."
+msgstr ""
+
+#: includes/services/class-ppa-text-service.php:87
+msgid "Text file is empty."
+msgstr ""
+
+#: includes/services/class-ppa-text-service.php:99
+msgid "Failed to read text file."
+msgstr ""
+
+#: includes/services/class-ppa-text-service.php:106
+msgid "Text file contains no readable content."
+msgstr ""
+
+#: templates/assignment/single.php:34
+msgid "Skip to submission"
+msgstr ""
+
+#: templates/assignment/single.php:218
 msgid "This assignment is not currently accepting submissions."
 msgstr ""
 
@@ -1801,13 +2126,14 @@ msgid "Submission form"
 msgstr ""
 
 #: templates/assignment/submission-form.php:33
-#: templates/assignment/submission-status.php:224
+#: templates/assignment/submission-status.php:252
 #: templates/assignment/submission-type-selector.php:39
 msgid "Submit Again"
 msgstr ""
 
 #: templates/assignment/submission-form.php:35
 #: templates/assignment/submission-type-selector.php:41
+#: src/settings-panel/components/AppearanceTab.jsx:490
 msgid "Submit Your Work"
 msgstr ""
 
@@ -1816,6 +2142,7 @@ msgid "Upload files. Drag and drop or press Enter to browse."
 msgstr ""
 
 #: templates/assignment/submission-form.php:85
+#: src/settings-panel/components/AppearanceTab.jsx:520
 msgid "Drag and drop files here, or click to browse"
 msgstr ""
 
@@ -1830,10 +2157,12 @@ msgid "Uploaded files"
 msgstr ""
 
 #: templates/assignment/submission-form.php:117
+#: src/settings-panel/components/AppearanceTab.jsx:548
 msgid "Notes (optional)"
 msgstr ""
 
 #: templates/assignment/submission-form.php:120
+#: src/settings-panel/components/AppearanceTab.jsx:557
 msgid "Add any context or comments about your submission."
 msgstr ""
 
@@ -1841,99 +2170,115 @@ msgstr ""
 msgid "E.g., \"I focused on the second approach discussed in class...\""
 msgstr ""
 
-#: templates/assignment/submission-status.php:33
+#: templates/assignment/submission-status.php:34
 msgid "Your submission"
 msgstr ""
 
-#: templates/assignment/submission-status.php:45
+#: templates/assignment/submission-status.php:46
+#: src/grading-interface/components/GradingForm.jsx:654
 msgid "Submitted:"
 msgstr ""
 
-#: templates/assignment/submission-status.php:54
+#: templates/assignment/submission-status.php:55
 msgid "Submission #:"
 msgstr ""
 
 #. translators: %1$s: number of preview words shown, %2$s: total word count
-#: templates/assignment/submission-status.php:112
+#: templates/assignment/submission-status.php:113
 #, php-format
 msgid "Preview showing the first %1$s of %2$s words."
 msgstr ""
 
 #. translators: %s: word count
-#: templates/assignment/submission-status.php:123
-#, php-format
+#. translators: %s: number of words
+#: templates/assignment/submission-status.php:124
+#: src/shared/components/viewers/TextContentViewer.jsx:100
+#, php-format,js-format
 msgid "%s words"
 msgstr ""
 
-#: templates/assignment/submission-status.php:132
+#: templates/assignment/submission-status.php:133
+#: src/submission-detail/components/SubmissionDetail.jsx:377
 msgid "Submitted Files"
 msgstr ""
 
-#: templates/assignment/submission-status.php:146
+#: templates/assignment/submission-status.php:147
+#: src/shared/components/viewers/DocumentPanel.jsx:361
 msgid "Download"
 msgstr ""
 
-#: templates/assignment/submission-status.php:158
+#: templates/assignment/submission-status.php:159
 msgid "Your Grade"
 msgstr ""
 
 #. translators: %1$s: score, %2$s: max points
-#: templates/assignment/submission-status.php:165
-#: templates/assignment/submission-status.php:280
+#: templates/assignment/submission-status.php:166
+#: templates/assignment/submission-status.php:308
 #: templates/dashboard/my-submissions.php:121
 #, php-format
 msgid "%1$s / %2$s"
 msgstr ""
 
-#: templates/assignment/submission-status.php:173
+#: templates/assignment/submission-status.php:174
+#: src/grading-interface/components/GradingForm.jsx:983
 msgid "points"
 msgstr ""
 
-#: templates/assignment/submission-status.php:182
+#: templates/assignment/submission-status.php:183
 msgid "Did Not Pass"
 msgstr ""
 
-#: templates/assignment/submission-status.php:191
+#: templates/assignment/submission-status.php:206
 msgid "Instructor Feedback"
 msgstr ""
 
+#. translators: %1$s: grader's display name, %2$s: date the submission was graded
+#: templates/assignment/submission-status.php:216
+#, php-format
+msgid "Graded by %1$s on %2$s"
+msgstr ""
+
 #. translators: %s: date the submission was graded
-#: templates/assignment/submission-status.php:200
+#: templates/assignment/submission-status.php:223
 #, php-format
 msgid "Graded on %s"
 msgstr ""
 
+#: templates/assignment/submission-status.php:240
+msgid "You can resubmit this assignment."
+msgstr ""
+
 #. translators: %1$d: remaining resubmissions, %2$d: total max resubmissions
-#: templates/assignment/submission-status.php:217
+#: templates/assignment/submission-status.php:244
 #, php-format
 msgid "You have %1$d of %2$d resubmissions remaining."
 msgstr ""
 
-#: templates/assignment/submission-status.php:231
+#: templates/assignment/submission-status.php:259
 msgid "Previous Submissions"
 msgstr ""
 
 #. translators: %d: submission number
-#: templates/assignment/submission-status.php:264
+#: templates/assignment/submission-status.php:292
 #, php-format
 msgid "Submission #%d"
 msgstr ""
 
-#: templates/assignment/submission-status.php:289
+#: templates/assignment/submission-status.php:317
 msgid "Not graded"
 msgstr ""
 
 #. translators: %d: submission number
-#: templates/assignment/submission-status.php:299
+#: templates/assignment/submission-status.php:327
 #, php-format
 msgid "View details for submission #%d"
 msgstr ""
 
-#: templates/assignment/submission-status.php:310
+#: templates/assignment/submission-status.php:338
 msgid "Delete this submission"
 msgstr ""
 
-#: templates/assignment/submission-status.php:317
+#: templates/assignment/submission-status.php:345
 msgid "Feedback:"
 msgstr ""
 
@@ -1993,6 +2338,7 @@ msgstr ""
 
 #: templates/dashboard/my-submissions.php:68
 #: templates/dashboard/my-submissions.php:134
+#: src/submission-detail/components/SubmissionDetail.jsx:494
 msgid "Actions"
 msgstr ""
 
@@ -2004,6 +2350,7 @@ msgstr ""
 
 #: assets/js/learndash-editor.js:155
 #: assets/js/tutorlms-editor.js:155
+#: src/settings-panel/components/EmailTab.jsx:286
 msgid "Remove"
 msgstr ""
 
@@ -2030,7 +2377,7 @@ msgid "max points"
 msgstr ""
 
 #: blocks/assignment/index.js:172
-msgid "to pass"
+msgid "pts to pass"
 msgstr ""
 
 #: blocks/assignment/index.js:193
@@ -2042,6 +2389,7 @@ msgid "The full assignment will be displayed on the frontend."
 msgstr ""
 
 #: blocks/assignment/index.js:226
+#: src/settings-panel/components/SettingsPage.jsx:244
 msgid "Assignment Settings"
 msgstr ""
 
@@ -2131,6 +2479,1769 @@ msgstr ""
 
 #: blocks/my-submissions/index.js:184
 msgid "Preview not available in editor. The list will display on the frontend for logged-in users."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:184
+msgid "Assignment saved successfully!"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:189
+msgid "Failed to save assignment."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:212
+msgid "Could not save: please correct the highlighted fields and try again."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:252
+msgid "Are you sure you want to cancel? Any unsaved changes will be lost."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:282
+msgid "File Settings"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:305
+msgid "Saving assignment…"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:354
+msgid "Create New Assignment"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:358
+msgid "Edit Assignment"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:380
+#: src/assignment-editor/components/AssignmentEditor.jsx:464
+msgid "Save Assignment"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:389
+msgid "Assignment Editor Guide"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:398
+msgid "Create assignments for your students. Configure settings, set grading criteria, and manage file upload requirements."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:407
+msgid "Pro Tip:"
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:412
+msgid "Use the Settings tab to configure grading and submission options, and the File Settings tab to control which file types and sizes students can upload."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:147
+msgid "Category created successfully."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:152
+msgid "Failed to create category."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:189
+msgid "Tag created successfully."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:194
+msgid "Failed to create tag."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:218
+msgid "Select Categories"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:224
+msgid "Organize assignments by selecting one or more categories."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:243
+msgid "Select categories…"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:266
+msgid "Create a new category:"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:275
+msgid "Category name"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:293
+#: src/assignment-editor/components/CategoriesPanel.jsx:383
+msgid "Add"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:314
+msgid "Select Tags"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:317
+msgid "Add tags to help filter and find assignments."
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:336
+msgid "Select tags…"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:359
+msgid "Create a new tag:"
+msgstr ""
+
+#: src/assignment-editor/components/CategoriesPanel.jsx:365
+msgid "Tag name"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:51
+msgid "1 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:55
+msgid "2 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:59
+msgid "5 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:63
+msgid "10 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:67
+msgid "20 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:71
+msgid "50 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:75
+msgid "100 MB"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:94
+msgid "Allowed File Types"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:100
+msgid "Select which file types students can upload"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:118
+msgid "Accepted File Types"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:152
+msgid "Select All"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:160
+msgid "Deselect All"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:170
+msgid "Upload Limits"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:173
+msgid "Control file size and quantity limits per submission"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:191
+msgid "Maximum File Size"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:197
+msgid "Maximum size per individual file"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:221
+msgid "Maximum Files per Submission"
+msgstr ""
+
+#: src/assignment-editor/components/FileSettingsPanel.jsx:227
+msgid "How many files a student can upload in a single submission"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:77
+msgid "Basic Information"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:92
+msgid "Assignment Title"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:103
+msgid "Please enter an assignment title"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:111
+msgid "e.g., \"Week 5 Essay\" or \"Final Project Submission\""
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:133
+msgid "Brief description shown in assignment lists"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:151
+msgid "Brief description of the assignment…"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:170
+msgid "Detailed instructions shown to students on the assignment page"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:188
+msgid "Provide detailed instructions for completing this assignment…"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:210
+msgid "Draft = work in progress. Published = visible to students. Archived = hidden but preserved."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:261
+#: src/settings-panel/components/StatusTab.jsx:536
+msgid "Theme"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:267
+msgid "Visual theme for this assignment. Overrides the global default set in Settings."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:289
+#: src/settings-panel/components/AppearanceTab.jsx:135
+#: src/settings-panel/components/AppearanceTab.jsx:258
+#: src/settings-panel/components/AppearanceTab.jsx:346
+#: src/settings-panel/components/AppearanceTab.jsx:890
+#: src/settings-panel/components/AppearanceTab.jsx:1070
+msgid "Default"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:296
+#: src/settings-panel/components/AppearanceTab.jsx:349
+#: src/settings-panel/components/AppearanceTab.jsx:1074
+msgid "Modern"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:303
+#: src/settings-panel/components/AppearanceTab.jsx:352
+#: src/settings-panel/components/AppearanceTab.jsx:1078
+msgid "Minimal"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:333
+msgid "Maximum Points"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:341
+msgid "Automatically set from rubric criteria totals"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:345
+msgid "The maximum number of points for this assignment"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:363
+msgid "Synced to rubric total."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:377
+#: src/assignment-editor/components/SettingsPanel.jsx:450
+#: src/settings-panel/components/GeneralTab.jsx:112
+msgid "pts"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:395
+msgid "Minimum points needed to pass"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:465
+#: src/grading-interface/components/GradingForm.jsx:755
+msgid "Grading Guidelines"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:471
+msgid "Internal guidelines for graders (not shown to students)"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:489
+msgid "Grading criteria and rubric notes for graders…"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:511
+msgid "Use rubric for grading"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:517
+msgid "Replaces the grading guidelines text box with a structured rubric. Criteria and levels will be visible to students on the assignment page."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:559
+msgid "Auto-grade with AI"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:565
+msgid "When enabled, an AI grading suggestion is generated automatically after each student submission. Instructors review and apply the suggestion on the grading page."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:583
+msgid "AI grading generates feedback suggestions automatically after each submission. Instructors review, edit, and apply the suggestions before returning grades to students — the AI never grades directly."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:600
+msgid "Submission Settings"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:616
+msgid "Submission Type"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:622
+msgid "Choose how students submit their work: file upload, text editor, or either"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:644
+msgid "File Upload Only"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:651
+msgid "Text Editor Only"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:658
+msgid "Either (Student Chooses)"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:672
+msgid "Notification Email"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:678
+msgid "Additional email addresses to notify when a student submits. The assignment author always receives the notification."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:693
+msgid "Comma-separated email addresses. Leave blank to only notify the assignment author."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:699
+msgid "e.g., instructor@school.edu, ta@school.edu"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:713
+msgid "Allow Resubmission"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:719
+msgid "Allow students to resubmit after their initial submission"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:737
+msgid "When disabled, students can only submit once."
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:752
+msgid "Maximum Resubmissions"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:758
+msgid "Maximum number of times a student can resubmit"
+msgstr ""
+
+#: src/assignment-editor/components/SettingsPanel.jsx:773
+msgid "Set to 0 for unlimited resubmissions."
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:134
+#: src/dashboard/components/PopularAssignments.jsx:119
+#: src/reports/components/DateRangePicker.jsx:36
+#: src/reports/components/Reports.jsx:199
+msgid "Last 30 days"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:138
+#: src/reports/components/DateRangePicker.jsx:40
+#: src/reports/components/Reports.jsx:203
+msgid "Last 90 days"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:142
+#: src/reports/components/Reports.jsx:207
+msgid "Last 6 months"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:146
+#: src/reports/components/Reports.jsx:211
+msgid "Last year"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:150
+#: src/reports/components/Reports.jsx:215
+msgid "Last 2 years"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:158
+msgid "Assignment Activity"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:243
+#: src/reports/components/AssignmentPerformanceReport.jsx:170
+#: src/reports/components/Reports.jsx:429
+msgid "Avg Score"
+msgstr ""
+
+#: src/dashboard/components/ActivityChart.jsx:258
+#: src/reports/components/Reports.jsx:446
+msgid "No assignment activity in this period"
+msgstr ""
+
+#: src/dashboard/components/Dashboard.jsx:63
+msgid "Failed to load dashboard data."
+msgstr ""
+
+#: src/dashboard/components/Dashboard.jsx:116
+msgid "Welcome to PressPrimer Assignment! Here's an overview of recent assignment activity."
+msgstr ""
+
+#: src/dashboard/components/Dashboard.jsx:148
+#: src/reports/components/Reports.jsx:305
+msgid "Loading…"
+msgstr ""
+
+#: src/dashboard/components/PopularAssignments.jsx:58
+msgid "No submissions yet"
+msgstr ""
+
+#: src/dashboard/components/PopularAssignments.jsx:97
+msgid "submission"
+msgstr ""
+
+#: src/dashboard/components/PopularAssignments.jsx:101
+msgid "submissions"
+msgstr ""
+
+#: src/dashboard/components/PopularAssignments.jsx:117
+msgid "Popular Assignments"
+msgstr ""
+
+#: src/dashboard/components/QuickActions.jsx:32
+msgid "Create Assignment"
+msgstr ""
+
+#: src/dashboard/components/QuickActions.jsx:41
+msgid "View Submissions"
+msgstr ""
+
+#: src/dashboard/components/QuickActions.jsx:50
+msgid "Open Grading Queue"
+msgstr ""
+
+#: src/dashboard/components/QuickActions.jsx:58
+msgid "View Reports"
+msgstr ""
+
+#: src/dashboard/components/QuickActions.jsx:69
+msgid "Quick Actions"
+msgstr ""
+
+#: src/dashboard/components/QuickActions.jsx:91
+msgid "Watch Onboarding Tour"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:51
+msgid "Just now"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:54
+#: src/dashboard/components/RecentActivity.jsx:59
+#: src/dashboard/components/RecentActivity.jsx:64
+msgid "ago"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:156
+msgid "Type"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:174
+msgid "When"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:191
+msgid "Recent Activity"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:199
+msgid "View All"
+msgstr ""
+
+#: src/dashboard/components/RecentActivity.jsx:206
+msgid "No recent activity"
+msgstr ""
+
+#: src/dashboard/components/StatsCards.jsx:36
+msgid "Published Assignments"
+msgstr ""
+
+#: src/dashboard/components/StatsCards.jsx:42
+msgid "Submissions (7 days)"
+msgstr ""
+
+#: src/dashboard/components/StatsCards.jsx:48
+msgid "Awaiting Grading"
+msgstr ""
+
+#: src/dashboard/components/StatsCards.jsx:54
+msgid "Graded (7 days)"
+msgstr ""
+
+#: src/dashboard/components/StatsCards.jsx:60
+msgid "Average Score (7 days)"
+msgstr ""
+
+#: src/dashboard/components/StatsCards.jsx:69
+msgid "Return Rate (7 days)"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:157
+#: src/submission-detail/components/SubmissionDetail.jsx:117
+msgid "Failed to load submission."
+msgstr ""
+
+#. translators: %d: maximum points
+#: src/grading-interface/components/GradingForm.jsx:243
+#, js-format
+msgid "Please enter a score between 0 and %d."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:284
+msgid "Saved."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:290
+msgid "Failed to save."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:317
+msgid "No more submissions."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:328
+msgid "Please assign a score before returning."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:361
+msgid "Returned to student."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:368
+msgid "Failed to return submission."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:534
+msgid "← Back to Queue"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:568
+#: src/submission-detail/components/SubmissionDetail.jsx:250
+msgid "Prev"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:577
+#: src/submission-detail/components/SubmissionDetail.jsx:257
+msgid "Next"
+msgstr ""
+
+#. translators: %d: submission number
+#: src/grading-interface/components/GradingForm.jsx:667
+#, js-format
+msgid "Resubmission #%d"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:684
+msgid "Student Notes:"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:712
+msgid "Assignment Instructions"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:735
+msgid "No instructions provided."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:778
+msgid "No grading guidelines provided."
+msgstr ""
+
+#. translators: %d: maximum points
+#: src/grading-interface/components/GradingForm.jsx:963
+#, js-format
+msgid "Score must be between 0 and %d."
+msgstr ""
+
+#. translators: %s: keyboard key
+#: src/grading-interface/components/GradingForm.jsx:1028
+#, js-format
+msgid "Press %s"
+msgstr ""
+
+#. translators: %1$d: score percentage
+#: src/grading-interface/components/GradingForm.jsx:1074
+#, js-format
+msgid "Passing (%1$d%%)"
+msgstr ""
+
+#. translators: %s: required passing score in points
+#: src/grading-interface/components/GradingForm.jsx:1088
+#: src/submission-detail/components/SubmissionDetail.jsx:454
+#, js-format
+msgid "Not Passing (requires %s pts)"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1124
+msgid "Enter feedback for the student…"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1145
+msgid "Save"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1157
+msgid "Save & Return to Student"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1170
+msgid "This submission has been returned to the student."
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1188
+msgid "Shortcuts:"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1190
+msgid "navigate"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1192
+msgid "quick score"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1197
+msgid "save"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1199
+msgid "save & next"
+msgstr ""
+
+#: src/grading-interface/components/GradingForm.jsx:1204
+msgid "close"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:91
+msgid "Failed to load report data."
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:181
+#: src/reports/components/OverviewCards.jsx:77
+msgid "Pass Rate"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:192
+msgid "Awaiting"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:202
+msgid "Avg Grading Time"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:230
+msgid "All Reports"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:236
+#: src/reports/components/Reports.jsx:223
+msgid "Assignment Performance"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:242
+#: src/reports/components/Reports.jsx:224
+msgid "See how each assignment is performing with submission counts, average scores, and pass rates."
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:278
+msgid "Search assignments…"
+msgstr ""
+
+#: src/reports/components/AssignmentPerformanceReport.jsx:297
+msgid "of"
+msgstr ""
+
+#: src/reports/components/DateRangePicker.jsx:32
+msgid "Last 7 days"
+msgstr ""
+
+#: src/reports/components/DateRangePicker.jsx:44
+msgid "All time"
+msgstr ""
+
+#: src/reports/components/DateRangePicker.jsx:48
+msgid "Custom"
+msgstr ""
+
+#: src/reports/components/DateRangePicker.jsx:74
+msgid "Date Range:"
+msgstr ""
+
+#: src/reports/components/OverviewCards.jsx:64
+msgid "Total Submissions"
+msgstr ""
+
+#: src/reports/components/OverviewCards.jsx:70
+msgid "Average Score"
+msgstr ""
+
+#: src/reports/components/OverviewCards.jsx:84
+msgid "Avg. Grading Time"
+msgstr ""
+
+#: src/reports/components/Reports.jsx:141
+msgid "Failed to load overview statistics."
+msgstr ""
+
+#: src/reports/components/Reports.jsx:250
+msgid "More Reports Coming Soon!"
+msgstr ""
+
+#: src/reports/components/Reports.jsx:251
+msgid "We're working on additional reports to help you better understand your assignment results."
+msgstr ""
+
+#: src/reports/components/Reports.jsx:277
+msgid "View assignment performance and student results."
+msgstr ""
+
+#: src/reports/components/Reports.jsx:318
+msgid "Submission Activity"
+msgstr ""
+
+#: src/reports/components/Reports.jsx:462
+msgid "Available Reports"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:38
+msgid "Danger Zone"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:41
+msgid "These settings can result in permanent data loss. Use with caution."
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:49
+msgid "Remove Data on Uninstall"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:64
+msgid "Remove all plugin data when uninstalling"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:72
+msgid "Warning"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:76
+msgid "If enabled, uninstalling this plugin will permanently delete:"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:88
+msgid "All assignments"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:94
+msgid "All student submissions and files"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:100
+msgid "All grades and feedback"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:106
+msgid "All categories"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:112
+msgid "All plugin settings"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:120
+msgid "This action cannot be undone!"
+msgstr ""
+
+#: src/settings-panel/components/AdvancedTab.jsx:134
+msgid "By default, data is preserved when you uninstall the plugin to prevent accidental data loss. Only enable this if you are certain you want to completely remove all data."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:139
+msgid "Georgia (Serif)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:143
+msgid "Palatino (Serif)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:147
+msgid "Arial (Sans-serif)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:151
+msgid "Verdana (Sans-serif)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:155
+msgid "Tahoma (Sans-serif)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:159
+msgid "Trebuchet MS (Sans-serif)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:163
+msgid "Courier New (Monospace)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:173
+msgid "Default (16px)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:177
+msgid "Small (14px)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:181
+msgid "Medium Small (15px)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:185
+msgid "Medium Large (17px)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:189
+msgid "Large (18px)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:193
+msgid "Extra Large (20px)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:251
+#: src/settings-panel/components/AppearanceTab.jsx:912
+msgid "Reset to Default"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:335
+msgid "Live Preview"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:359
+msgid "Shows how your assignment page will look to students."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:387
+msgid "Live preview of appearance settings"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:474
+msgid "Submit a 2,000 word essay. Include a bibliography and proper citations."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:532
+msgid "Accepted: PDF, DOCX, DOC, TXT, RTF, ODT, JPG, JPEG, PNG, GIF, ZIP (max 10 MB each, up to 5 files)"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:578
+msgid "E.g., \"I focused on the second approach…\""
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:641
+#: src/shared/components/viewers/DocumentPanel.jsx:39
+msgid "Failed"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:687
+msgid "Typography"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:693
+msgid "Customize fonts for all assignment themes. These settings apply globally to Default, Modern, and Minimal themes."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:701
+msgid "Font Family"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:705
+msgid "Choose a font family for assignment text."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:726
+msgid "Base Font Size"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:730
+msgid "The base font size for assignment content. Other sizes scale proportionally."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:756
+msgid "Colors"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:762
+msgid "Override theme colors globally. Custom colors apply to all themes. Use \"Reset to Default\" to restore theme-specific colors."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:769
+msgid "Primary Color"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:773
+msgid "Used for buttons, links, and interactive elements."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:785
+msgid "Text Color"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:786
+msgid "Primary text color for assignment content."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:798
+msgid "Background Color"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:802
+msgid "Main background color for assignment containers."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:817
+msgid "Success Color"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:821
+msgid "Color for pass badges and success notices."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:833
+msgid "Error Color"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:834
+msgid "Color for fail badges and error notices."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:852
+msgid "Layout"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:858
+msgid "Adjust layout properties across all themes."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:866
+msgid "Border Radius"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:870
+msgid "Roundness of corners. Set to 0 for sharp corners, higher values for more rounded. Leave empty for theme default."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:929
+msgid "Spacing"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:935
+msgid "Fine-tune spacing for assignment elements."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:943
+msgid "Line Height"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:947
+msgid "Controls the vertical spacing between lines of text."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:994
+msgid "Container Max Width"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:998
+msgid "Maximum width of the assignment container. Set lower values for better readability."
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:1051
+msgid "Default Theme"
+msgstr ""
+
+#: src/settings-panel/components/AppearanceTab.jsx:1056
+msgid "Choose the default display theme for all assignments. Individual assignments can override this in their settings."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:64
+msgid "Copied!"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:66
+msgid "Failed to copy"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:76
+msgid "Click to copy"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:152
+msgid "Select Email Logo"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:154
+msgid "Use this image"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:187
+msgid "Please enter a valid email address"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:213
+#: src/settings-panel/components/EmailTab.jsx:222
+msgid "Failed to send test email"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:234
+msgid "Email Settings"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:237
+msgid "Configure email notifications sent by the plugin."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:245
+msgid "Email Logo"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:246
+msgid "Logo displayed at the top of emails. Max width 400px, max height 150px."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:270
+msgid "Email logo"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:294
+msgid "Select Logo"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:305
+msgid "From Name"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:306
+msgid "Name shown in the \"From\" field of emails sent by the plugin."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:333
+msgid "From Email Address"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:337
+msgid "Email address shown in the \"From\" field of emails sent by the plugin."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:367
+msgid "Notification Toggles"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:370
+msgid "Choose which email notifications are sent automatically."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:378
+#: src/settings-panel/components/EmailTab.jsx:851
+msgid "Submission Confirmation"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:396
+msgid "Email students when their submission is received"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:406
+#: src/settings-panel/components/EmailTab.jsx:858
+msgid "Grade Notification"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:423
+msgid "Email students when their assignment is graded and returned"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:433
+#: src/settings-panel/components/EmailTab.jsx:865
+msgid "New Submission Notification"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:445
+msgid "Email the assignment owner (and any additional addresses set on the assignment) when a student submits"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:457
+msgid "Submission Confirmation Email"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:463
+msgid "Customize the email sent to students when their submission is received."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:471
+#: src/settings-panel/components/EmailTab.jsx:587
+#: src/settings-panel/components/EmailTab.jsx:730
+msgid "Subject Line"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:492
+#: src/settings-panel/components/EmailTab.jsx:608
+#: src/settings-panel/components/EmailTab.jsx:751
+msgid "Email Body"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:518
+#: src/settings-panel/components/EmailTab.jsx:633
+#: src/settings-panel/components/EmailTab.jsx:776
+msgid "Available Tokens:"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:521
+#: src/settings-panel/components/EmailTab.jsx:636
+#: src/settings-panel/components/EmailTab.jsx:779
+msgid "(click to copy)"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:526
+#: src/settings-panel/components/EmailTab.jsx:641
+msgid "Student's first name"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:533
+#: src/settings-panel/components/EmailTab.jsx:648
+#: src/settings-panel/components/EmailTab.jsx:784
+msgid "Student's full display name"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:540
+#: src/settings-panel/components/EmailTab.jsx:655
+#: src/settings-panel/components/EmailTab.jsx:798
+msgid "Title of the assignment"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:547
+#: src/settings-panel/components/EmailTab.jsx:690
+#: src/settings-panel/components/EmailTab.jsx:805
+msgid "Submission date and time"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:554
+#: src/settings-panel/components/EmailTab.jsx:697
+#: src/settings-panel/components/EmailTab.jsx:812
+msgid "Your site name"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:561
+msgid "Button linking to submission status page"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:573
+msgid "Grade Notification Email"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:579
+msgid "Customize the email sent to students when their assignment is graded."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:662
+msgid "Score achieved"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:669
+msgid "Maximum points possible"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:676
+msgid "Pass/fail status text"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:683
+msgid "Visual score summary box with pass/fail"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:704
+msgid "Button linking to grade and feedback page"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:716
+msgid "New Submission Notification Email"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:722
+msgid "Customize the email sent to the assignment owner (and any additional notification addresses configured on the assignment) when a student submits."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:791
+msgid "Student's email address"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:819
+msgid "Button linking to the grading page"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:831
+msgid "Test Email"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:834
+msgid "Send a test email to verify your email configuration and preview your templates."
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:842
+msgid "Email Type"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:877
+msgid "Send To"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:886
+msgid "Enter email address"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:898
+msgid "Send Test"
+msgstr ""
+
+#: src/settings-panel/components/EmailTab.jsx:903
+msgid "Save your settings first, then send a test email to preview your templates with sample data."
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:30
+msgid "— Select a page —"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:44
+msgid "Pages"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:47
+msgid "Select which pages contain assignment shortcodes. A \"My Submissions\" page is created automatically on activation."
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:55
+msgid "My Submissions Page"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:59
+msgid "Page containing the [pressprimer_assignment_my_submissions] shortcode. Used in email links so students can view their submissions."
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:85
+msgid "Assignment Defaults"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:88
+msgid "Default values used when creating new assignments."
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:96
+msgid "Default Passing Score"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:100
+msgid "Default points required to pass new assignments."
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:120
+msgid "Default Max File Size"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:124
+msgid "Maximum file size for uploads (1-100 MB)."
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:144
+msgid "Default Max Files"
+msgstr ""
+
+#: src/settings-panel/components/GeneralTab.jsx:148
+msgid "Maximum number of files per submission (1-20)."
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:257
+#: src/settings-panel/components/StatusTab.jsx:704
+msgid "Active"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:261
+#: src/settings-panel/components/StatusTab.jsx:402
+#: src/settings-panel/components/StatusTab.jsx:488
+msgid "Version"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:266
+msgid "Integration"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:272
+msgid "Working"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:277
+msgid "Attached Assignments"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:307
+#: src/settings-panel/components/StatusTab.jsx:686
+msgid "LMS Integrations"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:310
+msgid "Connect with popular Learning Management Systems."
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:325
+msgid "LearnDash Not Detected"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:329
+msgid "Install and activate LearnDash to enable this integration. Once active, you can attach PressPrimer assignments to lessons and topics."
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:345
+msgid "LearnDash Settings"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:354
+msgid "Message shown when the assignment is locked until all topics are complete"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:386
+msgid "This message appears on lesson pages when the assignment is restricted until all topics are completed. Leave blank to use the default message."
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:399
+#: src/settings-panel/components/SettingsPage.jsx:320
+msgid "Save Settings"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:424
+msgid "Tutor LMS Not Detected"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:428
+msgid "Install and activate Tutor LMS to enable this integration. Once active, you can attach PressPrimer assignments to lessons."
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:447
+msgid "LifterLMS Not Detected"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:451
+msgid "Install and activate LifterLMS to enable this integration. Once active, you can attach PressPrimer assignments to lessons and courses."
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:470
+msgid "LearnPress Not Detected"
+msgstr ""
+
+#: src/settings-panel/components/IntegrationsTab.jsx:474
+msgid "Install and activate LearnPress to enable this integration. Once active, you can attach PressPrimer assignments to lessons and courses."
+msgstr ""
+
+#: src/settings-panel/components/SettingsPage.jsx:202
+msgid "Settings saved successfully!"
+msgstr ""
+
+#: src/settings-panel/components/SettingsPage.jsx:211
+#: src/settings-panel/components/SettingsPage.jsx:220
+msgid "Failed to save settings."
+msgstr ""
+
+#: src/settings-panel/components/SettingsPage.jsx:250
+msgid "Configure your assignment plugin settings, email notifications, and preferences."
+msgstr ""
+
+#: src/settings-panel/components/SettingsPage.jsx:299
+msgid "Saving…"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:90
+msgid "Failed to repair tables."
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:136
+#: src/settings-panel/components/StatusTab.jsx:861
+#: src/shared/components/viewers/DocumentPanel.jsx:47
+msgid "OK"
+msgstr ""
+
+#. translators: %s: minimum required version number
+#: src/settings-panel/components/StatusTab.jsx:142
+#, js-format
+msgid "Requires %s+"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:320
+#: src/settings-panel/components/StatusTab.jsx:337
+msgid "System status copied to clipboard."
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:344
+msgid "Failed to copy. Please try again."
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:361
+#: src/settings-panel/components/StatusTab.jsx:777
+msgid "Available"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:365
+#: src/settings-panel/components/StatusTab.jsx:784
+msgid "Not Available"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:377
+msgid "Copy all diagnostic information to share with support."
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:386
+msgid "Copy System Status"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:395
+msgid "Plugin"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:411
+msgid "DB Version"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:418
+msgid "Not set"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:427
+msgid "Educator"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:440
+msgid "School"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:451
+msgid "Enterprise"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:468
+msgid "WordPress"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:475
+msgid "Site URL"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:502
+msgid "Multisite"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:527
+msgid "Memory Limit"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:547
+msgid "Server"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:554
+msgid "PHP Version"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:568
+msgid "Post Max Size"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:577
+msgid "Upload Max Filesize"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:589
+msgid "Time Limit"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:597
+msgid "seconds"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:605
+msgid "MySQL Version"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:621
+msgid "Statistics"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:715
+msgid "Not Detected"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:733
+msgid "File Handling"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:736
+msgid "Server capabilities for processing uploaded assignment files including security validation, text extraction, and document preview."
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:746
+msgid "MIME Detection (finfo)"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:755
+msgid "PDF Parser Library"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:766
+msgid "pdftotext Command"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:794
+msgid "DOCX Support (ZipArchive)"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:803
+msgid "Image Processing (GD)"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:817
+msgid "Database Tables"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:822
+msgid "Missing Tables Detected"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:826
+msgid "Some database tables are missing. Click the repair button below to recreate them."
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:840
+msgid "Table"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:844
+msgid "Rows"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:871
+msgid "Missing"
+msgstr ""
+
+#: src/settings-panel/components/StatusTab.jsx:897
+msgid "Repair Database Tables"
+msgstr ""
+
+#. translators: %d: number of active plugins
+#: src/settings-panel/components/StatusTab.jsx:916
+#, js-format
+msgid "Active Plugins (%d)"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:43
+msgid "Poor"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:51
+msgid "Good"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:170
+msgid "Preview not available for this file type."
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:182
+#: src/shared/components/viewers/DocxViewer.jsx:141
+#: src/shared/components/viewers/OdtViewer.jsx:418
+#: src/shared/components/viewers/RtfViewer.jsx:143
+#: src/shared/components/viewers/TextViewer.jsx:117
+msgid "Download File"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:199
+msgid "No files submitted"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:280
+msgid "Text:"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:303
+msgid "Text: Unknown"
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:329
+msgid "Text re-extracted."
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:340
+msgid "Re-extraction failed."
+msgstr ""
+
+#: src/shared/components/viewers/DocumentPanel.jsx:350
+msgid "Re-extract"
+msgstr ""
+
+#: src/shared/components/viewers/DocxViewer.jsx:89
+#: src/shared/components/viewers/OdtViewer.jsx:366
+#: src/shared/components/viewers/RtfViewer.jsx:91
+msgid "Failed to load document."
+msgstr ""
+
+#: src/shared/components/viewers/DocxViewer.jsx:117
+#: src/shared/components/viewers/OdtViewer.jsx:394
+#: src/shared/components/viewers/RtfViewer.jsx:119
+msgid "Loading document…"
+msgstr ""
+
+#: src/shared/components/viewers/DocxViewer.jsx:127
+#: src/shared/components/viewers/OdtViewer.jsx:404
+#: src/shared/components/viewers/RtfViewer.jsx:129
+msgid "Could not preview document"
+msgstr ""
+
+#: src/shared/components/viewers/DocxViewer.jsx:151
+msgid "Some formatting may not be displayed correctly."
+msgstr ""
+
+#: src/shared/components/viewers/ImageViewer.jsx:89
+msgid "Failed to load image."
+msgstr ""
+
+#: src/shared/components/viewers/ImageViewer.jsx:120
+msgid "Failed to display image."
+msgstr ""
+
+#: src/shared/components/viewers/ImageViewer.jsx:182
+#: src/shared/components/viewers/PdfViewer.jsx:273
+msgid "Open in new tab"
+msgstr ""
+
+#: src/shared/components/viewers/OdtViewer.jsx:286
+msgid "No content found in document."
+msgstr ""
+
+#: src/shared/components/viewers/OdtViewer.jsx:345
+msgid "Invalid ODT file: content.xml not found."
+msgstr ""
+
+#: src/shared/components/viewers/PdfViewer.jsx:165
+msgid "Failed to load PDF."
+msgstr ""
+
+#: src/shared/components/viewers/PdfViewer.jsx:222
+msgid "Try opening in a new tab"
+msgstr ""
+
+#. translators: %d: number of pages
+#: src/shared/components/viewers/PdfViewer.jsx:249
+#, js-format
+msgid "%d pages"
+msgstr ""
+
+#: src/shared/components/viewers/PdfViewer.jsx:301
+msgid "Loading PDF…"
+msgstr ""
+
+#: src/shared/components/viewers/TextContentViewer.jsx:67
+msgid "No text content submitted"
+msgstr ""
+
+#: src/shared/components/viewers/TextContentViewer.jsx:109
+msgid "Download TXT"
+msgstr ""
+
+#: src/shared/components/viewers/TextViewer.jsx:67
+msgid "Failed to load file."
+msgstr ""
+
+#: src/shared/components/viewers/TextViewer.jsx:94
+msgid "Loading file…"
+msgstr ""
+
+#: src/shared/components/viewers/TextViewer.jsx:103
+msgid "Could not preview file"
+msgstr ""
+
+#. translators: 1: number of lines, 2: number of characters
+#: src/shared/components/viewers/TextViewer.jsx:144
+#, js-format
+msgid "%1$d lines, %2$d characters"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:133
+msgid "Delete this submission?"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:135
+msgid "This action cannot be undone. All submitted files will also be deleted."
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:222
+msgid "← Back to Submissions"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:236
+msgid "Submission Details"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:265
+msgid "Submission Information"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:318
+msgid "Submission #"
+msgstr ""
+
+#. translators: %d: submission number
+#: src/submission-detail/components/SubmissionDetail.jsx:326
+#, js-format
+msgid "#%d"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:373
+msgid "Submitted Content"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:409
+msgid "Score & Feedback"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:442
+msgid "Passing"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:497
+msgid "Open in the full grading interface with keyboard shortcuts and workflow tools"
+msgstr ""
+
+#: src/submission-detail/components/SubmissionDetail.jsx:507
+msgid "Open in Grading Interface"
 msgstr ""
 
 #: blocks/assignment/block.json

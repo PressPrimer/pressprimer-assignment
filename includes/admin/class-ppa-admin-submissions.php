@@ -541,6 +541,49 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			$where_values[]  = get_current_user_id();
 		}
 
+		/**
+		 * Filter the set of user IDs visible to the current user.
+		 *
+		 * Used by the Educator addon to enforce teacher data isolation.
+		 *
+		 * Return values:
+		 *   null         — no constraint (admin, or Educator not active).
+		 *   array of int — restrict to these user IDs.
+		 *   empty array  — no access.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param null|int[] $user_ids        null by default.
+		 * @param int        $current_user_id The user making the request.
+		 */
+		$visible_user_ids = apply_filters(
+			'pressprimer_assignment_visible_user_ids',
+			null,
+			get_current_user_id()
+		);
+
+		if ( null !== $visible_user_ids ) {
+			if ( empty( $visible_user_ids ) ) {
+				// No access — force empty result.
+				$this->items = [];
+				$this->set_pagination_args(
+					[
+						'total_items' => 0,
+						'per_page'    => $per_page,
+						'total_pages' => 0,
+					]
+				);
+				$columns               = $this->get_columns();
+				$hidden                = get_hidden_columns( $this->screen );
+				$sortable              = $this->get_sortable_columns();
+				$this->_column_headers = [ $columns, $hidden, $sortable ];
+				return;
+			}
+			$id_placeholders = implode( ',', array_fill( 0, count( $visible_user_ids ), '%d' ) );
+			$where_clauses[] = "s.user_id IN ({$id_placeholders})";
+			$where_values    = array_merge( $where_values, array_map( 'absint', $visible_user_ids ) );
+		}
+
 		// Build orderby and order.
 		$allowed_orderby = [ 'id', 'status', 'submitted_at', 'score' ];
 		$orderby         = isset( $_GET['orderby'] ) && '' !== $_GET['orderby'] ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'submitted_at';

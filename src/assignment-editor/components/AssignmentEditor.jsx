@@ -45,6 +45,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ selectedCategories, setSelectedCategories ] = useState(
 		assignmentData.categories || []
 	);
+	const [ rubricData, setRubricData ] = useState( null );
 
 	// Defaults from plugin settings (provided for new assignments).
 	const defaults = assignmentData.defaults || {};
@@ -60,7 +61,13 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				parseInt( assignmentData.allow_resubmission, 10 ) === 1;
 			const maxResub = parseInt( assignmentData.max_resubmissions, 10 );
 
-			form.setFieldsValue( {
+			const rubricEnabled =
+				parseInt( assignmentData.rubric_enabled, 10 ) === 1;
+
+			const aiAutoGrade =
+				parseInt( assignmentData.ai_auto_grade, 10 ) === 1;
+
+			const fieldValues = {
 				title: assignmentData.title || '',
 				description: assignmentData.description || '',
 				instructions: assignmentData.instructions || '',
@@ -87,7 +94,16 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					'png',
 					'gif',
 				],
-			} );
+				rubric_enabled: rubricEnabled,
+				ai_auto_grade: aiAutoGrade,
+			};
+
+			form.setFieldsValue( fieldValues );
+
+			// Initialize rubric data from existing rubric structure.
+			if ( assignmentData.rubric ) {
+				setRubricData( assignmentData.rubric );
+			}
 		}
 	}, [ assignmentData, form ] );
 
@@ -102,13 +118,15 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 
 			const assignmentId = currentId || assignmentData.id;
 
-			// Prepare payload.
+			// Prepare payload — exclude rubric_enabled (managed by Educator endpoints).
+			const { rubric_enabled: rubricEnabledValue, ...rest } = values;
 			const payload = {
-				...values,
+				...rest,
 				allow_resubmission: values.allow_resubmission ? 1 : 0,
 				max_resubmissions: values.allow_resubmission
 					? values.max_resubmissions
 					: 0,
+				ai_auto_grade: values.ai_auto_grade ? 1 : 0,
 				categories: selectedCategories,
 			};
 
@@ -125,19 +143,46 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				data: payload,
 			} );
 
-			message.success(
-				__( 'Assignment saved successfully!', 'pressprimer-assignment' )
-			);
+			// Resolve the saved assignment ID.
+			const savedId = assignmentId || response.id;
 
-			// Update URL if this was a new assignment.
+			// Update state and URL immediately after creation so that
+			// subsequent saves use PUT (update) instead of POST (create),
+			// even if the rubric save below fails.
 			if ( ! assignmentId && response.id ) {
+				setCurrentId( response.id );
 				window.history.replaceState(
 					{},
 					'',
 					`${ window.pressprimerAssignmentAdmin.adminUrl }admin.php?page=pressprimer-assignment-assignments&action=edit&assignment=${ response.id }`
 				);
-				setCurrentId( response.id );
 			}
+
+			// Save or delete rubric via Educator endpoints (if addon is active).
+			if (
+				savedId &&
+				window.pressprimerAssignmentAdmin?.addons?.educator
+			) {
+				if ( rubricEnabledValue && rubricData ) {
+					await apiFetch( {
+						path: `/ppae/v1/assignments/${ savedId }/rubric`,
+						method: 'POST',
+						data: { criteria: rubricData },
+					} );
+				} else if ( ! rubricEnabledValue ) {
+					// Delete rubric (sets rubric_enabled = 0).
+					await apiFetch( {
+						path: `/ppae/v1/assignments/${ savedId }/rubric`,
+						method: 'DELETE',
+					} ).catch( () => {
+						// Ignore 404 — no rubric to delete.
+					} );
+				}
+			}
+
+			message.success(
+				__( 'Assignment saved successfully!', 'pressprimer-assignment' )
+			);
 		} catch ( error ) {
 			message.error(
 				error.message ||
@@ -145,6 +190,55 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			);
 		} finally {
 			setSaving( false );
+		}
+	};
+
+	/**
+	 * Handle validation failure — switch to the tab containing the first error.
+	 *
+	 * @param {Object} errorInfo             Ant Design validation error info.
+	 * @param {Array}  errorInfo.errorFields Array of fields that failed validation.
+	 */
+	const handleFinishFailed = ( { errorFields } ) => {
+		if ( ! errorFields || errorFields.length === 0 ) {
+			return;
+		}
+
+		// Show a viewport-pinned toast so the user sees feedback even
+		// when they clicked Save from the bottom of a long form. The
+		// inline field errors remain visible after the tab switch, so
+		// the user can scroll up to see exactly what needs fixing.
+		message.error(
+			__(
+				'Could not save: please correct the highlighted fields and try again.',
+				'pressprimer-assignment'
+			)
+		);
+
+		// Fields that live on the settings tab.
+		const settingsFields = [
+			'title',
+			'description',
+			'instructions',
+			'grading_guidelines',
+			'status',
+			'theme',
+			'submission_type',
+			'max_points',
+			'passing_score',
+			'allow_resubmission',
+			'max_resubmissions',
+			'notification_email',
+			'rubric_enabled',
+			'ai_auto_grade',
+		];
+
+		const firstFieldName = errorFields[ 0 ].name[ 0 ];
+
+		if ( settingsFields.includes( firstFieldName ) ) {
+			setActiveTab( 'settings' );
+		} else {
+			setActiveTab( 'file-settings' );
 		}
 	};
 
@@ -169,7 +263,19 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 		{
 			key: 'settings',
 			label: __( 'Settings', 'pressprimer-assignment' ),
-			children: <SettingsPanel form={ form } />,
+			children: (
+				<SettingsPanel
+					form={ form }
+					rubricData={ rubricData }
+					onRubricDataChange={ setRubricData }
+					onRubricTotalChange={ ( total ) => {
+						// Sync assignment max_points to rubric total when rubric is enabled.
+						if ( total > 0 ) {
+							form.setFieldValue( 'max_points', total );
+						}
+					} }
+				/>
+			),
 		},
 		{
 			key: 'file-settings',
@@ -202,6 +308,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					form={ form }
 					layout="vertical"
 					onFinish={ handleSubmit }
+					onFinishFailed={ handleFinishFailed }
 					initialValues={ {
 						title: '',
 						description: '',
@@ -228,6 +335,8 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 							'png',
 							'gif',
 						],
+						rubric_enabled: false,
+						ai_auto_grade: false,
 					} }
 				>
 					{ /* Header */ }

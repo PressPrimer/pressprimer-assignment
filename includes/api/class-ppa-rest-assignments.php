@@ -461,6 +461,22 @@ class PressPrimer_Assignment_REST_Assignments {
 			PressPrimer_Assignment_Statistics_Service::clear_all_caches();
 		}
 
+		/**
+		 * Fire audit log event for assignment created.
+		 *
+		 * @since 2.0.0
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'assignment.created',
+			'assignment',
+			$assignment_id,
+			[
+				'title'     => $assignment->title,
+				'author_id' => $assignment->author_id,
+			]
+		);
+
 		return rest_ensure_response( $this->prepare_item_for_response( $assignment ) );
 	}
 
@@ -494,6 +510,10 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		$data = $this->sanitize_assignment_data( $request );
 
+		// Track which fields changed for the audit log.
+		$old_status     = $assignment->status;
+		$changed_fields = array_keys( $data );
+
 		// Update assignment properties.
 		foreach ( $data as $key => $value ) {
 			if ( property_exists( $assignment, $key ) ) {
@@ -521,6 +541,59 @@ class PressPrimer_Assignment_REST_Assignments {
 		if ( class_exists( 'PressPrimer_Assignment_Statistics_Service' ) ) {
 			PressPrimer_Assignment_Statistics_Service::clear_all_caches();
 		}
+
+		// Fire audit log events based on what changed.
+		$new_status = $assignment->status;
+
+		if ( $old_status !== $new_status && 'published' === $new_status ) {
+			/**
+			 * Fires when an assignment is published.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param int                            $id         Assignment ID.
+			 * @param PressPrimer_Assignment_Assignment $assignment The assignment object.
+			 */
+			do_action( 'pressprimer_assignment_published', $id, $assignment );
+
+			do_action(
+				'pressprimer_assignment_log_event',
+				'assignment.published',
+				'assignment',
+				$id,
+				[ 'title' => $assignment->title ]
+			);
+		} elseif ( $old_status !== $new_status && 'archived' === $new_status ) {
+			/**
+			 * Fires when an assignment is archived.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param int                            $id         Assignment ID.
+			 * @param PressPrimer_Assignment_Assignment $assignment The assignment object.
+			 */
+			do_action( 'pressprimer_assignment_archived', $id, $assignment );
+
+			do_action(
+				'pressprimer_assignment_log_event',
+				'assignment.archived',
+				'assignment',
+				$id,
+				[ 'title' => $assignment->title ]
+			);
+		}
+
+		// Fire audit log event for assignment updated.
+		do_action(
+			'pressprimer_assignment_log_event',
+			'assignment.updated',
+			'assignment',
+			$id,
+			[
+				'changed_fields' => $changed_fields,
+				'title'          => $assignment->title,
+			]
+		);
 
 		return rest_ensure_response( $this->prepare_item_for_response( $assignment ) );
 	}
@@ -553,6 +626,9 @@ class PressPrimer_Assignment_REST_Assignments {
 			);
 		}
 
+		// Capture title before deletion for audit log.
+		$assignment_title = $assignment->title;
+
 		/**
 		 * Fires before an assignment is deleted.
 		 *
@@ -580,6 +656,29 @@ class PressPrimer_Assignment_REST_Assignments {
 		 * @param int $id The deleted assignment ID.
 		 */
 		do_action( 'pressprimer_assignment_deleted', $id );
+
+		/**
+		 * Fire audit log event for assignment deleted.
+		 *
+		 * Enterprise addon listens to this and writes to the audit log.
+		 * When Enterprise is not active, this hook fires harmlessly.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $event_type  Event identifier.
+		 * @param string $object_type Object type affected.
+		 * @param int    $object_id   Object ID.
+		 * @param array  $data        Additional context.
+		 */
+		do_action(
+			'pressprimer_assignment_log_event',
+			'assignment.deleted',
+			'assignment',
+			$id,
+			[
+				'title' => $assignment_title,
+			]
+		);
 
 		return rest_ensure_response(
 			[
@@ -644,6 +743,10 @@ class PressPrimer_Assignment_REST_Assignments {
 		// Boolean fields stored as integer.
 		if ( null !== $request->get_param( 'allow_resubmission' ) ) {
 			$data['allow_resubmission'] = $request->get_param( 'allow_resubmission' ) ? 1 : 0;
+		}
+
+		if ( null !== $request->get_param( 'ai_auto_grade' ) ) {
+			$data['ai_auto_grade'] = $request->get_param( 'ai_auto_grade' ) ? 1 : 0;
 		}
 
 		// Enum fields - validate against allowed values.
@@ -881,6 +984,7 @@ class PressPrimer_Assignment_REST_Assignments {
 			'max_files'          => (int) $assignment->max_files,
 			'submission_type'    => $assignment->submission_type,
 			'status'             => $assignment->status,
+			'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
 			'author_id'          => (int) $assignment->author_id,
 			'notification_email' => $assignment->notification_email ?? '',
 			'submission_count'   => (int) $assignment->submission_count,

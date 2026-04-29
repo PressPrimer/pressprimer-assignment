@@ -187,6 +187,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endif; ?>
 		</div>
 
+		<?php
+		/**
+		 * Fires after the grade display on a returned submission, before instructor feedback.
+		 *
+		 * Used by Educator addon to render rubric score breakdown.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param PressPrimer_Assignment_Submission $submission The submission instance.
+		 * @param PressPrimer_Assignment_Assignment $assignment The assignment instance.
+		 */
+		do_action( 'pressprimer_assignment_after_grade_display', $submission, $assignment );
+		?>
+
 		<?php if ( ! empty( $submission->feedback ) ) : ?>
 			<div class="ppa-feedback">
 				<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Instructor Feedback', 'pressprimer-assignment' ); ?></h4>
@@ -222,12 +236,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="ppa-resubmit-section">
 			<p class="ppa-resubmit-info">
 				<?php
-				printf(
-					/* translators: %1$d: remaining resubmissions, %2$d: total max resubmissions */
-					esc_html__( 'You have %1$d of %2$d resubmissions remaining.', 'pressprimer-assignment' ),
-					(int) $resubmissions_remaining,
-					(int) $assignment->max_resubmissions
-				);
+				if ( -1 === (int) $resubmissions_remaining ) {
+					esc_html_e( 'You can resubmit this assignment.', 'pressprimer-assignment' );
+				} else {
+					printf(
+						/* translators: %1$d: remaining resubmissions, %2$d: total max resubmissions */
+						esc_html__( 'You have %1$d of %2$d resubmissions remaining.', 'pressprimer-assignment' ),
+						(int) $resubmissions_remaining,
+						(int) $assignment->max_resubmissions
+					);
+				}
 				?>
 			</p>
 			<button type="button" class="ppa-button ppa-button-secondary" id="ppa-start-resubmit" data-assignment-id="<?php echo esc_attr( $assignment->id ); ?>">

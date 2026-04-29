@@ -301,7 +301,52 @@ class PressPrimer_Assignment_REST_Settings {
 
 		// Merge with existing and save.
 		$merged = array_merge( $existing, $sanitized );
+
+		// Determine which settings keys changed.
+		$changed_keys = [];
+		foreach ( $sanitized as $key => $value ) {
+			if ( ! array_key_exists( $key, $existing ) || $existing[ $key ] !== $value ) {
+				$changed_keys[] = $key;
+			}
+		}
+
 		update_option( PressPrimer_Assignment_Admin_Settings::OPTION_NAME, $merged );
+
+		// Fire audit log event if any settings actually changed.
+		if ( ! empty( $changed_keys ) ) {
+			/**
+			 * Fire audit log event for settings changed.
+			 *
+			 * Enterprise addon listens to this and writes to the audit log.
+			 * When Enterprise is not active, this hook fires harmlessly.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param string $event_type  Event identifier.
+			 * @param string $object_type Object type affected.
+			 * @param int    $object_id   Object ID (0 for settings).
+			 * @param array  $data        Additional context.
+			 */
+			/**
+			 * Fires when plugin settings are saved.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param array $changed_keys List of setting keys that changed.
+			 * @param array $merged       The full merged settings array after save.
+			 */
+			do_action( 'pressprimer_assignment_settings_saved', $changed_keys, $merged );
+
+			do_action(
+				'pressprimer_assignment_log_event',
+				'settings.changed',
+				'settings',
+				0,
+				[
+					'changed_keys' => $changed_keys,
+				]
+			);
+		}
 
 		return new WP_REST_Response(
 			[

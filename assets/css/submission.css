@@ -531,6 +531,7 @@
 	border-radius: var(--ppa-radius-full);
 	overflow: hidden;
 	margin-top: var(--ppa-space-xs);
+	margin-left: var(--ppa-space-xl);
 }
 
 .ppa-file-progress-bar {
@@ -2007,6 +2008,11 @@
 	margin-right: var(--ppa-space-sm);
 }
 
+[dir="rtl"] .ppa-file-progress {
+	margin-left: 0;
+	margin-right: var(--ppa-space-xl);
+}
+
 /* File actions alignment */
 [dir="rtl"] .ppa-file-actions {
 	flex-direction: row-reverse;
@@ -2105,4 +2111,16 @@
 [dir="rtl"] .ppa-preview-notes-content {
 	direction: rtl;
 	text-align: right;
+}
+
+
+/* ==========================================================================
+   LearnPress integration: hide LearnPress's "lesson content is empty"
+   notice. This stylesheet only enqueues when an assignment is rendering,
+   so the rule is scoped to that context by load timing — the
+   .learn-press-message class does not exist on other pages.
+   ========================================================================== */
+
+.learn-press-message.notice {
+	display: none;
 }

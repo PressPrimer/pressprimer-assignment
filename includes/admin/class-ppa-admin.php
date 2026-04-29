@@ -254,6 +254,11 @@ class PressPrimer_Assignment_Admin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'pressprimer_assignment_admin_nonce' ),
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
+				'addons'  => [
+					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
 				'strings' => [
 					'confirmDelete'      => __( 'Are you sure you want to delete this item?', 'pressprimer-assignment' ),
 					'confirmDeleteTitle' => __( 'Delete Item', 'pressprimer-assignment' ),
@@ -413,6 +418,24 @@ class PressPrimer_Assignment_Admin {
 	 */
 	private function localize_reports_data() {
 		/**
+		 * Filters the list of addon report cards shown on the Reports page.
+		 *
+		 * Each report definition should contain:
+		 * - key: Unique string identifier
+		 * - title: Display title
+		 * - description: Brief description
+		 * - iconType: Ant Design icon name (e.g., 'AuditOutlined')
+		 * - color: Background color for the icon (e.g., '#722ed1')
+		 * - available: Boolean, whether the report is active
+		 * - href: URL to the report page
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param array $addon_reports Array of addon report definitions.
+		 */
+		$addon_reports = apply_filters( 'pressprimer_assignment_reports_addon_reports', [] );
+
+		/**
 		 * Filters the reports mascot image URL.
 		 *
 		 * Used by Enterprise addon for white-label branding.
@@ -422,7 +445,7 @@ class PressPrimer_Assignment_Admin {
 		 * @param string $mascot_url Default mascot URL.
 		 */
 		$reports_mascot = apply_filters(
-			'pressprimer_assignment_reports_mascot',
+			'pressprimer_assignment_reports_header_mascot',
 			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/reports-mascot.png'
 		);
 
@@ -432,6 +455,7 @@ class PressPrimer_Assignment_Admin {
 			[
 				'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 				'reportsMascot' => $reports_mascot,
+				'addonReports'  => $addon_reports,
 			]
 		);
 	}

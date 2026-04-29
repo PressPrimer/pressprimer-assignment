@@ -13,11 +13,14 @@ import {
 	Select,
 	Switch,
 	Card,
+	Checkbox,
+	Divider,
 	Space,
 	Col,
 	Row,
 	Typography,
 	Tooltip,
+	Alert,
 } from 'antd';
 import {
 	QuestionCircleOutlined,
@@ -29,17 +32,40 @@ import {
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
-const { Title, Text } = Typography;
+const { Title } = Typography;
+
+// Rubric editor is registered globally by the Educator addon.
+const RubricEditor = window.PPAERubricEditor || null;
+
+// Check if the Educator addon is active.
+const educatorActive =
+	window.pressprimerAssignmentAdmin?.addons?.educator || false;
+
+// Check if the School addon is active and an AI provider is configured.
+const schoolActive = window.pressprimerAssignmentAdmin?.addons?.school || false;
+const schoolProviderConfigured =
+	window.pressprimerAssignmentEditorData?.school_provider_configured || false;
 
 /**
  * Settings Panel Component
  *
- * @param {Object} props      Component props.
- * @param {Object} props.form Ant Design form instance.
+ * @param {Object}   props                     Component props.
+ * @param {Object}   props.form                Ant Design form instance.
+ * @param {Object}   props.rubricData          Current rubric criteria data.
+ * @param {Function} props.onRubricDataChange  Callback when rubric data changes.
+ * @param {Function} props.onRubricTotalChange Callback when rubric total points changes.
  */
-const SettingsPanel = ( { form } ) => {
+const SettingsPanel = ( {
+	form,
+	rubricData,
+	onRubricDataChange,
+	onRubricTotalChange,
+} ) => {
 	// Watch allow_resubmission to show/hide max_resubmissions.
 	const allowResubmission = Form.useWatch( 'allow_resubmission', form );
+
+	// Watch rubric_enabled to toggle between grading guidelines and rubric editor.
+	const rubricEnabled = Form.useWatch( 'rubric_enabled', form );
 
 	return (
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
@@ -310,10 +336,17 @@ const SettingsPanel = ( { form } ) => {
 										) }
 									</span>
 									<Tooltip
-										title={ __(
-											'The maximum number of points for this assignment',
-											'pressprimer-assignment'
-										) }
+										title={
+											rubricEnabled
+												? __(
+														'Automatically set from rubric criteria totals',
+														'pressprimer-assignment'
+												  )
+												: __(
+														'The maximum number of points for this assignment',
+														'pressprimer-assignment'
+												  )
+										}
 									>
 										<QuestionCircleOutlined
 											style={ {
@@ -325,6 +358,14 @@ const SettingsPanel = ( { form } ) => {
 								</Space>
 							}
 							name="max_points"
+							extra={
+								rubricEnabled
+									? __(
+											'Synced to rubric total.',
+											'pressprimer-assignment'
+									  )
+									: undefined
+							}
 						>
 							<InputNumber
 								min={ 0.01 }
@@ -332,6 +373,7 @@ const SettingsPanel = ( { form } ) => {
 								step={ 1 }
 								style={ { width: 150 } }
 								size="small"
+								disabled={ !! rubricEnabled }
 								addonAfter={ __(
 									'pts',
 									'pressprimer-assignment'
@@ -365,6 +407,39 @@ const SettingsPanel = ( { form } ) => {
 								</Space>
 							}
 							name="passing_score"
+							dependencies={ [ 'max_points' ] }
+							rules={ [
+								( { getFieldValue } ) => ( {
+									validator( _, value ) {
+										if (
+											value === null ||
+											value === undefined ||
+											value === ''
+										) {
+											return Promise.resolve();
+										}
+										const max = parseFloat(
+											getFieldValue( 'max_points' )
+										);
+										const score = parseFloat( value );
+										if (
+											! isNaN( max ) &&
+											! isNaN( score ) &&
+											score > max
+										) {
+											return Promise.reject(
+												new Error(
+													__(
+														'Passing score cannot be greater than maximum points.',
+														'pressprimer-assignment'
+													)
+												)
+											);
+										}
+										return Promise.resolve();
+									},
+								} ),
+							] }
 						>
 							<InputNumber
 								min={ 0 }
@@ -381,39 +456,140 @@ const SettingsPanel = ( { form } ) => {
 					</Col>
 				</Row>
 
-				<Form.Item
-					label={
-						<Space>
-							<span>
-								{ __(
-									'Grading Guidelines',
-									'pressprimer-assignment'
-								) }
-							</span>
-							<Tooltip
-								title={ __(
-									'Internal guidelines for graders (not shown to students)',
-									'pressprimer-assignment'
-								) }
-							>
-								<QuestionCircleOutlined
-									style={ { fontSize: 12, color: '#8c8c8c' } }
-								/>
-							</Tooltip>
-						</Space>
-					}
-					name="grading_guidelines"
-				>
-					<TextArea
-						rows={ 4 }
-						placeholder={ __(
-							'Grading criteria and rubric notes for graders…',
-							'pressprimer-assignment'
+				{ /* Grading guidelines — hidden when rubric is enabled */ }
+				{ ! rubricEnabled && (
+					<Form.Item
+						label={
+							<Space>
+								<span>
+									{ __(
+										'Grading Guidelines',
+										'pressprimer-assignment'
+									) }
+								</span>
+								<Tooltip
+									title={ __(
+										'Internal guidelines for graders (not shown to students)',
+										'pressprimer-assignment'
+									) }
+								>
+									<QuestionCircleOutlined
+										style={ {
+											fontSize: 12,
+											color: '#8c8c8c',
+										} }
+									/>
+								</Tooltip>
+							</Space>
+						}
+						name="grading_guidelines"
+					>
+						<TextArea
+							rows={ 4 }
+							placeholder={ __(
+								'Grading criteria and rubric notes for graders…',
+								'pressprimer-assignment'
+							) }
+							style={ { maxWidth: 500 } }
+							size="small"
+						/>
+					</Form.Item>
+				) }
+
+				{ /* Rubric section — only when Educator addon is active */ }
+				{ educatorActive && (
+					<>
+						<Divider />
+						<Form.Item
+							name="rubric_enabled"
+							valuePropName="checked"
+							style={ { marginBottom: rubricEnabled ? 16 : 0 } }
+						>
+							<Checkbox>
+								<Space>
+									<span>
+										{ __(
+											'Use rubric for grading',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'Replaces the grading guidelines text box with a structured rubric. Criteria and levels will be visible to students on the assignment page.',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							</Checkbox>
+						</Form.Item>
+
+						{ rubricEnabled && RubricEditor && (
+							<RubricEditor
+								initialData={ rubricData }
+								onDataChange={ onRubricDataChange }
+								onTotalChange={ onRubricTotalChange }
+							/>
 						) }
-						style={ { maxWidth: 500 } }
-						size="small"
-					/>
-				</Form.Item>
+					</>
+				) }
+
+				{ /* Auto-grade — only when School addon is active and provider configured */ }
+				{ schoolActive && schoolProviderConfigured && (
+					<>
+						<Divider />
+						<Form.Item
+							name="ai_auto_grade"
+							valuePropName="checked"
+							style={ { marginBottom: 8 } }
+						>
+							<Checkbox>
+								<Space>
+									<span
+										style={ {
+											fontWeight: 500,
+										} }
+									>
+										{ __(
+											'Auto-grade with AI',
+											'pressprimer-assignment'
+										) }
+									</span>
+									<Tooltip
+										title={ __(
+											'When enabled, an AI grading suggestion is generated automatically after each student submission. Instructors review and apply the suggestion on the grading page.',
+											'pressprimer-assignment'
+										) }
+									>
+										<QuestionCircleOutlined
+											style={ {
+												fontSize: 12,
+												color: '#8c8c8c',
+											} }
+										/>
+									</Tooltip>
+								</Space>
+							</Checkbox>
+						</Form.Item>
+						<Alert
+							type="info"
+							showIcon
+							message={ __(
+								'AI grading generates feedback suggestions automatically after each submission. Instructors review, edit, and apply the suggestions before returning grades to students — the AI never grades directly.',
+								'pressprimer-assignment'
+							) }
+							style={ {
+								marginBottom: 0,
+							} }
+						/>
+					</>
+				) }
 			</Card>
 
 			{ /* Submission Settings */ }
@@ -556,6 +732,14 @@ const SettingsPanel = ( { form } ) => {
 							}
 							name="allow_resubmission"
 							valuePropName="checked"
+							extra={
+								! allowResubmission
+									? __(
+											'When disabled, students can only submit once.',
+											'pressprimer-assignment'
+									  )
+									: undefined
+							}
 						>
 							<Switch size="small" />
 						</Form.Item>
@@ -586,24 +770,19 @@ const SettingsPanel = ( { form } ) => {
 									</Space>
 								}
 								name="max_resubmissions"
+								extra={ __(
+									'Set to 0 for unlimited resubmissions.',
+									'pressprimer-assignment'
+								) }
 							>
 								<InputNumber
-									min={ 1 }
+									min={ 0 }
 									max={ 100 }
-									style={ { width: 150 } }
+									style={ { width: 300 } }
 									size="small"
 								/>
 							</Form.Item>
 						) }
-						<Text
-							type="secondary"
-							style={ { fontSize: 12, display: 'block' } }
-						>
-							{ __(
-								'When disabled, students can only submit once.',
-								'pressprimer-assignment'
-							) }
-						</Text>
 					</Col>
 				</Row>
 			</Card>

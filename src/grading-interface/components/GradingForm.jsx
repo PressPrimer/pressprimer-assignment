@@ -42,6 +42,21 @@ import DocumentPanel from '../../shared/components/viewers/DocumentPanel';
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+// RubricPanel is registered globally by the Educator addon's rubric-builder bundle.
+const RubricPanel = window.PPAERubricPanel || null;
+
+// Educator addon localizes rubric data on the grading page.
+const educatorGrading = window.pressprimerAssignmentEducatorGrading || null;
+
+// AIGradingPanel is registered globally by the School addon's ai-grading bundle.
+const AIGradingPanel = window.PPASAIGradingPanel || null;
+
+// ProofreadingPanel is registered globally by the School addon's ai-grading bundle.
+const ProofreadingPanel = window.PPASProofreadingPanel || null;
+
+// School addon localizes provider configuration on the grading page.
+const schoolGrading = window.pressprimerAssignmentSchoolGrading || null;
+
 /**
  * Navigate to a grading URL for a given submission ID.
  *
@@ -82,6 +97,12 @@ const GradingForm = ( { submissionId } ) => {
 	const [ scoreWarning, setScoreWarning ] = useState( '' );
 	const [ feedback, setFeedback ] = useState( '' );
 	const [ currentStatus, setCurrentStatus ] = useState( '' );
+
+	// Rubric grading state (Educator addon).
+	const [ rubricScores, setRubricScores ] = useState( [] );
+
+	// Key counter to force RubricPanel remount when AI scores are applied.
+	const [ rubricKey, setRubricKey ] = useState( 0 );
 
 	// Navigation state.
 	const [ siblings, setSiblings ] = useState( { prev: null, next: null } );
@@ -235,6 +256,15 @@ const GradingForm = ( { submissionId } ) => {
 			const gradingTimeDelta = getAndResetGradingTime();
 
 			try {
+				// Save rubric scores first if Educator addon provides them.
+				if ( rubricScores.length > 0 && educatorGrading?.rubric ) {
+					await apiFetch( {
+						path: `/ppae/v1/submissions/${ submissionId }/rubric-scores`,
+						method: 'PUT',
+						data: { scores: rubricScores },
+					} );
+				}
+
 				await apiFetch( {
 					path: `/ppa/v1/submissions/${ submissionId }`,
 					method: 'PUT',
@@ -265,7 +295,14 @@ const GradingForm = ( { submissionId } ) => {
 				savingRef.current = false;
 			}
 		},
-		[ submissionId, score, feedback, assignment, getAndResetGradingTime ]
+		[
+			submissionId,
+			score,
+			feedback,
+			assignment,
+			getAndResetGradingTime,
+			rubricScores,
+		]
 	);
 
 	/**
@@ -300,6 +337,15 @@ const GradingForm = ( { submissionId } ) => {
 
 		setSaving( true );
 		try {
+			// Save rubric scores first if Educator addon provides them.
+			if ( rubricScores.length > 0 && educatorGrading?.rubric ) {
+				await apiFetch( {
+					path: `/ppae/v1/submissions/${ submissionId }/rubric-scores`,
+					method: 'PUT',
+					data: { scores: rubricScores },
+				} );
+			}
+
 			await apiFetch( {
 				path: `/ppa/v1/submissions/${ submissionId }`,
 				method: 'PUT',
@@ -327,7 +373,13 @@ const GradingForm = ( { submissionId } ) => {
 		} finally {
 			setSaving( false );
 		}
-	}, [ submissionId, score, feedback, getAndResetGradingTime ] );
+	}, [
+		submissionId,
+		score,
+		feedback,
+		getAndResetGradingTime,
+		rubricScores,
+	] );
 
 	// Auto-save every 30 seconds when there are unsaved changes.
 	useEffect( () => {
@@ -541,7 +593,45 @@ const GradingForm = ( { submissionId } ) => {
 							files={ files }
 							textContent={ submission.text_content }
 							wordCount={ submission.word_count }
+							onFileUpdate={ ( fileId, result ) => {
+								setFiles( ( prev ) =>
+									prev.map( ( f ) =>
+										f.id === fileId
+											? {
+													...f,
+													extraction_method:
+														result.method,
+													extraction_quality:
+														result.quality,
+													extraction_error:
+														result.error,
+											  }
+											: f
+									)
+								);
+							} }
 						/>
+
+						{ /* Proofreading Panel (School addon) */ }
+						{ ProofreadingPanel &&
+							schoolGrading &&
+							schoolGrading.aiCompatible !== false &&
+							! isReadOnly && (
+								<div style={ { padding: '0 16px 16px' } }>
+									<ProofreadingPanel
+										submissionId={ submissionId }
+										providerConfigured={
+											!! schoolGrading.providerConfigured
+										}
+										onInsertFeedback={ ( text ) => {
+											setFeedback( ( prev ) =>
+												prev ? prev + '\n' + text : text
+											);
+											setHasChanges( true );
+										} }
+									/>
+								</div>
+							) }
 					</Card>
 				</Col>
 
@@ -650,43 +740,195 @@ const GradingForm = ( { submissionId } ) => {
 							) }
 						</div>
 
-						{ /* Grading Guidelines */ }
-						<Divider />
-						<div className="ppa-reference-section">
-							<Text
-								strong
-								style={ { display: 'block', marginBottom: 8 } }
-							>
-								{ __(
-									'Grading Guidelines',
-									'pressprimer-assignment'
-								) }
-							</Text>
-							{ assignment.grading_guidelines ? (
-								<div
-									style={ {
-										padding: '12px 16px',
-										background: '#f6f7f7',
-										borderRadius: 4,
-										lineHeight: 1.6,
-									} }
-									dangerouslySetInnerHTML={ {
-										__html: assignment.grading_guidelines,
-									} }
-								/>
-							) : (
-								<Text
-									type="secondary"
-									italic
-									style={ { fontSize: 13 } }
-								>
-									{ __(
-										'No grading guidelines provided.',
-										'pressprimer-assignment'
+						{ /* Grading Guidelines (hidden when a rubric is active) */ }
+						{ ! ( RubricPanel && educatorGrading?.rubric ) && (
+							<>
+								<Divider />
+								<div className="ppa-reference-section">
+									<Text
+										strong
+										style={ {
+											display: 'block',
+											marginBottom: 8,
+										} }
+									>
+										{ __(
+											'Grading Guidelines',
+											'pressprimer-assignment'
+										) }
+									</Text>
+									{ assignment.grading_guidelines ? (
+										<div
+											style={ {
+												padding: '12px 16px',
+												background: '#f6f7f7',
+												borderRadius: 4,
+												lineHeight: 1.6,
+											} }
+											dangerouslySetInnerHTML={ {
+												__html: assignment.grading_guidelines,
+											} }
+										/>
+									) : (
+										<Text
+											type="secondary"
+											italic
+											style={ { fontSize: 13 } }
+										>
+											{ __(
+												'No grading guidelines provided.',
+												'pressprimer-assignment'
+											) }
+										</Text>
 									) }
-								</Text>
+								</div>
+							</>
+						) }
+
+						{ /* AI Grading Panel (School addon) */ }
+						{ AIGradingPanel &&
+							schoolGrading &&
+							schoolGrading.aiCompatible !== false &&
+							! isReadOnly && (
+								<>
+									<Divider />
+									<AIGradingPanel
+										submissionId={ submissionId }
+										hasRubric={
+											!! (
+												RubricPanel &&
+												educatorGrading?.rubric
+											)
+										}
+										providerConfigured={
+											!! schoolGrading.providerConfigured
+										}
+										aiAutoGrade={
+											!! schoolGrading.aiAutoGrade
+										}
+										preloadedSuggestions={
+											schoolGrading?.aiSuggestions || null
+										}
+										onApplySuggestions={ ( {
+											criteria,
+											overallFeedback,
+											suggestedScore,
+										} ) => {
+											// Apply overall feedback.
+											if ( overallFeedback ) {
+												setFeedback( overallFeedback );
+												setHasChanges( true );
+											}
+
+											// Apply per-criterion scores to
+											// the rubric panel (if present).
+											if (
+												criteria &&
+												criteria.length > 0 &&
+												educatorGrading?.rubric
+											) {
+												const newScores = criteria.map(
+													( c ) => {
+														const pts =
+															c.suggested_points !==
+															undefined
+																? c.suggested_points
+																: null;
+														return {
+															criterion_id:
+																c.criterion_id,
+															level_id:
+																c.suggested_level_id ||
+																null,
+															points: pts,
+															feedback:
+																c.feedback ||
+																'',
+														};
+													}
+												);
+
+												setRubricScores( ( prev ) => {
+													// Merge AI suggestions with
+													// any existing manual scores.
+													const merged = [ ...prev ];
+													newScores.forEach(
+														( ns ) => {
+															const idx =
+																merged.findIndex(
+																	( m ) =>
+																		m.criterion_id ===
+																		ns.criterion_id
+																);
+															if ( idx >= 0 ) {
+																merged[ idx ] =
+																	ns;
+															} else {
+																merged.push(
+																	ns
+																);
+															}
+														}
+													);
+													return merged;
+												} );
+
+												// Force RubricPanel remount so
+												// it re-initializes with the
+												// AI-applied scores.
+												setRubricKey( ( k ) => k + 1 );
+												setHasChanges( true );
+
+												// Sum points for score field.
+												const totalFromAI =
+													newScores.reduce(
+														( sum, s ) =>
+															sum +
+															( s.points || 0 ),
+														0
+													);
+												if ( totalFromAI > 0 ) {
+													setScore( totalFromAI );
+												}
+											} else if (
+												suggestedScore !== null &&
+												suggestedScore !== undefined
+											) {
+												// Non-rubric mode: apply
+												// the suggested overall score.
+												setScore( suggestedScore );
+												setHasChanges( true );
+											}
+										} }
+									/>
+								</>
 							) }
-						</div>
+
+						{ /* Rubric Panel (Educator addon) */ }
+						{ RubricPanel && educatorGrading?.rubric && (
+							<>
+								<Divider />
+								<RubricPanel
+									key={ rubricKey }
+									rubricData={ educatorGrading.rubric }
+									existingScores={
+										rubricScores.length > 0
+											? rubricScores
+											: educatorGrading.existing_scores ||
+											  []
+									}
+									onTotalChange={ ( total ) => {
+										setScore( total );
+										setHasChanges( true );
+									} }
+									onScoresChange={ ( scores ) => {
+										setRubricScores( scores );
+										setHasChanges( true );
+									} }
+									disabled={ isReadOnly }
+								/>
+							</>
+						) }
 
 						<Divider />
 

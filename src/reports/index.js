@@ -27,6 +27,17 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				Component = AssignmentPerformanceReport;
 				break;
 			default:
+				// If no report type or unknown type, check if it's an addon report.
+				// Addon reports render their own content in ppa-addon-report-root.
+				if ( reportType ) {
+					root.innerHTML = '<div id="ppa-addon-report-root"></div>';
+					document.dispatchEvent(
+						new CustomEvent( 'ppa-addon-report-ready', {
+							detail: { reportType },
+						} )
+					);
+					return;
+				}
 				Component = Reports;
 		}
 

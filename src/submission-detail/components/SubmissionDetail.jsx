@@ -383,6 +383,22 @@ const SubmissionDetail = ( { submissionId } ) => {
 						files={ files }
 						textContent={ submission.text_content }
 						wordCount={ submission.word_count }
+						onFileUpdate={ ( fileId, result ) => {
+							setFiles( ( prev ) =>
+								prev.map( ( f ) =>
+									f.id === fileId
+										? {
+												...f,
+												extraction_method:
+													result.method,
+												extraction_quality:
+													result.quality,
+												extraction_error: result.error,
+										  }
+										: f
+								)
+							);
+						} }
 					/>
 				</Card>
 			) }

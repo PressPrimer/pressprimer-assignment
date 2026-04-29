@@ -527,13 +527,47 @@ Your instructor has provided feedback. Click the button below to view your compl
 		$settings = self::get_settings();
 		$logo_url = isset( $settings['email_logo_url'] ) ? $settings['email_logo_url'] : '';
 
+		/**
+		 * Filter the brand logo URL used in emails.
+		 *
+		 * Enterprise addon hooks this to return the configured logo URL.
+		 * Only applied when no custom email logo is set in settings.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $url Default: the PressPrimer logo URL bundled with the plugin.
+		 */
+		if ( empty( $logo_url ) ) {
+			$logo_url = apply_filters(
+				'pressprimer_assignment_brand_logo_url',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/logo.png'
+			);
+			// Only use the brand logo if the filter returned a non-default value.
+			// If still the bundled logo, fall back to the site name text header.
+			if ( PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/logo.png' === $logo_url ) {
+				$logo_url = '';
+			}
+		}
+
+		/**
+		 * Filter the brand name used in email headers and footers.
+		 *
+		 * Enterprise addon hooks this to return the configured organization name.
+		 * Falls back to the site name from WordPress settings.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $name Default: site name from get_bloginfo('name').
+		 */
+		$brand_name = apply_filters( 'pressprimer_assignment_brand_name', get_bloginfo( 'name' ) );
+
 		ob_start();
 		?>
 		<div class="email-header">
 			<?php if ( $logo_url ) : ?>
-				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( $brand_name ); ?>">
 			<?php else : ?>
-				<h1><?php echo esc_html( get_bloginfo( 'name' ) ); ?></h1>
+				<h1><?php echo esc_html( $brand_name ); ?></h1>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -561,15 +595,18 @@ Your instructor has provided feedback. Click the button below to view your compl
 	 * @return string Footer HTML.
 	 */
 	private static function build_email_footer() {
+		/** This filter is documented in includes/services/class-ppa-email-service.php */
+		$brand_name = apply_filters( 'pressprimer_assignment_brand_name', get_bloginfo( 'name' ) );
+
 		ob_start();
 		?>
 		<div class="email-footer">
 			<p>
 				<?php
 				printf(
-					/* translators: %s: site name */
+					/* translators: %s: site name or brand name */
 					esc_html__( 'This email was sent from %s', 'pressprimer-assignment' ),
-					esc_html( get_bloginfo( 'name' ) )
+					esc_html( $brand_name )
 				);
 				?>
 			</p>

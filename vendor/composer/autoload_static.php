@@ -17,6 +17,10 @@ class ComposerStaticInit392d6adba18a41967f821970159b8ebc
         array (
             'Symfony\\Polyfill\\Mbstring\\' => 26,
         ),
+        'R' =>
+        array (
+            'RtfHtmlPhp\\' => 11,
+        ),
         'P' =>
         array (
             'PhpParser\\' => 10,
@@ -33,6 +37,10 @@ class ComposerStaticInit392d6adba18a41967f821970159b8ebc
         'Symfony\\Polyfill\\Mbstring\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'RtfHtmlPhp\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/henck/rtf-to-html/src',
         ),
         'PhpParser\\' =>
         array (
@@ -837,6 +845,16 @@ class ComposerStaticInit392d6adba18a41967f821970159b8ebc
         'PhpParser\\PrettyPrinterAbstract' => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser/PrettyPrinterAbstract.php',
         'PhpParser\\PrettyPrinter\\Standard' => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser/PrettyPrinter/Standard.php',
         'PhpParser\\Token' => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser/Token.php',
+        'RtfHtmlPhp\\ControlSymbol' => __DIR__ . '/..' . '/henck/rtf-to-html/src/ControlSymbol.php',
+        'RtfHtmlPhp\\ControlWord' => __DIR__ . '/..' . '/henck/rtf-to-html/src/ControlWord.php',
+        'RtfHtmlPhp\\Document' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Document.php',
+        'RtfHtmlPhp\\Element' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Element.php',
+        'RtfHtmlPhp\\Group' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Group.php',
+        'RtfHtmlPhp\\Html\\Font' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Html/Font.php',
+        'RtfHtmlPhp\\Html\\HtmlFormatter' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Html/HtmlFormatter.php',
+        'RtfHtmlPhp\\Html\\Image' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Html/Image.php',
+        'RtfHtmlPhp\\Html\\State' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Html/State.php',
+        'RtfHtmlPhp\\Text' => __DIR__ . '/..' . '/henck/rtf-to-html/src/Text.php',
         'SebastianBergmann\\CliParser\\AmbiguousOptionException' => __DIR__ . '/..' . '/sebastian/cli-parser/src/exceptions/AmbiguousOptionException.php',
         'SebastianBergmann\\CliParser\\Exception' => __DIR__ . '/..' . '/sebastian/cli-parser/src/exceptions/Exception.php',
         'SebastianBergmann\\CliParser\\OptionDoesNotAllowArgumentException' => __DIR__ . '/..' . '/sebastian/cli-parser/src/exceptions/OptionDoesNotAllowArgumentException.php',

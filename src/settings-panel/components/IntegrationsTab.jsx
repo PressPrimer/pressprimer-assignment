@@ -34,6 +34,14 @@ const { Title, Paragraph, Text } = Typography;
  * @param {Function} props.updateSetting Function to update a setting
  * @param {Object}   props.settingsData  Full settings data including LMS status
  */
+// School addon (PressPrimer Assignment School) registers its AI Settings
+// component on this global from its own bundle. When the addon is not
+// active the slot stays empty.
+const SchoolAISettings =
+	typeof window !== 'undefined' && window.PPASAISettings
+		? window.PPASAISettings
+		: null;
+
 // eslint-disable-next-line no-unused-vars -- Props passed by SettingsPage to all tabs.
 const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 	// LMS Integration states - use pre-loaded data from PHP.
@@ -59,6 +67,24 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 	);
 	const [ loadingTutorlms, setLoadingTutorlms ] = useState(
 		lmsStatus.tutorlms?.active || false
+	);
+
+	const [ lifterlmsStatus, setLifterlmsStatus ] = useState(
+		lmsStatus.lifterlms?.active
+			? { active: true, version: lmsStatus.lifterlms.version }
+			: { active: false }
+	);
+	const [ loadingLifterlms, setLoadingLifterlms ] = useState(
+		lmsStatus.lifterlms?.active || false
+	);
+
+	const [ learnpressStatus, setLearnpressStatus ] = useState(
+		lmsStatus.learnpress?.active
+			? { active: true, version: lmsStatus.learnpress.version }
+			: { active: false }
+	);
+	const [ loadingLearnpress, setLoadingLearnpress ] = useState(
+		lmsStatus.learnpress?.active || false
 	);
 
 	// Fetch LearnDash extended status only if LearnDash is active.
@@ -117,6 +143,60 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 
 		fetchTutorlmsStatus();
 	}, [ lmsStatus.tutorlms?.active ] );
+
+	// Fetch LifterLMS extended status only if LifterLMS is active.
+	useEffect( () => {
+		if ( ! lmsStatus.lifterlms?.active ) {
+			setLoadingLifterlms( false );
+			return;
+		}
+
+		const fetchLifterlmsStatus = async () => {
+			try {
+				const response = await apiFetch( {
+					path: '/ppa/v1/lifterlms/status',
+					method: 'GET',
+				} );
+
+				if ( response.success ) {
+					setLifterlmsStatus( response.status );
+				}
+			} catch ( error ) {
+				// Keep the basic status from PHP.
+			} finally {
+				setLoadingLifterlms( false );
+			}
+		};
+
+		fetchLifterlmsStatus();
+	}, [ lmsStatus.lifterlms?.active ] );
+
+	// Fetch LearnPress extended status only if LearnPress is active.
+	useEffect( () => {
+		if ( ! lmsStatus.learnpress?.active ) {
+			setLoadingLearnpress( false );
+			return;
+		}
+
+		const fetchLearnpressStatus = async () => {
+			try {
+				const response = await apiFetch( {
+					path: '/ppa/v1/learnpress/status',
+					method: 'GET',
+				} );
+
+				if ( response.success ) {
+					setLearnpressStatus( response.status );
+				}
+			} catch ( error ) {
+				// Keep the basic status from PHP.
+			} finally {
+				setLoadingLearnpress( false );
+			}
+		};
+
+		fetchLearnpressStatus();
+	}, [ lmsStatus.learnpress?.active ] );
 
 	/**
 	 * Save LearnDash settings
@@ -351,7 +431,62 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 						)
 					) }
 				</div>
+
+				{ /* LifterLMS */ }
+				<div
+					className="ppa-lms-integration"
+					style={ { marginTop: 24 } }
+				>
+					<div className="ppa-lms-integration-header">
+						<Text strong>LifterLMS</Text>
+					</div>
+
+					{ renderLmsContent(
+						loadingLifterlms,
+						lifterlmsStatus,
+						__(
+							'LifterLMS Not Detected',
+							'pressprimer-assignment'
+						),
+						__(
+							'Install and activate LifterLMS to enable this integration. Once active, you can attach PressPrimer assignments to lessons and courses.',
+							'pressprimer-assignment'
+						)
+					) }
+				</div>
+
+				{ /* LearnPress */ }
+				<div
+					className="ppa-lms-integration"
+					style={ { marginTop: 24 } }
+				>
+					<div className="ppa-lms-integration-header">
+						<Text strong>LearnPress</Text>
+					</div>
+
+					{ renderLmsContent(
+						loadingLearnpress,
+						learnpressStatus,
+						__(
+							'LearnPress Not Detected',
+							'pressprimer-assignment'
+						),
+						__(
+							'Install and activate LearnPress to enable this integration. Once active, you can attach PressPrimer assignments to lessons and courses.',
+							'pressprimer-assignment'
+						)
+					) }
+				</div>
 			</div>
+
+			{ /* AI Settings - rendered by the School addon when active. */ }
+			{ SchoolAISettings && (
+				<SchoolAISettings
+					settings={ settings }
+					updateSetting={ updateSetting }
+					settingsData={ settingsData }
+				/>
+			) }
 		</div>
 	);
 };

@@ -106,7 +106,7 @@ class PressPrimer_Assignment_Plugin {
 	 * Sets up the addon manager and fires the registration hook
 	 * for premium addons to register themselves.
 	 *
-	 * @since 1.0.0
+	 * @since 2.0.0
 	 */
 	private function init_addon_manager() {
 		if ( class_exists( 'PressPrimer_Assignment_Addon_Manager' ) ) {
@@ -157,8 +157,19 @@ class PressPrimer_Assignment_Plugin {
 	 * @since 1.0.0
 	 */
 	private function register_cron_hooks() {
-		if ( class_exists( 'PressPrimer_Assignment_PDF_Service' ) ) {
-			add_action( 'pressprimer_assignment_extract_pdf_text', [ 'PressPrimer_Assignment_PDF_Service', 'process_scheduled_extraction' ] );
+		// Text extraction cron handlers — one per file format.
+		$extraction_hooks = array(
+			'pressprimer_assignment_extract_pdf_text'  => 'PressPrimer_Assignment_PDF_Service',
+			'pressprimer_assignment_extract_docx_text' => 'PressPrimer_Assignment_DOCX_Service',
+			'pressprimer_assignment_extract_odt_text'  => 'PressPrimer_Assignment_ODT_Service',
+			'pressprimer_assignment_extract_rtf_text'  => 'PressPrimer_Assignment_RTF_Service',
+			'pressprimer_assignment_extract_txt_text'  => 'PressPrimer_Assignment_Text_Service',
+		);
+
+		foreach ( $extraction_hooks as $hook => $class ) {
+			if ( class_exists( $class ) ) {
+				add_action( $hook, array( $class, 'process_scheduled_extraction' ) );
+			}
 		}
 	}
 
@@ -302,6 +313,18 @@ class PressPrimer_Assignment_Plugin {
 				$tutor = new PressPrimer_Assignment_TutorLMS();
 				$tutor->init();
 			}
+		}
+
+		// LifterLMS integration (loads unconditionally — the class handles detection).
+		if ( class_exists( 'PressPrimer_Assignment_LifterLMS' ) ) {
+			$lifterlms = new PressPrimer_Assignment_LifterLMS();
+			$lifterlms->init();
+		}
+
+		// LearnPress integration (loads unconditionally — the class handles detection).
+		if ( class_exists( 'PressPrimer_Assignment_LearnPress' ) ) {
+			$learnpress = new PressPrimer_Assignment_LearnPress();
+			$learnpress->init();
 		}
 
 		// Uncanny Automator integration.

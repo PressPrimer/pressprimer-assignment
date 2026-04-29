@@ -3,7 +3,7 @@
  * Plugin Name:       PressPrimer Assignment
  * Plugin URI:        https://pressprimer.com/assignment
  * Description:       Comprehensive assignment management for WordPress educators.
- * Version:           1.0.0
+ * Version:           2.0.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            PressPrimer
@@ -25,12 +25,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'PRESSPRIMER_ASSIGNMENT_VERSION', '1.0.0' );
+define( 'PRESSPRIMER_ASSIGNMENT_VERSION', '2.0.0' );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_FILE', __FILE__ );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'PRESSPRIMER_ASSIGNMENT_DB_VERSION', '1.7.0' );
+define( 'PRESSPRIMER_ASSIGNMENT_DB_VERSION', '1.9.0' );
 
 // Composer autoloader (for vendor dependencies)
 if ( file_exists( PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'vendor/autoload.php' ) ) {
@@ -69,7 +69,7 @@ add_action( 'init', 'pressprimer_assignment_init', 0 );
  * Returns the singleton instance of the addon manager for addon registration
  * and compatibility checking.
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * @return PressPrimer_Assignment_Addon_Manager The addon manager instance.
  */
@@ -87,15 +87,15 @@ function pressprimer_assignment_addon_manager() {
  * add_action( 'pressprimer_assignment_register_addons', function() {
  *     pressprimer_assignment_register_addon( 'ppa-educator', [
  *         'name'     => 'PressPrimer Assignment Educator',
- *         'version'  => '1.0.0',
+ *         'version'  => '2.0.0',
  *         'file'     => __FILE__,
- *         'requires' => '1.0.0',
+ *         'requires' => '2.0.0',
  *         'tier'     => 'educator',
  *     ] );
  * } );
  * ```
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * @param string $slug   Unique addon identifier.
  * @param array  $config Addon configuration array.
@@ -110,7 +110,7 @@ function pressprimer_assignment_register_addon( $slug, $config ) {
  *
  * Use this to conditionally enable features that depend on premium addons.
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * @param string $slug Addon slug to check.
  * @return bool True if addon is registered and compatible.

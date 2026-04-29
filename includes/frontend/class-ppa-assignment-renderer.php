@@ -212,6 +212,43 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			$can_resubmit = $this->can_user_resubmit( $assignment, $user_id, $user_submission );
 		}
 
+		// Brand filter values — available in templates for white-label support.
+		/**
+		 * Filter the brand name used in student-facing strings.
+		 *
+		 * Enterprise addon hooks this to return the configured organization name.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $name Default: site name from get_bloginfo('name').
+		 */
+		$brand_name = apply_filters( 'pressprimer_assignment_brand_name', get_bloginfo( 'name' ) );
+
+		/**
+		 * Filter the brand logo URL used in student-facing pages.
+		 *
+		 * Enterprise addon hooks this to return the configured logo URL.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $url Default: the PressPrimer logo URL bundled with the plugin.
+		 */
+		$brand_logo_url = apply_filters(
+			'pressprimer_assignment_brand_logo_url',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/images/logo.png'
+		);
+
+		/**
+		 * Filter the header background color used in assignment headers.
+		 *
+		 * Enterprise addon hooks this to return a custom hex color.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $color Default: '#334155' (the PressPrimer dark slate).
+		 */
+		$header_bg_color = apply_filters( 'pressprimer_assignment_header_bg_color', '#334155' );
+
 		// Start output buffering.
 		ob_start();
 
@@ -284,14 +321,32 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			<?php
 		}
 
-		// Grading guidelines.
-		if ( ! empty( $assignment->grading_guidelines ) ) {
-			?>
-			<div class="ppa-assignment-instructions">
-				<h3 class="ppa-instructions-heading"><?php esc_html_e( 'How You\'ll Be Graded', 'pressprimer-assignment' ); ?></h3>
-				<div class="ppa-instructions-content"><?php echo wp_kses_post( wpautop( $assignment->grading_guidelines ) ); ?></div>
-			</div>
-			<?php
+		// Grading guidelines (or rubric, when Educator addon hooks in).
+		if ( ! empty( $assignment->grading_guidelines ) || has_filter( 'pressprimer_assignment_grading_guidelines_output' ) ) {
+			$guidelines_html = '';
+			if ( ! empty( $assignment->grading_guidelines ) ) {
+				$guidelines_html = '<div class="ppa-assignment-instructions">'
+					. '<h3 class="ppa-instructions-heading">' . esc_html__( 'How You\'ll Be Graded', 'pressprimer-assignment' ) . '</h3>'
+					. '<div class="ppa-instructions-content">' . wp_kses_post( wpautop( $assignment->grading_guidelines ) ) . '</div>'
+					. '</div>';
+			}
+
+			/**
+			 * Filters the grading guidelines HTML output.
+			 *
+			 * Allows addons (e.g., Educator's rubric) to replace the guidelines
+			 * with alternative content like a read-only rubric display.
+			 *
+			 * @since 2.0.0
+			 *
+			 * @param string $guidelines_html The default grading guidelines HTML.
+			 * @param int    $assignment_id   The assignment ID.
+			 */
+			$guidelines_html = apply_filters( 'pressprimer_assignment_grading_guidelines_output', $guidelines_html, $assignment->id );
+
+			if ( ! empty( $guidelines_html ) ) {
+				echo wp_kses_post( $guidelines_html );
+			}
 		}
 
 		return ob_get_clean();
@@ -422,7 +477,12 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		$resubmissions_remaining = 0;
 
 		if ( $can_resubmit && $assignment->allow_resubmission ) {
-			$resubmissions_remaining = max( 0, $assignment->max_resubmissions - $submission->submission_number + 1 );
+			if ( 0 === (int) $assignment->max_resubmissions ) {
+				// Unlimited resubmissions — use -1 as sentinel value for template.
+				$resubmissions_remaining = -1;
+			} else {
+				$resubmissions_remaining = max( 0, $assignment->max_resubmissions - $submission->submission_number + 1 );
+			}
 		}
 
 		// Get previous submissions for this user/assignment.
@@ -631,8 +691,8 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			return false;
 		}
 
-		// Check resubmission limit.
-		if ( $user_submission->submission_number >= $assignment->max_resubmissions + 1 ) {
+		// Check resubmission limit (0 = unlimited).
+		if ( (int) $assignment->max_resubmissions > 0 && $user_submission->submission_number >= $assignment->max_resubmissions + 1 ) {
 			return false;
 		}
 

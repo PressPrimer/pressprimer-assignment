@@ -310,6 +310,11 @@ class PressPrimer_Assignment_Admin_Grading {
 				'adminUrl'     => admin_url(),
 				'buildUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/',
 				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'addons'       => [
+					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+				],
 			]
 		);
 	}
@@ -409,7 +414,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		$args = [
 			'per_page' => $per_page,
 			'page'     => $current_page,
-			'status'   => [ 'submitted', 'grading' ],
+			'status'   => [ 'submitted', 'grading', 'graded' ],
 		];
 
 		// Filter by assignment.
@@ -420,7 +425,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		// Filter by status.
 		$get_status = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : '';
 		if ( '' !== $get_status && 'all' !== $get_status ) {
-			$valid = [ 'submitted', 'grading' ];
+			$valid = [ 'submitted', 'grading', 'graded' ];
 			if ( in_array( $get_status, $valid, true ) ) {
 				$args['status'] = [ $get_status ];
 			}
@@ -567,6 +572,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		$statuses = [
 			'submitted' => __( 'Submitted', 'pressprimer-assignment' ),
 			'grading'   => __( 'Grading', 'pressprimer-assignment' ),
+			'graded'    => __( 'Graded', 'pressprimer-assignment' ),
 		];
 
 		return isset( $statuses[ $item->status ] ) ? esc_html( $statuses[ $item->status ] ) : esc_html( $item->status );
@@ -636,6 +642,7 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 			'all'       => __( 'All Statuses', 'pressprimer-assignment' ),
 			'submitted' => __( 'Submitted', 'pressprimer-assignment' ),
 			'grading'   => __( 'Grading', 'pressprimer-assignment' ),
+			'graded'    => __( 'Graded', 'pressprimer-assignment' ),
 		];
 
 		?>

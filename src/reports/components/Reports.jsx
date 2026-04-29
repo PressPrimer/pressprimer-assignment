@@ -12,7 +12,20 @@ import { useState, useEffect, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Spin, Alert, Card, Row, Col, Select, Empty } from 'antd';
-import { TrophyOutlined, RocketOutlined } from '@ant-design/icons';
+import {
+	TrophyOutlined,
+	ClockCircleOutlined,
+	RocketOutlined,
+	BarChartOutlined,
+	LineChartOutlined,
+	PieChartOutlined,
+	FundOutlined,
+	DashboardOutlined,
+	AuditOutlined,
+	SafetyCertificateOutlined,
+	ExperimentOutlined,
+	DeleteOutlined,
+} from '@ant-design/icons';
 import {
 	LineChart,
 	Line,
@@ -25,6 +38,26 @@ import {
 } from 'recharts';
 
 import OverviewCards from './OverviewCards';
+
+/**
+ * Map icon type string to component.
+ *
+ * Addons can use these icon types in their report definitions.
+ */
+const ICON_MAP = {
+	TrophyOutlined: <TrophyOutlined />,
+	ClockCircleOutlined: <ClockCircleOutlined />,
+	RocketOutlined: <RocketOutlined />,
+	BarChartOutlined: <BarChartOutlined />,
+	LineChartOutlined: <LineChartOutlined />,
+	PieChartOutlined: <PieChartOutlined />,
+	FundOutlined: <FundOutlined />,
+	DashboardOutlined: <DashboardOutlined />,
+	AuditOutlined: <AuditOutlined />,
+	SafetyCertificateOutlined: <SafetyCertificateOutlined />,
+	ExperimentOutlined: <ExperimentOutlined />,
+	DeleteOutlined: <DeleteOutlined />,
+};
 
 /**
  * Format date for chart display.
@@ -183,8 +216,8 @@ const Reports = () => {
 		},
 	];
 
-	// Report cards for the grid.
-	const reports = [
+	// Core reports.
+	const coreReports = [
 		{
 			key: 'assignment-performance',
 			title: __( 'Assignment Performance', 'pressprimer-assignment' ),
@@ -195,22 +228,38 @@ const Reports = () => {
 			icon: <TrophyOutlined />,
 			color: '#faad14',
 			available: true,
-			comingSoon: false,
 			href: 'admin.php?page=pressprimer-assignment-reports&report=assignment-performance',
 		},
-		{
-			key: 'coming-soon',
-			title: __( 'More Reports Coming Soon!', 'pressprimer-assignment' ),
-			description: __(
-				"We're working on additional reports to help you better understand your assignment results.",
-				'pressprimer-assignment'
-			),
-			icon: <RocketOutlined />,
-			color: '#8c8c8c',
-			available: false,
-			comingSoon: true,
-		},
 	];
+
+	// Addon reports from localized data — map iconType to actual icon components.
+	const rawAddonReports =
+		window.pressprimerAssignmentReportsData?.addonReports || [];
+	const addonReports = Array.isArray( rawAddonReports )
+		? rawAddonReports
+				.filter( ( report ) => report && typeof report === 'object' )
+				.map( ( report ) => ( {
+					...report,
+					icon: ICON_MAP[ report.iconType ] || <BarChartOutlined />,
+				} ) )
+		: [];
+
+	// Coming soon placeholder.
+	const comingSoonReport = {
+		key: 'coming-soon',
+		title: __( 'More Reports Coming Soon!', 'pressprimer-assignment' ),
+		description: __(
+			"We're working on additional reports to help you better understand your assignment results.",
+			'pressprimer-assignment'
+		),
+		icon: <RocketOutlined />,
+		color: '#8c8c8c',
+		available: false,
+		comingSoon: true,
+	};
+
+	// Combine: core reports + addon reports + coming soon.
+	const reports = [ ...coreReports, ...addonReports, comingSoonReport ];
 
 	// Get mascot from localized data.
 	const pluginUrl = window.pressprimerAssignmentReportsData?.pluginUrl || '';

@@ -123,6 +123,12 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.7.0', '<' ) ) {
 			self::migrate_to_1_7_0();
 		}
+		if ( version_compare( $from_version, '1.8.0', '<' ) ) {
+			self::migrate_to_1_8_0();
+		}
+		if ( version_compare( $from_version, '1.9.0', '<' ) ) {
+			self::migrate_to_1_9_0();
+		}
 	}
 
 	/**
@@ -287,6 +293,66 @@ class PressPrimer_Assignment_Migrator {
 	}
 
 	/**
+	 * Migration to 1.8.0
+	 *
+	 * Adds extraction metadata columns to submission_files for
+	 * the server-side text extraction overhaul:
+	 * - extracted_at, extraction_method, extraction_quality,
+	 *   extraction_error, extracted_text_length, extracted_word_count
+	 *
+	 * @since 2.0.0
+	 */
+	private static function migrate_to_1_8_0() {
+		global $wpdb;
+
+		$files_table = $wpdb->prefix . 'ppa_submission_files';
+
+		$new_columns = array(
+			'extracted_at'          => 'DATETIME DEFAULT NULL AFTER extracted_text',
+			'extraction_method'     => 'VARCHAR(32) DEFAULT NULL AFTER extracted_at',
+			'extraction_quality'    => 'TINYINT DEFAULT NULL AFTER extraction_method',
+			'extraction_error'      => 'VARCHAR(255) DEFAULT NULL AFTER extraction_quality',
+			'extracted_text_length' => 'INT UNSIGNED DEFAULT NULL AFTER extraction_error',
+			'extracted_word_count'  => 'INT UNSIGNED DEFAULT NULL AFTER extracted_text_length',
+		);
+
+		foreach ( $new_columns as $column_name => $column_def ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+			$column_exists = $wpdb->get_var(
+				$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $files_table, $column_name )
+			);
+			if ( ! $column_exists ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( "ALTER TABLE {$files_table} ADD COLUMN {$column_name} {$column_def}" );
+			}
+		}
+	}
+
+	/**
+	 * Migration to 1.9.0
+	 *
+	 * Adds AI auto-grade flag to assignments table. When enabled and
+	 * the School addon is active, new submissions are queued for
+	 * background AI grading suggestions.
+	 *
+	 * @since 2.0.0
+	 */
+	private static function migrate_to_1_9_0() {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $assignments_table, 'ai_auto_grade' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN ai_auto_grade TINYINT(1) NOT NULL DEFAULT 0 AFTER theme" );
+		}
+	}
+
+	/**
 	 * Verify tables exist
 	 *
 	 * Checks that all critical database tables were created successfully.
@@ -428,7 +494,20 @@ class PressPrimer_Assignment_Migrator {
 	public static function get_table_status() {
 		global $wpdb;
 
-		$tables  = self::get_required_tables();
+		$tables = self::get_required_tables();
+
+		/**
+		 * Filter the list of database tables shown on the Status page.
+		 *
+		 * Addons can append their own table names (with $wpdb->prefix)
+		 * so they appear alongside the core tables.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string[] $tables Array of full table names including prefix.
+		 */
+		$tables = apply_filters( 'pressprimer_assignment_status_tables', $tables );
+
 		$results = [];
 
 		foreach ( $tables as $table ) {

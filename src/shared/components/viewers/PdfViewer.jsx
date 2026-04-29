@@ -100,14 +100,9 @@ const PdfViewer = ( { url } ) => {
 				renderTasksRef.current.push( renderTask );
 				await renderTask.promise;
 			} catch ( renderError ) {
-				// Ignore cancelled render tasks.
-				if ( renderError?.name !== 'RenderingCancelledException' ) {
-					// eslint-disable-next-line no-console
-					console.error(
-						`Failed to render page ${ pageNum }:`,
-						renderError
-					);
-				}
+				// Render errors are non-fatal: the page simply will not
+				// display. Cancelled render tasks during navigation are
+				// expected and intentionally swallowed.
 			}
 		}
 	}, [] );
