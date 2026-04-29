@@ -533,8 +533,11 @@ class PressPrimer_Assignment_LifterLMS {
 			absint( $assignment_id )
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shortcode output is escaped internally.
-		echo '<div class="ppa-lifterlms-assignment-wrapper">' . do_shortcode( $assignment_shortcode ) . '</div>';
+		// Build the wrapped HTML and run it through wp_kses with the
+		// renderer's allowed-HTML list so form/input markup survives.
+		$wrapped_html = '<div class="ppa-lifterlms-assignment-wrapper">' . do_shortcode( $assignment_shortcode ) . '</div>';
+		$allowed_html = $this->get_assignment_allowed_html();
+		echo wp_kses( $wrapped_html, $allowed_html );
 	}
 
 	/**
@@ -590,8 +593,11 @@ class PressPrimer_Assignment_LifterLMS {
 			absint( $assignment_id )
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shortcode output is escaped internally.
-		echo '<div class="ppa-lifterlms-assignment-wrapper">' . do_shortcode( $assignment_shortcode ) . '</div>';
+		// Build the wrapped HTML and run it through wp_kses with the
+		// renderer's allowed-HTML list so form/input markup survives.
+		$wrapped_html = '<div class="ppa-lifterlms-assignment-wrapper">' . do_shortcode( $assignment_shortcode ) . '</div>';
+		$allowed_html = $this->get_assignment_allowed_html();
+		echo wp_kses( $wrapped_html, $allowed_html );
 	}
 
 	/**
@@ -1174,5 +1180,26 @@ class PressPrimer_Assignment_LifterLMS {
 				'status'  => $status,
 			]
 		);
+	}
+
+	/**
+	 * Allowed-HTML list for echoing the assignment shortcode wrapped in
+	 * a container div.
+	 *
+	 * Mirrors the assignment renderer's own allowed list so that form
+	 * controls, file inputs, and data-* attributes survive the wp_kses
+	 * pass we apply to the wrapped output.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array Allowed HTML map for wp_kses().
+	 */
+	private function get_assignment_allowed_html() {
+		$allowed = array();
+		if ( class_exists( 'PressPrimer_Assignment_Assignment_Renderer' ) ) {
+			$renderer = new PressPrimer_Assignment_Assignment_Renderer();
+			$allowed  = $renderer->get_allowed_html();
+		}
+		return $allowed;
 	}
 }

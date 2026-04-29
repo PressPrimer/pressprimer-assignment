@@ -583,12 +583,33 @@ class PressPrimer_Assignment_LearnPress {
 			absint( $assignment_id )
 		);
 
-		// Hide the "lesson content is empty" notice when we have an assignment.
-		echo '<style>.learn-press-message.notice { display: none; }</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe static CSS.
+		// Render the assignment via the shortcode (which already passes its
+		// output through wp_kses() internally) and wrap it in a container
+		// div carrying lesson/course context for downstream JS handlers.
+		$inner_html = do_shortcode( $assignment_shortcode );
 
-		echo '<div class="ppa-learnpress-assignment-wrapper" data-lesson-id="' . esc_attr( $lesson_id ) . '" data-course-id="' . esc_attr( $course_id ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe HTML with escaped attributes.
-		echo do_shortcode( $assignment_shortcode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shortcode output is escaped by the assignment renderer.
-		echo '</div>';
+		$wrapped_html = sprintf(
+			'<div class="ppa-learnpress-assignment-wrapper" data-lesson-id="%1$s" data-course-id="%2$s">%3$s</div>',
+			esc_attr( $lesson_id ),
+			esc_attr( $course_id ),
+			$inner_html
+		);
+
+		// Reuse the assignment renderer's allowed-HTML list so the wrapped
+		// output passes through wp_kses without losing form/input markup.
+		// Extend it with the data-* attributes our wrapper div needs.
+		$allowed_html = array();
+		if ( class_exists( 'PressPrimer_Assignment_Assignment_Renderer' ) ) {
+			$renderer     = new PressPrimer_Assignment_Assignment_Renderer();
+			$allowed_html = $renderer->get_allowed_html();
+		}
+		if ( ! isset( $allowed_html['div'] ) ) {
+			$allowed_html['div'] = array();
+		}
+		$allowed_html['div']['data-lesson-id'] = true;
+		$allowed_html['div']['data-course-id'] = true;
+
+		echo wp_kses( $wrapped_html, $allowed_html );
 	}
 
 	// =========================================================================

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-23T17:53:42+00:00\n"
+"POT-Creation-Date: 2026-04-29T01:43:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pressprimer-assignment\n"
@@ -152,7 +152,7 @@ msgstr ""
 #: includes/admin/class-ppa-admin-categories.php:127
 #: includes/admin/class-ppa-admin.php:162
 #: includes/admin/class-ppa-admin.php:163
-#: src/assignment-editor/components/AssignmentEditor.jsx:276
+#: src/assignment-editor/components/AssignmentEditor.jsx:287
 #: src/assignment-editor/components/CategoriesPanel.jsx:208
 #: src/settings-panel/components/StatusTab.jsx:664
 msgid "Categories"
@@ -390,8 +390,8 @@ msgstr ""
 #: includes/admin/class-ppa-admin-categories.php:378
 #: includes/admin/class-ppa-admin.php:268
 #: includes/frontend/class-ppa-frontend.php:448
-#: src/assignment-editor/components/AssignmentEditor.jsx:357
-#: src/assignment-editor/components/AssignmentEditor.jsx:444
+#: src/assignment-editor/components/AssignmentEditor.jsx:368
+#: src/assignment-editor/components/AssignmentEditor.jsx:455
 #: src/submission-detail/components/SubmissionDetail.jsx:141
 msgid "Cancel"
 msgstr ""
@@ -720,7 +720,7 @@ msgstr ""
 
 #: includes/admin/class-ppa-admin.php:192
 #: includes/admin/class-ppa-admin.php:193
-#: src/assignment-editor/components/AssignmentEditor.jsx:254
+#: src/assignment-editor/components/AssignmentEditor.jsx:265
 msgid "Settings"
 msgstr ""
 
@@ -1526,8 +1526,8 @@ msgstr ""
 msgid "When enabled, students must pass this assignment to mark the lesson complete."
 msgstr ""
 
-#: includes/integrations/class-ppa-lifterlms.php:581
-#: includes/integrations/class-ppa-lifterlms.php:649
+#: includes/integrations/class-ppa-lifterlms.php:584
+#: includes/integrations/class-ppa-lifterlms.php:655
 #: includes/integrations/class-ppa-tutorlms.php:725
 msgid "Enroll in this course to access the assignment."
 msgstr ""
@@ -1673,35 +1673,40 @@ msgstr ""
 msgid "A user submits {{an assignment}}"
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:357
+#: includes/models/class-ppa-assignment.php:371
 msgid "Assignment title cannot be empty."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:366
+#: includes/models/class-ppa-assignment.php:380
 msgid "Invalid submission type. Must be file, text, or either."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:374
+#: includes/models/class-ppa-assignment.php:388
 msgid "Invalid status. Must be draft, published, or archived."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:384
+#: includes/models/class-ppa-assignment.php:398
 msgid "Max points must be between 0.01 and 100,000."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:395
+#: includes/models/class-ppa-assignment.php:409
 msgid "Passing score must be between 0 and 100,000."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:406
+#: includes/models/class-ppa-assignment.php:422
+#: src/assignment-editor/components/SettingsPanel.jsx:432
+msgid "Passing score cannot be greater than maximum points."
+msgstr ""
+
+#: includes/models/class-ppa-assignment.php:433
 msgid "Max file size must be between 1 KB and 100 MB."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:417
+#: includes/models/class-ppa-assignment.php:444
 msgid "Max files must be between 1 and 50."
 msgstr ""
 
-#: includes/models/class-ppa-assignment.php:428
+#: includes/models/class-ppa-assignment.php:455
 msgid "Max resubmissions must be between 0 and 100."
 msgstr ""
 
@@ -2484,44 +2489,48 @@ msgstr ""
 msgid "Failed to save assignment."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:241
+#: src/assignment-editor/components/AssignmentEditor.jsx:212
+msgid "Could not save: please correct the highlighted fields and try again."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:252
 msgid "Are you sure you want to cancel? Any unsaved changes will be lost."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:271
+#: src/assignment-editor/components/AssignmentEditor.jsx:282
 msgid "File Settings"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:294
+#: src/assignment-editor/components/AssignmentEditor.jsx:305
 msgid "Saving assignment…"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:343
+#: src/assignment-editor/components/AssignmentEditor.jsx:354
 msgid "Create New Assignment"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:347
+#: src/assignment-editor/components/AssignmentEditor.jsx:358
 msgid "Edit Assignment"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:369
-#: src/assignment-editor/components/AssignmentEditor.jsx:453
+#: src/assignment-editor/components/AssignmentEditor.jsx:380
+#: src/assignment-editor/components/AssignmentEditor.jsx:464
 msgid "Save Assignment"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:378
+#: src/assignment-editor/components/AssignmentEditor.jsx:389
 msgid "Assignment Editor Guide"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:387
+#: src/assignment-editor/components/AssignmentEditor.jsx:398
 msgid "Create assignments for your students. Configure settings, set grading criteria, and manage file upload requirements."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:396
+#: src/assignment-editor/components/AssignmentEditor.jsx:407
 msgid "Pro Tip:"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:401
+#: src/assignment-editor/components/AssignmentEditor.jsx:412
 msgid "Use the Settings tab to configure grading and submission options, and the File Settings tab to control which file types and sizes students can upload."
 msgstr ""
 
@@ -2741,7 +2750,7 @@ msgid "Synced to rubric total."
 msgstr ""
 
 #: src/assignment-editor/components/SettingsPanel.jsx:377
-#: src/assignment-editor/components/SettingsPanel.jsx:417
+#: src/assignment-editor/components/SettingsPanel.jsx:450
 #: src/settings-panel/components/GeneralTab.jsx:112
 msgid "pts"
 msgstr ""
@@ -2750,100 +2759,100 @@ msgstr ""
 msgid "Minimum points needed to pass"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:432
+#: src/assignment-editor/components/SettingsPanel.jsx:465
 #: src/grading-interface/components/GradingForm.jsx:755
 msgid "Grading Guidelines"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:438
+#: src/assignment-editor/components/SettingsPanel.jsx:471
 msgid "Internal guidelines for graders (not shown to students)"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:456
+#: src/assignment-editor/components/SettingsPanel.jsx:489
 msgid "Grading criteria and rubric notes for graders…"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:478
+#: src/assignment-editor/components/SettingsPanel.jsx:511
 msgid "Use rubric for grading"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:484
+#: src/assignment-editor/components/SettingsPanel.jsx:517
 msgid "Replaces the grading guidelines text box with a structured rubric. Criteria and levels will be visible to students on the assignment page."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:526
+#: src/assignment-editor/components/SettingsPanel.jsx:559
 msgid "Auto-grade with AI"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:532
+#: src/assignment-editor/components/SettingsPanel.jsx:565
 msgid "When enabled, an AI grading suggestion is generated automatically after each student submission. Instructors review and apply the suggestion on the grading page."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:550
+#: src/assignment-editor/components/SettingsPanel.jsx:583
 msgid "AI grading generates feedback suggestions automatically after each submission. Instructors review, edit, and apply the suggestions before returning grades to students — the AI never grades directly."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:567
+#: src/assignment-editor/components/SettingsPanel.jsx:600
 msgid "Submission Settings"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:583
+#: src/assignment-editor/components/SettingsPanel.jsx:616
 msgid "Submission Type"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:589
+#: src/assignment-editor/components/SettingsPanel.jsx:622
 msgid "Choose how students submit their work: file upload, text editor, or either"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:611
+#: src/assignment-editor/components/SettingsPanel.jsx:644
 msgid "File Upload Only"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:618
+#: src/assignment-editor/components/SettingsPanel.jsx:651
 msgid "Text Editor Only"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:625
+#: src/assignment-editor/components/SettingsPanel.jsx:658
 msgid "Either (Student Chooses)"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:639
+#: src/assignment-editor/components/SettingsPanel.jsx:672
 msgid "Notification Email"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:645
+#: src/assignment-editor/components/SettingsPanel.jsx:678
 msgid "Additional email addresses to notify when a student submits. The assignment author always receives the notification."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:660
+#: src/assignment-editor/components/SettingsPanel.jsx:693
 msgid "Comma-separated email addresses. Leave blank to only notify the assignment author."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:666
+#: src/assignment-editor/components/SettingsPanel.jsx:699
 msgid "e.g., instructor@school.edu, ta@school.edu"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:680
+#: src/assignment-editor/components/SettingsPanel.jsx:713
 msgid "Allow Resubmission"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:686
+#: src/assignment-editor/components/SettingsPanel.jsx:719
 msgid "Allow students to resubmit after their initial submission"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:704
+#: src/assignment-editor/components/SettingsPanel.jsx:737
 msgid "When disabled, students can only submit once."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:719
+#: src/assignment-editor/components/SettingsPanel.jsx:752
 msgid "Maximum Resubmissions"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:725
+#: src/assignment-editor/components/SettingsPanel.jsx:758
 msgid "Maximum number of times a student can resubmit"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:740
+#: src/assignment-editor/components/SettingsPanel.jsx:773
 msgid "Set to 0 for unlimited resubmissions."
 msgstr ""
 
@@ -4129,7 +4138,7 @@ msgid "Failed to display image."
 msgstr ""
 
 #: src/shared/components/viewers/ImageViewer.jsx:182
-#: src/shared/components/viewers/PdfViewer.jsx:278
+#: src/shared/components/viewers/PdfViewer.jsx:273
 msgid "Open in new tab"
 msgstr ""
 
@@ -4141,21 +4150,21 @@ msgstr ""
 msgid "Invalid ODT file: content.xml not found."
 msgstr ""
 
-#: src/shared/components/viewers/PdfViewer.jsx:170
+#: src/shared/components/viewers/PdfViewer.jsx:165
 msgid "Failed to load PDF."
 msgstr ""
 
-#: src/shared/components/viewers/PdfViewer.jsx:227
+#: src/shared/components/viewers/PdfViewer.jsx:222
 msgid "Try opening in a new tab"
 msgstr ""
 
 #. translators: %d: number of pages
-#: src/shared/components/viewers/PdfViewer.jsx:254
+#: src/shared/components/viewers/PdfViewer.jsx:249
 #, js-format
 msgid "%d pages"
 msgstr ""
 
-#: src/shared/components/viewers/PdfViewer.jsx:306
+#: src/shared/components/viewers/PdfViewer.jsx:301
 msgid "Loading PDF…"
 msgstr ""
 

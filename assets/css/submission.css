@@ -2112,3 +2112,15 @@
 	direction: rtl;
 	text-align: right;
 }
+
+
+/* ==========================================================================
+   LearnPress integration: hide LearnPress's "lesson content is empty"
+   notice. This stylesheet only enqueues when an assignment is rendering,
+   so the rule is scoped to that context by load timing — the
+   .learn-press-message class does not exist on other pages.
+   ========================================================================== */
+
+.learn-press-message.notice {
+	display: none;
+}
