@@ -26,7 +26,6 @@ import {
 	Tooltip,
 	Typography,
 	Divider,
-	Input,
 	Alert,
 } from 'antd';
 import {
@@ -38,9 +37,9 @@ import {
 	SendOutlined,
 } from '@ant-design/icons';
 import DocumentPanel from '../../shared/components/viewers/DocumentPanel';
+import RichTextEditor from '../../shared/components/RichTextEditor';
 
 const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
 
 // RubricPanel is registered globally by the Educator addon's rubric-builder bundle.
 const RubricPanel = window.PPAERubricPanel || null;
@@ -112,9 +111,6 @@ const GradingForm = ( { submissionId } ) => {
 
 	// Ref to track if a save is in progress (for keyboard shortcut debouncing).
 	const savingRef = useRef( false );
-
-	// Ref for feedback textarea to detect focus.
-	const feedbackRef = useRef( null );
 
 	// Active grading time tracking.
 	const gradingTimeRef = useRef( {
@@ -1113,12 +1109,11 @@ const GradingForm = ( { submissionId } ) => {
 							>
 								{ __( 'Feedback', 'pressprimer-assignment' ) }
 							</label>
-							<TextArea
+							<RichTextEditor
 								id="ppa-feedback-input"
-								ref={ feedbackRef }
 								value={ feedback }
-								onChange={ ( e ) => {
-									setFeedback( e.target.value );
+								onChange={ ( html ) => {
+									setFeedback( html );
 									setHasChanges( true );
 								} }
 								placeholder={ __(
@@ -1126,7 +1121,7 @@ const GradingForm = ( { submissionId } ) => {
 									'pressprimer-assignment'
 								) }
 								disabled={ isReadOnly }
-								autoSize={ { minRows: 4, maxRows: 12 } }
+								rows={ 8 }
 							/>
 						</div>
 

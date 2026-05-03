@@ -88,12 +88,17 @@ class PressPrimer_Assignment_Admin_Settings {
 		// Enqueue WordPress media library for logo selection.
 		wp_enqueue_media();
 
+		// Enqueue WordPress TinyMCE editor scripts (used by RichTextEditor wrapper).
+		wp_enqueue_editor();
+
 		// Enqueue built React app.
 		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/settings-panel.asset.php';
 		$asset      = file_exists( $asset_file ) ? require $asset_file : [
 			'dependencies' => [ 'wp-element', 'wp-i18n', 'wp-api-fetch' ],
 			'version'      => PRESSPRIMER_ASSIGNMENT_VERSION,
 		];
+
+		$asset['dependencies'] = array_unique( array_merge( $asset['dependencies'], [ 'wp-editor' ] ) );
 
 		wp_enqueue_script(
 			'ppa-settings-panel',

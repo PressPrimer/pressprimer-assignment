@@ -27,7 +27,8 @@ import {
 	DeleteOutlined,
 } from '@ant-design/icons';
 
-const { TextArea } = Input;
+import RichTextEditor from '../../shared/components/RichTextEditor';
+
 const { Title, Paragraph, Text } = Typography;
 
 /**
@@ -491,24 +492,16 @@ const EmailTab = ( { settings, updateSetting, settingsData } ) => {
 					<Form.Item
 						label={ __( 'Email Body', 'pressprimer-assignment' ) }
 					>
-						<TextArea
+						<RichTextEditor
 							value={
 								settings.email_submission_body ??
 								DEFAULTS.submission_body
 							}
-							onChange={ ( e ) =>
-								updateSetting(
-									'email_submission_body',
-									e.target.value
-								)
+							onChange={ ( html ) =>
+								updateSetting( 'email_submission_body', html )
 							}
 							placeholder={ DEFAULTS.submission_body }
 							rows={ 10 }
-							style={ {
-								maxWidth: 500,
-								fontFamily: 'monospace',
-								fontSize: 13,
-							} }
 						/>
 					</Form.Item>
 				</div>
@@ -607,23 +600,15 @@ const EmailTab = ( { settings, updateSetting, settingsData } ) => {
 					<Form.Item
 						label={ __( 'Email Body', 'pressprimer-assignment' ) }
 					>
-						<TextArea
+						<RichTextEditor
 							value={
 								settings.email_grade_body ?? DEFAULTS.grade_body
 							}
-							onChange={ ( e ) =>
-								updateSetting(
-									'email_grade_body',
-									e.target.value
-								)
+							onChange={ ( html ) =>
+								updateSetting( 'email_grade_body', html )
 							}
 							placeholder={ DEFAULTS.grade_body }
 							rows={ 12 }
-							style={ {
-								maxWidth: 500,
-								fontFamily: 'monospace',
-								fontSize: 13,
-							} }
 						/>
 					</Form.Item>
 				</div>
@@ -750,23 +735,15 @@ const EmailTab = ( { settings, updateSetting, settingsData } ) => {
 					<Form.Item
 						label={ __( 'Email Body', 'pressprimer-assignment' ) }
 					>
-						<TextArea
+						<RichTextEditor
 							value={
 								settings.email_admin_body ?? DEFAULTS.admin_body
 							}
-							onChange={ ( e ) =>
-								updateSetting(
-									'email_admin_body',
-									e.target.value
-								)
+							onChange={ ( html ) =>
+								updateSetting( 'email_admin_body', html )
 							}
 							placeholder={ DEFAULTS.admin_body }
 							rows={ 10 }
-							style={ {
-								maxWidth: 500,
-								fontFamily: 'monospace',
-								fontSize: 13,
-							} }
 						/>
 					</Form.Item>
 				</div>

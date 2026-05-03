@@ -268,10 +268,14 @@ class PressPrimer_Assignment_Admin_Grading {
 			PRESSPRIMER_ASSIGNMENT_VERSION
 		);
 
+		// Enqueue WordPress TinyMCE editor scripts (used by RichTextEditor wrapper).
+		wp_enqueue_editor();
+
 		// Enqueue the built React bundle.
 		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/grading-interface.asset.php';
 		if ( file_exists( $asset_file ) ) {
-			$asset = require $asset_file;
+			$asset                 = require $asset_file;
+			$asset['dependencies'] = array_unique( array_merge( $asset['dependencies'], [ 'wp-editor' ] ) );
 
 			wp_enqueue_script(
 				'ppa-grading-interface',
@@ -291,11 +295,11 @@ class PressPrimer_Assignment_Admin_Grading {
 				);
 			}
 		} else {
-			// Fallback: use wp-element, wp-i18n, wp-api-fetch as dependencies.
+			// Fallback: use wp-element, wp-i18n, wp-api-fetch, wp-editor as dependencies.
 			wp_enqueue_script(
 				'ppa-grading-interface',
 				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/grading-interface.js',
-				[ 'wp-element', 'wp-i18n', 'wp-api-fetch' ],
+				[ 'wp-element', 'wp-i18n', 'wp-api-fetch', 'wp-editor' ],
 				PRESSPRIMER_ASSIGNMENT_VERSION,
 				true
 			);

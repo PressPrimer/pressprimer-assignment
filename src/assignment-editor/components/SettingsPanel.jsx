@@ -31,7 +31,8 @@ import {
 	FormatPainterOutlined,
 } from '@ant-design/icons';
 
-const { TextArea } = Input;
+import RichTextEditor from '../../shared/components/RichTextEditor';
+
 const { Title } = Typography;
 
 // Rubric editor is registered globally by the Educator addon.
@@ -146,13 +147,12 @@ const SettingsPanel = ( {
 							}
 							name="description"
 						>
-							<TextArea
+							<RichTextEditor
 								rows={ 5 }
 								placeholder={ __(
 									'Brief description of the assignment…',
 									'pressprimer-assignment'
 								) }
-								size="small"
 							/>
 						</Form.Item>
 					</Col>
@@ -183,13 +183,12 @@ const SettingsPanel = ( {
 							}
 							name="instructions"
 						>
-							<TextArea
+							<RichTextEditor
 								rows={ 5 }
 								placeholder={ __(
 									'Provide detailed instructions for completing this assignment…',
 									'pressprimer-assignment'
 								) }
-								size="small"
 							/>
 						</Form.Item>
 					</Col>
@@ -484,14 +483,12 @@ const SettingsPanel = ( {
 						}
 						name="grading_guidelines"
 					>
-						<TextArea
+						<RichTextEditor
 							rows={ 4 }
 							placeholder={ __(
 								'Grading criteria and rubric notes for graders…',
 								'pressprimer-assignment'
 							) }
-							style={ { maxWidth: 500 } }
-							size="small"
 						/>
 					</Form.Item>
 				) }
