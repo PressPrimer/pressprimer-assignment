@@ -708,15 +708,15 @@ class PressPrimer_Assignment_REST_Assignments {
 
 		// Rich text fields - allow safe HTML.
 		if ( null !== $request->get_param( 'description' ) ) {
-			$data['description'] = wp_kses_post( $request->get_param( 'description' ) );
+			$data['description'] = wp_kses_post( wp_unslash( $request->get_param( 'description' ) ) );
 		}
 
 		if ( null !== $request->get_param( 'instructions' ) ) {
-			$data['instructions'] = wp_kses_post( $request->get_param( 'instructions' ) );
+			$data['instructions'] = wp_kses_post( wp_unslash( $request->get_param( 'instructions' ) ) );
 		}
 
 		if ( null !== $request->get_param( 'grading_guidelines' ) ) {
-			$data['grading_guidelines'] = wp_kses_post( $request->get_param( 'grading_guidelines' ) );
+			$data['grading_guidelines'] = wp_kses_post( wp_unslash( $request->get_param( 'grading_guidelines' ) ) );
 		}
 
 		// Numeric fields.

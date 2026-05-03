@@ -635,7 +635,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		// Handle grading (score provided).
 		if ( null !== $score ) {
-			$feedback_text = null !== $feedback ? wp_kses_post( $feedback ) : '';
+			$feedback_text = null !== $feedback ? wp_kses_post( wp_unslash( $feedback ) ) : '';
 
 			$grading_service = new PressPrimer_Assignment_Grading_Service();
 			$result          = $grading_service->grade( $id, floatval( $score ), $feedback_text, $grading_time_delta );
@@ -684,7 +684,7 @@ class PressPrimer_Assignment_REST_Submissions {
 
 		// Handle feedback-only update (no score change).
 		if ( null !== $feedback ) {
-			$submission->feedback = wp_kses_post( $feedback );
+			$submission->feedback = wp_kses_post( wp_unslash( $feedback ) );
 
 			// Accumulate active grading time.
 			if ( $grading_time_delta > 0 ) {
