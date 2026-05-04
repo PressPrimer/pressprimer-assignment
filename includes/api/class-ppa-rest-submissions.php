@@ -202,42 +202,67 @@ class PressPrimer_Assignment_REST_Submissions {
 	 */
 	public function get_collection_params() {
 		return [
-			'page'          => [
+			'page'           => [
 				'description' => __( 'Current page of the collection.', 'pressprimer-assignment' ),
 				'type'        => 'integer',
 				'default'     => 1,
 				'minimum'     => 1,
 			],
-			'per_page'      => [
+			'per_page'       => [
 				'description' => __( 'Maximum number of items to return.', 'pressprimer-assignment' ),
 				'type'        => 'integer',
 				'default'     => 20,
 				'minimum'     => 1,
 				'maximum'     => 100,
 			],
-			'assignment_id' => [
+			'assignment_id'  => [
 				'description' => __( 'Filter by assignment ID.', 'pressprimer-assignment' ),
 				'type'        => 'integer',
 				'default'     => 0,
 			],
-			'status'        => [
+			'status'         => [
 				'description' => __( 'Filter by submission status.', 'pressprimer-assignment' ),
 				'type'        => 'string',
 				'default'     => '',
 				'enum'        => [ 'submitted', 'grading', 'graded', 'returned', '' ],
 			],
-			'search'        => [
+			'search'         => [
 				'description' => __( 'Search by student name or email.', 'pressprimer-assignment' ),
 				'type'        => 'string',
 				'default'     => '',
 			],
-			'orderby'       => [
+			'score_min'      => [
+				'description' => __( 'Inclusive lower bound on score. Excludes un-graded submissions when set.', 'pressprimer-assignment' ),
+				'type'        => 'number',
+				'required'    => false,
+			],
+			'score_max'      => [
+				'description' => __( 'Inclusive upper bound on score. Excludes un-graded submissions when set.', 'pressprimer-assignment' ),
+				'type'        => 'number',
+				'required'    => false,
+			],
+			'has_feedback'   => [
+				'description' => __( 'Filter by feedback presence. Accepts true/false (also 1/0, yes/no). Omit for any.', 'pressprimer-assignment' ),
+				'type'        => 'string',
+				'required'    => false,
+			],
+			'submitted_from' => [
+				'description' => __( 'Inclusive lower bound on submitted_at (ISO 8601 date).', 'pressprimer-assignment' ),
+				'type'        => 'string',
+				'required'    => false,
+			],
+			'submitted_to'   => [
+				'description' => __( 'Inclusive upper bound on submitted_at (ISO 8601 date). Normalized to end-of-day.', 'pressprimer-assignment' ),
+				'type'        => 'string',
+				'required'    => false,
+			],
+			'orderby'        => [
 				'description' => __( 'Field to order by.', 'pressprimer-assignment' ),
 				'type'        => 'string',
 				'default'     => 'submitted_at',
 				'enum'        => [ 'submitted_at', 'status', 'score', 'student_name' ],
 			],
-			'order'         => [
+			'order'          => [
 				'description' => __( 'Sort direction.', 'pressprimer-assignment' ),
 				'type'        => 'string',
 				'default'     => 'DESC',
@@ -272,6 +297,74 @@ class PressPrimer_Assignment_REST_Submissions {
 		$page          = max( 1, absint( $request->get_param( 'page' ) ) ?: 1 );
 		$offset        = ( $page - 1 ) * $per_page;
 
+		// Parse and validate the 2.1 filters before doing any DB work.
+		$score_min_raw = $request->get_param( 'score_min' );
+		$score_min     = null;
+		if ( null !== $score_min_raw && '' !== $score_min_raw ) {
+			if ( ! is_numeric( $score_min_raw ) ) {
+				return new WP_Error(
+					'invalid_score',
+					__( 'score_min must be numeric.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$score_min = (float) $score_min_raw;
+		}
+
+		$score_max_raw = $request->get_param( 'score_max' );
+		$score_max     = null;
+		if ( null !== $score_max_raw && '' !== $score_max_raw ) {
+			if ( ! is_numeric( $score_max_raw ) ) {
+				return new WP_Error(
+					'invalid_score',
+					__( 'score_max must be numeric.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$score_max = (float) $score_max_raw;
+		}
+
+		$has_feedback_raw = $request->get_param( 'has_feedback' );
+		$has_feedback     = null;
+		if ( null !== $has_feedback_raw && '' !== $has_feedback_raw ) {
+			$normalized = strtolower( (string) $has_feedback_raw );
+			if ( in_array( $normalized, [ 'true', '1', 'yes' ], true ) ) {
+				$has_feedback = true;
+			} elseif ( in_array( $normalized, [ 'false', '0', 'no' ], true ) ) {
+				$has_feedback = false;
+			}
+			// Anything else: treated as omitted (per spec).
+		}
+
+		$submitted_from_raw = $request->get_param( 'submitted_from' );
+		$submitted_from     = null;
+		if ( null !== $submitted_from_raw && '' !== $submitted_from_raw ) {
+			$ts = strtotime( (string) $submitted_from_raw );
+			if ( false === $ts ) {
+				return new WP_Error(
+					'invalid_date',
+					__( 'submitted_from is not a valid date.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$submitted_from = gmdate( 'Y-m-d 00:00:00', $ts );
+		}
+
+		$submitted_to_raw = $request->get_param( 'submitted_to' );
+		$submitted_to     = null;
+		if ( null !== $submitted_to_raw && '' !== $submitted_to_raw ) {
+			$ts = strtotime( (string) $submitted_to_raw );
+			if ( false === $ts ) {
+				return new WP_Error(
+					'invalid_date',
+					__( 'submitted_to is not a valid date.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			// Normalize to end-of-day so the day is fully inclusive.
+			$submitted_to = gmdate( 'Y-m-d 23:59:59', $ts );
+		}
+
 		// Scope to current user's assignments for manage_own users.
 		$author_id = $this->get_author_id();
 
@@ -292,21 +385,12 @@ class PressPrimer_Assignment_REST_Submissions {
 		);
 
 		if ( null !== $visible_user_ids && empty( $visible_user_ids ) ) {
-			return rest_ensure_response(
-				[
-					'items' => [],
-					'total' => 0,
-					'page'  => $page,
-					'pages' => 0,
-					'stats' => [
-						'total'     => 0,
-						'submitted' => 0,
-						'grading'   => 0,
-						'graded'    => 0,
-						'returned'  => 0,
-					],
-				]
-			);
+			return rest_ensure_response( $this->empty_list_response( $page ) );
+		}
+
+		// Inverted score range — no rows can match.
+		if ( null !== $score_min && null !== $score_max && $score_min > $score_max ) {
+			return rest_ensure_response( $this->empty_list_response( $page ) );
 		}
 
 		// Build WHERE.
@@ -341,6 +425,47 @@ class PressPrimer_Assignment_REST_Submissions {
 			$where_clauses[] = '(u.display_name LIKE %s OR u.user_email LIKE %s)';
 			$where_params[]  = $like_term;
 			$where_params[]  = $like_term;
+		}
+
+		// 2.1 filters: score range. Either bound excludes un-graded rows
+		// (s.score IS NULL) — the >= / <= comparisons against NULL evaluate
+		// to NULL, which fails WHERE; the explicit IS NOT NULL is added
+		// for clarity and matches the spec.
+		$score_constraint_added = false;
+		if ( null !== $score_min ) {
+			$where_clauses[]        = 's.score >= %f';
+			$where_params[]         = $score_min;
+			$score_constraint_added = true;
+		}
+		if ( null !== $score_max ) {
+			$where_clauses[]        = 's.score <= %f';
+			$where_params[]         = $score_max;
+			$score_constraint_added = true;
+		}
+		if ( $score_constraint_added ) {
+			$where_clauses[] = 's.score IS NOT NULL';
+		}
+
+		// 2.1 filters: feedback presence. TRIM handles whitespace-only
+		// content; HTML wrappers like "<p></p>" are not stripped (rare in
+		// practice and stripping HTML in the query would prevent index use).
+		if ( true === $has_feedback ) {
+			$where_clauses[] = '(s.feedback IS NOT NULL AND TRIM(s.feedback) != %s)';
+			$where_params[]  = '';
+		} elseif ( false === $has_feedback ) {
+			$where_clauses[] = '(s.feedback IS NULL OR TRIM(s.feedback) = %s)';
+			$where_params[]  = '';
+		}
+
+		// 2.1 filters: submitted_at date range (both bounds inclusive,
+		// submitted_to normalized to end-of-day above).
+		if ( null !== $submitted_from ) {
+			$where_clauses[] = 's.submitted_at >= %s';
+			$where_params[]  = $submitted_from;
+		}
+		if ( null !== $submitted_to ) {
+			$where_clauses[] = 's.submitted_at <= %s';
+			$where_params[]  = $submitted_to;
 		}
 
 		$where_sql = 'WHERE ' . implode( ' AND ', $where_clauses );
@@ -775,6 +900,33 @@ class PressPrimer_Assignment_REST_Submissions {
 				'errors'   => $errors,
 			]
 		);
+	}
+
+	/**
+	 * Build the empty-result response shape for the list endpoint.
+	 *
+	 * Used when an early short-circuit (no visibility, inverted score range,
+	 * etc.) means no rows can match.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param int $page Current page number.
+	 * @return array Empty list response payload.
+	 */
+	private function empty_list_response( $page ) {
+		return [
+			'items' => [],
+			'total' => 0,
+			'page'  => $page,
+			'pages' => 0,
+			'stats' => [
+				'total'     => 0,
+				'submitted' => 0,
+				'grading'   => 0,
+				'graded'    => 0,
+				'returned'  => 0,
+			],
+		];
 	}
 
 	/**
