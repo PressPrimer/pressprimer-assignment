@@ -23,6 +23,8 @@ import {
 	useImperativeHandle,
 } from '@wordpress/element';
 
+import './RichTextEditor.css';
+
 let editorCounter = 0;
 
 const TOOLBAR = 'bold italic bullist numlist link undo redo';
@@ -79,7 +81,9 @@ const RichTextEditor = forwardRef(
 							statusbar: false,
 							branding: false,
 							elementpath: false,
-							height: rows * 24,
+							// rows * line-height plus one extra line of room
+							// to compensate for the toolbar overhead.
+							height: rows * 24 + 30,
 							placeholder,
 							init_instance_callback: ( editor ) => {
 								editorInstanceRef.current = editor;
