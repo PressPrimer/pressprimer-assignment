@@ -12,6 +12,34 @@
 	width: 50px;
 }
 
+/*
+ * Submissions list table column widths.
+ *
+ * The default `widefat fixed` layout splits all columns equally, which
+ * leaves the Student name column too narrow to fit name + email without
+ * wrapping while Status / Files / Score get more room than they need.
+ * Constraining those columns gives Student and Assignment the slack.
+ */
+.wp-list-table.submissions .column-id {
+	width: 60px;
+}
+
+.wp-list-table.submissions .column-status {
+	width: 100px;
+}
+
+.wp-list-table.submissions .column-files {
+	width: 70px;
+}
+
+.wp-list-table.submissions .column-score {
+	width: 80px;
+}
+
+.wp-list-table.submissions .column-submitted_at {
+	width: 140px;
+}
+
 /* Utility: hide element */
 .ppa-hidden {
 	display: none;
