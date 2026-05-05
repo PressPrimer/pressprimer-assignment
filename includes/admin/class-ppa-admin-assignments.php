@@ -149,6 +149,11 @@ class PressPrimer_Assignment_Admin_Assignments {
 			$this->handle_delete();
 		}
 
+		// Single duplicate.
+		if ( 'duplicate' === $action && isset( $_GET['assignment'] ) ) {
+			$this->handle_duplicate();
+		}
+
 		// Bulk actions.
 		$bulk_action = $this->current_bulk_action();
 
@@ -162,6 +167,10 @@ class PressPrimer_Assignment_Admin_Assignments {
 
 		if ( 'draft' === $bulk_action && isset( $_GET['assignments'] ) ) {
 			$this->handle_bulk_draft();
+		}
+
+		if ( 'duplicate' === $bulk_action && isset( $_GET['assignments'] ) ) {
+			$this->handle_bulk_duplicate();
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
@@ -220,6 +229,23 @@ class PressPrimer_Assignment_Admin_Assignments {
 					printf(
 						/* translators: %d: number of assignments moved to draft */
 						esc_html( _n( '%d assignment moved to draft.', '%d assignments moved to draft.', $count, 'pressprimer-assignment' ) ),
+						(int) $count
+					);
+					?>
+				</p>
+			</div>
+			<?php
+		}
+
+		if ( isset( $_GET['duplicated'] ) && absint( wp_unslash( $_GET['duplicated'] ) ) > 0 ) {
+			$count = absint( wp_unslash( $_GET['duplicated'] ) );
+			?>
+			<div class="notice notice-success is-dismissible">
+				<p>
+					<?php
+					printf(
+						/* translators: %d: number of assignments duplicated */
+						esc_html( _n( '%d assignment duplicated.', '%d assignments duplicated.', $count, 'pressprimer-assignment' ) ),
 						(int) $count
 					);
 					?>
@@ -654,6 +680,139 @@ class PressPrimer_Assignment_Admin_Assignments {
 		wp_safe_redirect( add_query_arg( 'drafted', $drafted, admin_url( 'admin.php?page=pressprimer-assignment-assignments' ) ) );
 		exit;
 	}
+
+	/**
+	 * Check whether the current user may duplicate the given assignment.
+	 *
+	 * Mirrors the REST endpoint's permission logic: admins always allowed,
+	 * teachers allowed when the source's author is in the visibility scope
+	 * exposed via the pressprimer_assignment_visible_user_ids filter (or, when
+	 * Educator is not active and the filter returns null, when the source is
+	 * authored by the current user).
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param PressPrimer_Assignment_Assignment $assignment Source assignment.
+	 * @return bool True if the user may duplicate.
+	 */
+	private function user_can_duplicate( $assignment ) {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return true;
+		}
+
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			return false;
+		}
+
+		$visible_user_ids = apply_filters(
+			'pressprimer_assignment_visible_user_ids',
+			null,
+			get_current_user_id()
+		);
+
+		if ( null === $visible_user_ids ) {
+			return (int) $assignment->author_id === get_current_user_id();
+		}
+
+		if ( empty( $visible_user_ids ) ) {
+			return false;
+		}
+
+		return in_array( (int) $assignment->author_id, array_map( 'absint', $visible_user_ids ), true );
+	}
+
+	/**
+	 * Handle the single Duplicate row action.
+	 *
+	 * Verifies nonce + capability, calls the model's duplicate() method, and
+	 * redirects the user to the new assignment's edit screen with a success
+	 * notice flag. Mirrors the Quiz duplicate handler shape.
+	 *
+	 * @since 2.1.0
+	 */
+	private function handle_duplicate() {
+		if ( ! isset( $_GET['assignment'] ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'pressprimer-assignment' ) );
+		}
+
+		$assignment_id = absint( wp_unslash( $_GET['assignment'] ) );
+		check_admin_referer( 'duplicate-assignment_' . $assignment_id );
+
+		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
+
+		if ( ! $assignment ) {
+			wp_die( esc_html__( 'Assignment not found.', 'pressprimer-assignment' ) );
+		}
+
+		if ( ! $this->user_can_duplicate( $assignment ) ) {
+			wp_die( esc_html__( 'You do not have permission to duplicate this assignment.', 'pressprimer-assignment' ) );
+		}
+
+		$new_id = PressPrimer_Assignment_Assignment::duplicate( $assignment_id );
+
+		if ( is_wp_error( $new_id ) ) {
+			wp_die( esc_html( $new_id->get_error_message() ) );
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				[
+					'page'       => 'pressprimer-assignment-assignments',
+					'action'     => 'edit',
+					'assignment' => $new_id,
+					'duplicated' => 1,
+				],
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Handle bulk duplicate.
+	 *
+	 * Loops the selected source IDs, duplicates each one the user is permitted
+	 * to duplicate, and redirects to the list view with a success-count notice.
+	 * Sources outside the user's permission scope and any per-row failures are
+	 * skipped silently — the count reflects successful duplications only.
+	 *
+	 * @since 2.1.0
+	 */
+	private function handle_bulk_duplicate() {
+		check_admin_referer( 'bulk-assignments' );
+
+		if (
+			! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
+			wp_die( esc_html__( 'You do not have permission to duplicate assignments.', 'pressprimer-assignment' ) );
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Validated above via check_admin_referer.
+		$assignment_ids = isset( $_GET['assignments'] ) ? array_map( 'absint', wp_unslash( $_GET['assignments'] ) ) : [];
+		$duplicated     = 0;
+
+		foreach ( $assignment_ids as $assignment_id ) {
+			$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
+
+			if ( ! $assignment ) {
+				continue;
+			}
+
+			if ( ! $this->user_can_duplicate( $assignment ) ) {
+				continue;
+			}
+
+			$result = PressPrimer_Assignment_Assignment::duplicate( $assignment_id );
+
+			if ( ! is_wp_error( $result ) ) {
+				++$duplicated;
+			}
+		}
+
+		wp_safe_redirect( add_query_arg( 'duplicated', $duplicated, admin_url( 'admin.php?page=pressprimer-assignment-assignments' ) ) );
+		exit;
+	}
 }
 
 /**
@@ -721,9 +880,10 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 	 */
 	public function get_bulk_actions() {
 		return [
-			'publish' => __( 'Publish', 'pressprimer-assignment' ),
-			'draft'   => __( 'Move to Draft', 'pressprimer-assignment' ),
-			'delete'  => __( 'Delete', 'pressprimer-assignment' ),
+			'publish'   => __( 'Publish', 'pressprimer-assignment' ),
+			'draft'     => __( 'Move to Draft', 'pressprimer-assignment' ),
+			'duplicate' => __( 'Duplicate', 'pressprimer-assignment' ),
+			'delete'    => __( 'Delete', 'pressprimer-assignment' ),
 		];
 	}
 
@@ -891,6 +1051,25 @@ class PressPrimer_Assignment_Assignments_List_Table extends WP_List_Table {
 				)
 			),
 			esc_html__( 'Edit', 'pressprimer-assignment' )
+		);
+
+		// Duplicate action.
+		$actions['duplicate'] = sprintf(
+			'<a href="%s">%s</a>',
+			esc_url(
+				wp_nonce_url(
+					add_query_arg(
+						[
+							'page'       => 'pressprimer-assignment-assignments',
+							'action'     => 'duplicate',
+							'assignment' => $item->id,
+						],
+						admin_url( 'admin.php' )
+					),
+					'duplicate-assignment_' . $item->id
+				)
+			),
+			esc_html__( 'Duplicate', 'pressprimer-assignment' )
 		);
 
 		// Delete action.
