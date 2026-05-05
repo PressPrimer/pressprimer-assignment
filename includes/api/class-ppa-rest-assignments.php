@@ -96,6 +96,18 @@ class PressPrimer_Assignment_REST_Assignments {
 				],
 			]
 		);
+
+		// Duplicate route. Permission check is per-request (depends on the
+		// source assignment's visibility), so it has its own callback.
+		register_rest_route(
+			self::API_NAMESPACE,
+			'/assignments/(?P<id>\d+)/duplicate',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'duplicate_item' ],
+				'permission_callback' => [ $this, 'check_duplicate_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -686,6 +698,111 @@ class PressPrimer_Assignment_REST_Assignments {
 				'id'      => $id,
 			]
 		);
+	}
+
+	/**
+	 * Permission check for the duplicate endpoint.
+	 *
+	 * Allows admins (manage_all) and any user with manage_own whose visibility
+	 * scope (per the pressprimer_assignment_visible_user_ids filter) covers the
+	 * source assignment's author. Without the Educator addon, the visibility
+	 * filter returns null and the manage_own branch effectively requires the
+	 * source to be authored by the current user.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return bool|WP_Error True if permitted; WP_Error otherwise.
+	 */
+	public function check_duplicate_permission( $request ) {
+		if ( current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return true;
+		}
+
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN ) ) {
+			return false;
+		}
+
+		$id     = absint( $request->get_param( 'id' ) );
+		$source = PressPrimer_Assignment_Assignment::get( $id );
+
+		if ( ! $source ) {
+			// Defer to the handler so the response is 404, not 403.
+			return true;
+		}
+
+		// The source's author must be in the current user's visibility scope.
+		// Educator hooks pressprimer_assignment_visible_user_ids to enforce
+		// teacher data isolation; without it, the filter returns null and
+		// we fall back to "is the source authored by me?".
+		$visible_user_ids = apply_filters(
+			'pressprimer_assignment_visible_user_ids',
+			null,
+			get_current_user_id()
+		);
+
+		if ( null === $visible_user_ids ) {
+			return (int) $source->author_id === get_current_user_id();
+		}
+
+		if ( empty( $visible_user_ids ) ) {
+			return false;
+		}
+
+		return in_array( (int) $source->author_id, array_map( 'absint', $visible_user_ids ), true );
+	}
+
+	/**
+	 * Duplicate an assignment.
+	 *
+	 * Creates a new draft assignment with all settings and taxonomy copied from
+	 * the source. Submissions and files are not copied. Fires the
+	 * pressprimer_assignment_assignment_duplicated action so addons can copy
+	 * their own per-assignment data.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response on success; WP_Error on failure.
+	 */
+	public function duplicate_item( $request ) {
+		$source_id = absint( $request->get_param( 'id' ) );
+
+		$result = PressPrimer_Assignment_Assignment::duplicate( $source_id );
+
+		if ( is_wp_error( $result ) ) {
+			$status = 500;
+			if ( 'not_found' === $result->get_error_code() ) {
+				$status = 404;
+			}
+			return new WP_Error(
+				$result->get_error_code(),
+				$result->get_error_message(),
+				[ 'status' => $status ]
+			);
+		}
+
+		$new_id     = (int) $result;
+		$new_assign = PressPrimer_Assignment_Assignment::get( $new_id );
+
+		$response = rest_ensure_response(
+			[
+				'id'       => $new_id,
+				'uuid'     => $new_assign ? $new_assign->uuid : '',
+				'edit_url' => add_query_arg(
+					[
+						'page'       => 'pressprimer-assignment-assignments',
+						'action'     => 'edit',
+						'assignment' => $new_id,
+					],
+					admin_url( 'admin.php' )
+				),
+			]
+		);
+
+		$response->set_status( 201 );
+
+		return $response;
 	}
 
 	/**

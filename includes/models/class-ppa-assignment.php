@@ -697,6 +697,107 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	}
 
 	/**
+	 * Duplicate an assignment.
+	 *
+	 * Creates a new draft assignment with all settings and taxonomy relationships
+	 * copied from the source. Submissions, submission files, and cached counts are
+	 * not copied. The duplicate is owned by the current user regardless of the
+	 * source author. Wraps the row insert and taxonomy copy in a single transaction
+	 * so a partial failure leaves no orphan rows.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param int $source_id Source assignment ID.
+	 * @return int|WP_Error New assignment ID on success, WP_Error on failure.
+	 */
+	public static function duplicate( int $source_id ) {
+		global $wpdb;
+
+		$source = self::get( $source_id );
+		if ( ! $source ) {
+			return new WP_Error(
+				'not_found',
+				__( 'Source assignment not found.', 'pressprimer-assignment' )
+			);
+		}
+
+		// Build the new row from the source. parent::create() filters by
+		// fillable fields, so id/created_at/updated_at are dropped automatically;
+		// the DB sets created_at and updated_at via DEFAULT CURRENT_TIMESTAMP.
+		$data = $source->to_array();
+
+		$data['uuid']  = wp_generate_uuid4();
+		$data['title'] = sprintf(
+			/* translators: %s: source assignment title */
+			__( '%s (Copy)', 'pressprimer-assignment' ),
+			$source->title
+		);
+		$data['status']           = 'draft';
+		$data['author_id']        = get_current_user_id();
+		$data['submission_count'] = 0;
+		$data['graded_count']     = 0;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( 'START TRANSACTION' );
+
+		$new_id = self::create( $data );
+		if ( is_wp_error( $new_id ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( 'ROLLBACK' );
+			return $new_id;
+		}
+
+		// Copy taxonomy relationships from the source.
+		$tax_table = $wpdb->prefix . 'ppa_assignment_tax';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$category_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT category_id FROM {$tax_table} WHERE assignment_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$source_id
+			)
+		);
+
+		foreach ( $category_ids as $category_id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->insert(
+				$tax_table,
+				[
+					'assignment_id' => $new_id,
+					'category_id'   => absint( $category_id ),
+				],
+				[ '%d', '%d' ]
+			);
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( 'COMMIT' );
+
+		// Bump category counts for the newly attached categories.
+		if ( ! empty( $category_ids ) && class_exists( 'PressPrimer_Assignment_Category' ) ) {
+			foreach ( $category_ids as $cat_id ) {
+				PressPrimer_Assignment_Category::update_counts( absint( $cat_id ) );
+			}
+		}
+
+		/**
+		 * Fires after an assignment is duplicated.
+		 *
+		 * Addons hook this to copy their own per-assignment data, e.g.
+		 * Educator copies the rubric attachment, Enterprise records an audit
+		 * event. The hook signature is stable for the lifetime of the suite.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param int $new_assignment_id    The duplicate's assignment ID.
+		 * @param int $source_assignment_id The source assignment's ID.
+		 */
+		do_action( 'pressprimer_assignment_assignment_duplicated', $new_id, $source_id );
+
+		return $new_id;
+	}
+
+	/**
 	 * Check if assignment accepts submissions
 	 *
 	 * @since 1.0.0
