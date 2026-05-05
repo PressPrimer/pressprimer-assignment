@@ -82,8 +82,9 @@ const RichTextEditor = forwardRef(
 							branding: false,
 							elementpath: false,
 							// rows * line-height plus one extra line of room
-							// to compensate for the toolbar overhead.
-							height: rows * 24 + 30,
+							// to compensate for the toolbar overhead, plus a
+							// few pixels of breathing room at the bottom.
+							height: rows * 24 + 36,
 							placeholder,
 							init_instance_callback: ( editor ) => {
 								editorInstanceRef.current = editor;

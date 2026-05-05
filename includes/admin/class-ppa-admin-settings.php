@@ -119,6 +119,20 @@ class PressPrimer_Assignment_Admin_Settings {
 			);
 		}
 
+		// wp-scripts emits two CSS bundles per entry: style-{entry}.css for
+		// styles imported via the entry's index.js style.css, and {entry}.css
+		// for CSS imported from any other component (e.g. shared
+		// RichTextEditor.css). Enqueue both so component-level styles load.
+		$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/settings-panel.css';
+		if ( file_exists( $component_css ) ) {
+			wp_enqueue_style(
+				'ppa-settings-panel-components',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/settings-panel.css',
+				[],
+				$asset['version']
+			);
+		}
+
 		// Prepare settings data for React.
 		$settings_data = $this->get_settings_data_for_react();
 

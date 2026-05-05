@@ -294,6 +294,20 @@ class PressPrimer_Assignment_Admin_Grading {
 					$asset['version']
 				);
 			}
+
+			// wp-scripts emits two CSS bundles per entry: style-{entry}.css for
+			// styles imported via the entry's index.js style.css, and {entry}.css
+			// for CSS imported from any other component (e.g. shared
+			// RichTextEditor.css). Enqueue both so component-level styles load.
+			$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/grading-interface.css';
+			if ( file_exists( $component_css ) ) {
+				wp_enqueue_style(
+					'ppa-grading-interface-components',
+					PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/grading-interface.css',
+					[],
+					$asset['version']
+				);
+			}
 		} else {
 			// Fallback: use wp-element, wp-i18n, wp-api-fetch, wp-editor as dependencies.
 			wp_enqueue_script(

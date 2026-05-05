@@ -386,6 +386,20 @@ class PressPrimer_Assignment_Admin_Assignments {
 					$asset['version']
 				);
 			}
+
+			// wp-scripts emits two CSS bundles per entry: style-{entry}.css for
+			// styles imported via the entry's index.js style.css, and {entry}.css
+			// for CSS imported from any other component (e.g. shared
+			// RichTextEditor.css). Enqueue both so component-level styles load.
+			$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/assignment-editor.css';
+			if ( file_exists( $component_css ) ) {
+				wp_enqueue_style(
+					'ppa-assignment-editor-components',
+					PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/assignment-editor.css',
+					[],
+					$asset['version']
+				);
+			}
 		} else {
 			// Fallback: use wp-element, wp-i18n, wp-api-fetch, wp-editor as dependencies.
 			wp_enqueue_script(
