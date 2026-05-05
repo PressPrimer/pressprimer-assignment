@@ -1036,11 +1036,19 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 		$to = isset( $_GET['submitted_to'] ) ? sanitize_text_field( wp_unslash( $_GET['submitted_to'] ) ) : '';
 
 		?>
-		<label class="screen-reader-text" for="filter-by-submitted-from"><?php esc_html_e( 'Filter by submitted date (from)', 'pressprimer-assignment' ); ?></label>
-		<input type="date" name="submitted_from" id="filter-by-submitted-from" value="<?php echo esc_attr( $from ); ?>">
+		<label for="filter-by-submitted-from"><?php esc_html_e( 'Submitted:', 'pressprimer-assignment' ); ?></label>
+		<input type="date" name="submitted_from" id="filter-by-submitted-from" value="<?php echo esc_attr( $from ); ?>" aria-label="<?php esc_attr_e( 'Filter by submitted date (from)', 'pressprimer-assignment' ); ?>">
 
-		<label class="screen-reader-text" for="filter-by-submitted-to"><?php esc_html_e( 'Filter by submitted date (to)', 'pressprimer-assignment' ); ?></label>
-		<input type="date" name="submitted_to" id="filter-by-submitted-to" value="<?php echo esc_attr( $to ); ?>">
+		<label for="filter-by-submitted-to">
+			<?php
+			echo esc_html_x(
+				'to',
+				'date range separator between the from and to date filters',
+				'pressprimer-assignment'
+			);
+			?>
+		</label>
+		<input type="date" name="submitted_to" id="filter-by-submitted-to" value="<?php echo esc_attr( $to ); ?>" aria-label="<?php esc_attr_e( 'Filter by submitted date (to)', 'pressprimer-assignment' ); ?>">
 		<?php
 	}
 
