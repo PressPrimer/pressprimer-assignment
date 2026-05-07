@@ -176,17 +176,29 @@ function Edit( props ) {
 								</span>
 							) }
 						</div>
-						{ selectedAssignment.description && (
-							<p className="ppa-assignment-block-preview-description">
-								{ selectedAssignment.description.substring(
-									0,
-									150
-								) }
-								{ selectedAssignment.description.length > 150
-									? '…'
-									: '' }
-							</p>
-						) }
+						{ ( () => {
+							// Strip HTML tags from the rich text description
+							// before truncating — otherwise we render raw
+							// `<p><strong>…` markup as plain text in the
+							// editor preview.
+							const plain = new window.DOMParser()
+								.parseFromString(
+									selectedAssignment.description || '',
+									'text/html'
+								)
+								.body.textContent.trim();
+
+							if ( ! plain ) {
+								return null;
+							}
+
+							return (
+								<p className="ppa-assignment-block-preview-description">
+									{ plain.substring( 0, 150 ) }
+									{ plain.length > 150 ? '…' : '' }
+								</p>
+							);
+						} )() }
 					</>
 				) : (
 					<p>
