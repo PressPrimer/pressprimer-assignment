@@ -501,7 +501,7 @@ Your instructor has provided feedback. Click the button below to view your compl
 
 		<div class="email-body">
 			<div class="message-content">
-				<?php echo wp_kses_post( nl2br( $body_text ) ); ?>
+				<?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( nl2br( $body_text ) ) ); ?>
 			</div>
 		</div>
 

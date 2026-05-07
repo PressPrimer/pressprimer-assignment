@@ -301,7 +301,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		if ( ! empty( $display['show_description'] ) && ! empty( $assignment->description ) ) {
 			?>
 			<div class="ppa-assignment-description">
-				<div class="ppa-assignment-description-text"><?php echo wp_kses_post( wpautop( $assignment->description ) ); ?></div>
+				<div class="ppa-assignment-description-text"><?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $assignment->description ) ) ); ?></div>
 			</div>
 			<?php
 		}
@@ -316,7 +316,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			?>
 			<div class="ppa-assignment-instructions">
 				<h3 class="ppa-instructions-heading"><?php esc_html_e( 'Instructions', 'pressprimer-assignment' ); ?></h3>
-				<div class="ppa-instructions-content"><?php echo wp_kses_post( wpautop( $assignment->instructions ) ); ?></div>
+				<div class="ppa-instructions-content"><?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $assignment->instructions ) ) ); ?></div>
 			</div>
 			<?php
 		}
@@ -327,7 +327,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			if ( ! empty( $assignment->grading_guidelines ) ) {
 				$guidelines_html = '<div class="ppa-assignment-instructions">'
 					. '<h3 class="ppa-instructions-heading">' . esc_html__( 'How You\'ll Be Graded', 'pressprimer-assignment' ) . '</h3>'
-					. '<div class="ppa-instructions-content">' . wp_kses_post( wpautop( $assignment->grading_guidelines ) ) . '</div>'
+					. '<div class="ppa-instructions-content">' . wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $assignment->grading_guidelines ) ) ) . '</div>'
 					. '</div>';
 			}
 

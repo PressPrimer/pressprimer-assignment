@@ -205,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="ppa-feedback">
 				<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Instructor Feedback', 'pressprimer-assignment' ); ?></h4>
 				<div class="ppa-feedback-content">
-					<?php echo wp_kses_post( wpautop( $submission->feedback ) ); ?>
+					<?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $submission->feedback ) ) ); ?>
 				</div>
 				<?php if ( ! empty( $formatted_graded_date ) ) : ?>
 					<p class="ppa-form-hint">
@@ -344,7 +344,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<div class="ppa-submission-card-feedback">
 								<span class="ppa-submission-card-feedback-label"><?php esc_html_e( 'Feedback:', 'pressprimer-assignment' ); ?></span>
 								<div class="ppa-submission-card-feedback-text">
-									<?php echo wp_kses_post( wpautop( $prev->feedback ) ); ?>
+									<?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $prev->feedback ) ) ); ?>
 								</div>
 							</div>
 						<?php endif; ?>
