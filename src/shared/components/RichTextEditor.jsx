@@ -86,6 +86,11 @@ const RichTextEditor = forwardRef(
 							// few pixels of breathing room at the bottom.
 							height: rows * 24 + 36,
 							placeholder,
+							// Force every link to open in a new tab. Removing
+							// target_list hides the "Open in" dropdown from the
+							// Insert Link dialog so the user can't override it.
+							default_link_target: '_blank',
+							target_list: false,
 							init_instance_callback: ( editor ) => {
 								editorInstanceRef.current = editor;
 								setIsInitialized( true );
