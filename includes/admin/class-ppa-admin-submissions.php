@@ -990,10 +990,10 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 
 		?>
 		<label class="screen-reader-text" for="filter-by-score-min"><?php esc_html_e( 'Filter by minimum score', 'pressprimer-assignment' ); ?></label>
-		<input type="number" name="score_min" id="filter-by-score-min" value="<?php echo esc_attr( $score_min ); ?>" placeholder="<?php esc_attr_e( 'Min score', 'pressprimer-assignment' ); ?>" step="0.01" min="0">
+		<input type="number" name="score_min" id="filter-by-score-min" class="small-text" value="<?php echo esc_attr( $score_min ); ?>" placeholder="<?php esc_attr_e( 'Min', 'pressprimer-assignment' ); ?>" min="0">
 
 		<label class="screen-reader-text" for="filter-by-score-max"><?php esc_html_e( 'Filter by maximum score', 'pressprimer-assignment' ); ?></label>
-		<input type="number" name="score_max" id="filter-by-score-max" value="<?php echo esc_attr( $score_max ); ?>" placeholder="<?php esc_attr_e( 'Max score', 'pressprimer-assignment' ); ?>" step="0.01" min="0">
+		<input type="number" name="score_max" id="filter-by-score-max" class="small-text" value="<?php echo esc_attr( $score_max ); ?>" placeholder="<?php esc_attr_e( 'Max', 'pressprimer-assignment' ); ?>" min="0">
 		<?php
 	}
 
