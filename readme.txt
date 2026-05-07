@@ -3,7 +3,7 @@ Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
 Tested up to: 6.9
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -216,6 +216,15 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 
 == Changelog ==
 
+= 2.1.0 =
+* Added: Rich text editing in assignment description, instructions, grading guidelines, instructor feedback, and email template body fields. Toolbar supports bold, italic, bulleted and numbered lists, links, undo, and redo.
+* Added: Submissions list filters for score range, feedback presence (any / has feedback / no feedback), and submission date range
+* Added: Reset Filters link on the submissions list when one or more filters are active
+* Added: Duplicate assignment action available as a row action, bulk action, and editor toolbar button — copies all settings and taxonomy into a new draft owned by the current user
+* Added: New `pressprimer_assignment_assignment_duplicated` action hook so addons can copy their own per-assignment data
+* Added: Links inserted in rich text fields always open in a new tab
+* Fixed: Submissions list column widths so the Student column no longer wraps when name and email don't fit
+
 = 2.0.0 =
 * Added: LifterLMS integration with lesson embedding, completion triggers, and instructor role mapping
 * Added: LearnPress integration with lesson embedding, completion triggers, and instructor role mapping
@@ -243,6 +252,9 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 * Initial release
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+New: rich text editing across content fields, submissions list filters for score / feedback / date, and a Duplicate assignment action.
 
 = 2.0.0 =
 New: LifterLMS and LearnPress integrations, multi-format text extraction, unlimited resubmissions, and premium addon support.

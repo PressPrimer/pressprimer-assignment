@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: PressPrimer Assignment 2.0.0\n"
+"Project-Id-Version: PressPrimer Assignment 2.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/pressprimer-assignment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-29T01:43:36+00:00\n"
+"POT-Creation-Date: 2026-05-07T18:51:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pressprimer-assignment\n"
@@ -55,7 +55,7 @@ msgid "Assignments per page"
 msgstr ""
 
 #. translators: %d: number of assignments deleted
-#: includes/admin/class-ppa-admin-assignments.php:188
+#: includes/admin/class-ppa-admin-assignments.php:197
 #, php-format
 msgid "%d assignment deleted."
 msgid_plural "%d assignments deleted."
@@ -63,7 +63,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of assignments published
-#: includes/admin/class-ppa-admin-assignments.php:205
+#: includes/admin/class-ppa-admin-assignments.php:214
 #, php-format
 msgid "%d assignment published."
 msgid_plural "%d assignments published."
@@ -71,14 +71,22 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of assignments moved to draft
-#: includes/admin/class-ppa-admin-assignments.php:222
+#: includes/admin/class-ppa-admin-assignments.php:231
 #, php-format
 msgid "%d assignment moved to draft."
 msgid_plural "%d assignments moved to draft."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-ppa-admin-assignments.php:243
+#. translators: %d: number of assignments duplicated
+#: includes/admin/class-ppa-admin-assignments.php:248
+#, php-format
+msgid "%d assignment duplicated."
+msgid_plural "%d assignments duplicated."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin/class-ppa-admin-assignments.php:269
 #: includes/admin/class-ppa-admin-categories.php:89
 #: includes/admin/class-ppa-admin-grading.php:167
 #: includes/admin/class-ppa-admin-reports.php:47
@@ -89,7 +97,7 @@ msgstr[1] ""
 msgid "You do not have permission to access this page."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:273
+#: includes/admin/class-ppa-admin-assignments.php:299
 #: includes/admin/class-ppa-admin-categories.php:363
 #: includes/admin/class-ppa-admin-categories.php:756
 #: includes/admin/class-ppa-admin.php:105
@@ -99,66 +107,76 @@ msgstr ""
 msgid "Assignments"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:275
+#: includes/admin/class-ppa-admin-assignments.php:301
 msgid "Add New"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:282
+#: includes/admin/class-ppa-admin-assignments.php:308
 msgid "Search Assignments"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:305
-#: includes/admin/class-ppa-admin-assignments.php:510
-#: includes/api/class-ppa-rest-assignments.php:411
-#: includes/api/class-ppa-rest-assignments.php:498
-#: includes/api/class-ppa-rest-assignments.php:616
+#: includes/admin/class-ppa-admin-assignments.php:331
+#: includes/admin/class-ppa-admin-assignments.php:554
+#: includes/admin/class-ppa-admin-assignments.php:758
+#: includes/api/class-ppa-rest-assignments.php:423
+#: includes/api/class-ppa-rest-assignments.php:510
+#: includes/api/class-ppa-rest-assignments.php:628
 #: includes/frontend/class-ppa-shortcodes.php:136
 #: includes/integrations/class-ppa-tutorlms.php:1404
 msgid "Assignment not found."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:496
+#: includes/admin/class-ppa-admin-assignments.php:540
+#: includes/admin/class-ppa-admin-assignments.php:749
 #: includes/admin/class-ppa-admin-categories.php:555
 #: includes/admin/class-ppa-admin-submissions.php:341
 #: includes/frontend/class-ppa-frontend.php:553
 msgid "Invalid request."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:503
-#: includes/admin/class-ppa-admin-assignments.php:559
+#: includes/admin/class-ppa-admin-assignments.php:547
+#: includes/admin/class-ppa-admin-assignments.php:603
 msgid "You do not have permission to delete assignments."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:593
+#: includes/admin/class-ppa-admin-assignments.php:637
 msgid "You do not have permission to publish assignments."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:628
+#: includes/admin/class-ppa-admin-assignments.php:672
 msgid "You do not have permission to change assignment status."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:687
-#: includes/admin/class-ppa-admin-grading.php:358
+#: includes/admin/class-ppa-admin-assignments.php:762
+msgid "You do not have permission to duplicate this assignment."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-assignments.php:802
+msgid "You do not have permission to duplicate assignments."
+msgstr ""
+
+#: includes/admin/class-ppa-admin-assignments.php:864
+#: includes/admin/class-ppa-admin-grading.php:376
 #: includes/admin/class-ppa-admin-submissions.php:457
 #: src/submission-detail/components/SubmissionDetail.jsx:273
 msgid "ID"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:688
+#: includes/admin/class-ppa-admin-assignments.php:865
 msgid "Title"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:689
+#: includes/admin/class-ppa-admin-assignments.php:866
 #: includes/admin/class-ppa-admin-categories.php:127
 #: includes/admin/class-ppa-admin.php:162
 #: includes/admin/class-ppa-admin.php:163
-#: src/assignment-editor/components/AssignmentEditor.jsx:287
+#: src/assignment-editor/components/AssignmentEditor.jsx:332
 #: src/assignment-editor/components/CategoriesPanel.jsx:208
 #: src/settings-panel/components/StatusTab.jsx:664
 msgid "Categories"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:690
+#: includes/admin/class-ppa-admin-assignments.php:867
 #: includes/admin/class-ppa-admin-submissions.php:218
 #: includes/admin/class-ppa-admin.php:142
 #: includes/admin/class-ppa-admin.php:143
@@ -169,14 +187,14 @@ msgstr ""
 msgid "Submissions"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:691
-#: includes/admin/class-ppa-admin-grading.php:361
-#: includes/admin/class-ppa-admin-settings.php:180
+#: includes/admin/class-ppa-admin-assignments.php:868
+#: includes/admin/class-ppa-admin-grading.php:379
+#: includes/admin/class-ppa-admin-settings.php:199
 #: includes/admin/class-ppa-admin-submissions.php:460
 #: includes/class-ppa-privacy.php:150
 #: templates/dashboard/my-submissions.php:63
 #: templates/dashboard/my-submissions.php:102
-#: src/assignment-editor/components/SettingsPanel.jsx:204
+#: src/assignment-editor/components/SettingsPanel.jsx:203
 #: src/dashboard/components/RecentActivity.jsx:143
 #: src/settings-panel/components/IntegrationsTab.jsx:251
 #: src/settings-panel/components/SettingsPage.jsx:77
@@ -185,97 +203,104 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:692
+#: includes/admin/class-ppa-admin-assignments.php:869
 msgid "Date"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:720
+#: includes/admin/class-ppa-admin-assignments.php:897
 msgid "Publish"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:721
+#: includes/admin/class-ppa-admin-assignments.php:898
 msgid "Move to Draft"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:722
-#: includes/admin/class-ppa-admin-assignments.php:909
+#: includes/admin/class-ppa-admin-assignments.php:899
+#: includes/admin/class-ppa-admin-assignments.php:1086
+#: src/assignment-editor/components/AssignmentEditor.jsx:424
+#: src/assignment-editor/components/AssignmentEditor.jsx:520
+msgid "Duplicate"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-assignments.php:900
+#: includes/admin/class-ppa-admin-assignments.php:1106
 #: includes/admin/class-ppa-admin-categories.php:785
 #: includes/admin/class-ppa-admin-categories.php:995
 #: includes/admin/class-ppa-admin-submissions.php:491
-#: includes/admin/class-ppa-admin-submissions.php:732
+#: includes/admin/class-ppa-admin-submissions.php:790
 #: includes/admin/class-ppa-admin.php:267
 #: includes/frontend/class-ppa-frontend.php:457
 #: src/submission-detail/components/SubmissionDetail.jsx:139
 msgid "Delete"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:889
+#: includes/admin/class-ppa-admin-assignments.php:1067
 #: includes/admin/class-ppa-admin-categories.php:994
 msgid "Edit"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:908
+#: includes/admin/class-ppa-admin-assignments.php:1105
 msgid "Are you sure you want to delete this assignment?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:913
+#: includes/admin/class-ppa-admin-assignments.php:1110
 msgid "(no title)"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:993
-#: includes/admin/class-ppa-admin-assignments.php:1065
-#: includes/admin/class-ppa-admin-submissions.php:765
+#: includes/admin/class-ppa-admin-assignments.php:1190
+#: includes/admin/class-ppa-admin-assignments.php:1262
+#: includes/admin/class-ppa-admin-submissions.php:823
 #: includes/frontend/class-ppa-assignment-renderer.php:750
 #: includes/frontend/class-ppa-submissions-renderer.php:237
-#: src/assignment-editor/components/SettingsPanel.jsx:232
+#: src/assignment-editor/components/SettingsPanel.jsx:231
 #: src/dashboard/components/RecentActivity.jsx:91
 #: src/submission-detail/components/SubmissionDetail.jsx:46
 msgid "Draft"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:994
-#: includes/admin/class-ppa-admin-assignments.php:1066
-#: src/assignment-editor/components/SettingsPanel.jsx:239
+#: includes/admin/class-ppa-admin-assignments.php:1191
+#: includes/admin/class-ppa-admin-assignments.php:1263
+#: src/assignment-editor/components/SettingsPanel.jsx:238
 msgid "Published"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:995
-#: includes/admin/class-ppa-admin-assignments.php:1067
-#: src/assignment-editor/components/SettingsPanel.jsx:246
+#: includes/admin/class-ppa-admin-assignments.php:1192
+#: includes/admin/class-ppa-admin-assignments.php:1264
+#: src/assignment-editor/components/SettingsPanel.jsx:245
 msgid "Archived"
 msgstr ""
 
 #. translators: %s: human-readable time difference
-#: includes/admin/class-ppa-admin-assignments.php:1024
-#: includes/admin/class-ppa-admin-grading.php:602
-#: includes/admin/class-ppa-admin-submissions.php:824
+#: includes/admin/class-ppa-admin-assignments.php:1221
+#: includes/admin/class-ppa-admin-grading.php:620
+#: includes/admin/class-ppa-admin-submissions.php:882
 #, php-format
 msgid "%s ago"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:1048
-#: includes/admin/class-ppa-admin-grading.php:626
-#: includes/admin/class-ppa-admin-submissions.php:848
+#: includes/admin/class-ppa-admin-assignments.php:1245
+#: includes/admin/class-ppa-admin-grading.php:644
+#: includes/admin/class-ppa-admin-submissions.php:909
 msgid "Filter"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:1064
-#: includes/admin/class-ppa-admin-grading.php:642
-#: includes/admin/class-ppa-admin-submissions.php:864
+#: includes/admin/class-ppa-admin-assignments.php:1261
+#: includes/admin/class-ppa-admin-grading.php:660
+#: includes/admin/class-ppa-admin-submissions.php:926
 msgid "All Statuses"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:1071
-#: includes/admin/class-ppa-admin-grading.php:649
-#: includes/admin/class-ppa-admin-submissions.php:872
+#: includes/admin/class-ppa-admin-assignments.php:1268
+#: includes/admin/class-ppa-admin-grading.php:667
+#: includes/admin/class-ppa-admin-submissions.php:934
 msgid "Filter by status"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:1109
+#: includes/admin/class-ppa-admin-assignments.php:1306
 msgid "Filter by category"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-assignments.php:1111
+#: includes/admin/class-ppa-admin-assignments.php:1308
 msgid "All Categories"
 msgstr ""
 
@@ -339,7 +364,7 @@ msgstr ""
 #: includes/admin/class-ppa-admin-categories.php:205
 #: includes/admin/class-ppa-admin-categories.php:347
 #: includes/admin/class-ppa-admin-categories.php:754
-#: src/assignment-editor/components/SettingsPanel.jsx:127
+#: src/assignment-editor/components/SettingsPanel.jsx:128
 msgid "Description"
 msgstr ""
 
@@ -390,8 +415,8 @@ msgstr ""
 #: includes/admin/class-ppa-admin-categories.php:378
 #: includes/admin/class-ppa-admin.php:268
 #: includes/frontend/class-ppa-frontend.php:448
-#: src/assignment-editor/components/AssignmentEditor.jsx:368
-#: src/assignment-editor/components/AssignmentEditor.jsx:455
+#: src/assignment-editor/components/AssignmentEditor.jsx:413
+#: src/assignment-editor/components/AssignmentEditor.jsx:511
 #: src/submission-detail/components/SubmissionDetail.jsx:141
 msgid "Cancel"
 msgstr ""
@@ -399,7 +424,7 @@ msgstr ""
 #: includes/admin/class-ppa-admin-categories.php:461
 #: includes/admin/class-ppa-admin-categories.php:567
 #: includes/admin/class-ppa-admin-categories.php:878
-#: includes/admin/class-ppa-admin-settings.php:503
+#: includes/admin/class-ppa-admin-settings.php:522
 #: includes/frontend/class-ppa-frontend.php:533
 #: includes/frontend/class-ppa-submission-handler.php:773
 #: includes/integrations/class-ppa-learndash.php:850
@@ -513,27 +538,27 @@ msgstr ""
 #: includes/admin/class-ppa-admin-grading.php:227
 #: includes/admin/class-ppa-admin-submissions.php:251
 #: includes/admin/class-ppa-admin-submissions.php:354
-#: includes/api/class-ppa-rest-submissions.php:465
-#: includes/api/class-ppa-rest-submissions.php:569
-#: includes/api/class-ppa-rest-submissions.php:747
+#: includes/api/class-ppa-rest-submissions.php:590
+#: includes/api/class-ppa-rest-submissions.php:694
+#: includes/api/class-ppa-rest-submissions.php:872
 #: includes/frontend/class-ppa-submission-handler.php:309
 #: includes/frontend/class-ppa-submission-handler.php:791
 #: includes/services/class-ppa-file-service.php:469
 #: includes/services/class-ppa-grading-service.php:51
 #: includes/services/class-ppa-grading-service.php:226
-#: src/grading-interface/components/GradingForm.jsx:496
+#: src/grading-interface/components/GradingForm.jsx:492
 #: src/submission-detail/components/SubmissionDetail.jsx:176
 msgid "Submission not found."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:359
+#: includes/admin/class-ppa-admin-grading.php:377
 #: includes/admin/class-ppa-admin-submissions.php:458
 #: src/dashboard/components/RecentActivity.jsx:107
 #: src/submission-detail/components/SubmissionDetail.jsx:295
 msgid "Student"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:360
+#: includes/admin/class-ppa-admin-grading.php:378
 #: includes/admin/class-ppa-admin-submissions.php:459
 #: includes/class-ppa-privacy.php:140
 #: includes/frontend/class-ppa-frontend.php:461
@@ -550,12 +575,12 @@ msgstr ""
 msgid "Assignment"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:362
-#: includes/admin/class-ppa-admin-grading.php:573
-#: includes/admin/class-ppa-admin-grading.php:643
+#: includes/admin/class-ppa-admin-grading.php:380
+#: includes/admin/class-ppa-admin-grading.php:591
+#: includes/admin/class-ppa-admin-grading.php:661
 #: includes/admin/class-ppa-admin-submissions.php:463
-#: includes/admin/class-ppa-admin-submissions.php:766
-#: includes/admin/class-ppa-admin-submissions.php:865
+#: includes/admin/class-ppa-admin-submissions.php:824
+#: includes/admin/class-ppa-admin-submissions.php:927
 #: includes/frontend/class-ppa-submissions-renderer.php:238
 #: templates/dashboard/my-submissions.php:60
 #: templates/dashboard/my-submissions.php:90
@@ -565,35 +590,35 @@ msgstr ""
 msgid "Submitted"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:397
+#: includes/admin/class-ppa-admin-grading.php:415
 msgid "No submissions awaiting grading."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:511
-#: includes/admin/class-ppa-admin-submissions.php:685
+#: includes/admin/class-ppa-admin-grading.php:529
+#: includes/admin/class-ppa-admin-submissions.php:743
 msgid "Unknown User"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:528
+#: includes/admin/class-ppa-admin-grading.php:546
 msgid "Grade"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:574
-#: includes/admin/class-ppa-admin-grading.php:644
-#: includes/admin/class-ppa-admin-submissions.php:767
-#: includes/admin/class-ppa-admin-submissions.php:866
+#: includes/admin/class-ppa-admin-grading.php:592
+#: includes/admin/class-ppa-admin-grading.php:662
+#: includes/admin/class-ppa-admin-submissions.php:825
+#: includes/admin/class-ppa-admin-submissions.php:928
 #: includes/admin/class-ppa-admin.php:152
 #: includes/admin/class-ppa-admin.php:153
-#: src/assignment-editor/components/SettingsPanel.jsx:320
+#: src/assignment-editor/components/SettingsPanel.jsx:319
 #: src/dashboard/components/RecentActivity.jsx:79
 #: src/submission-detail/components/SubmissionDetail.jsx:52
 msgid "Grading"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:575
-#: includes/admin/class-ppa-admin-grading.php:645
-#: includes/admin/class-ppa-admin-submissions.php:768
-#: includes/admin/class-ppa-admin-submissions.php:867
+#: includes/admin/class-ppa-admin-grading.php:593
+#: includes/admin/class-ppa-admin-grading.php:663
+#: includes/admin/class-ppa-admin-submissions.php:826
+#: includes/admin/class-ppa-admin-submissions.php:929
 #: includes/frontend/class-ppa-assignment-renderer.php:753
 #: includes/frontend/class-ppa-submissions-renderer.php:240
 #: src/dashboard/components/RecentActivity.jsx:83
@@ -602,42 +627,42 @@ msgstr ""
 msgid "Graded"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:672
-#: includes/admin/class-ppa-admin-submissions.php:906
+#: includes/admin/class-ppa-admin-grading.php:690
+#: includes/admin/class-ppa-admin-submissions.php:968
 msgid "Filter by assignment"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-grading.php:674
-#: includes/admin/class-ppa-admin-submissions.php:908
+#: includes/admin/class-ppa-admin-grading.php:692
+#: includes/admin/class-ppa-admin-submissions.php:970
 msgid "All Assignments"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:164
+#: includes/admin/class-ppa-admin-settings.php:183
 #: src/settings-panel/components/SettingsPage.jsx:49
 msgid "General"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:168
+#: includes/admin/class-ppa-admin-settings.php:187
 #: src/settings-panel/components/SettingsPage.jsx:56
 msgid "Appearance"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:172
+#: includes/admin/class-ppa-admin-settings.php:191
 #: src/settings-panel/components/SettingsPage.jsx:63
 msgid "Email"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:176
+#: includes/admin/class-ppa-admin-settings.php:195
 #: src/settings-panel/components/SettingsPage.jsx:70
 msgid "Integrations"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:184
+#: includes/admin/class-ppa-admin-settings.php:203
 #: src/settings-panel/components/SettingsPage.jsx:84
 msgid "Advanced"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:508
+#: includes/admin/class-ppa-admin-settings.php:527
 #: includes/database/class-ppa-migrator.php:577
 #: includes/integrations/class-ppa-learndash.php:855
 #: includes/integrations/class-ppa-learnpress.php:492
@@ -647,17 +672,17 @@ msgstr ""
 msgid "Permission denied."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:513
+#: includes/admin/class-ppa-admin-settings.php:532
 msgid "Migrator class not available."
 msgstr ""
 
 #. translators: %d: number of tables repaired
-#: includes/admin/class-ppa-admin-settings.php:531
+#: includes/admin/class-ppa-admin-settings.php:550
 #, php-format
 msgid "%d table(s) repaired successfully."
 msgstr ""
 
-#: includes/admin/class-ppa-admin-settings.php:541
+#: includes/admin/class-ppa-admin-settings.php:560
 msgid "Some tables could not be repaired."
 msgstr ""
 
@@ -685,26 +710,81 @@ msgstr ""
 #: templates/dashboard/my-submissions.php:66
 #: templates/dashboard/my-submissions.php:110
 #: src/dashboard/components/RecentActivity.jsx:132
-#: src/grading-interface/components/GradingForm.jsx:945
+#: src/grading-interface/components/GradingForm.jsx:941
 #: src/submission-detail/components/SubmissionDetail.jsx:422
 msgid "Score"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:713
+#: includes/admin/class-ppa-admin-submissions.php:771
 #: templates/dashboard/my-submissions.php:138
 msgid "View"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:731
+#: includes/admin/class-ppa-admin-submissions.php:789
 msgid "Are you sure you want to delete this submission?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:769
-#: includes/admin/class-ppa-admin-submissions.php:868
+#: includes/admin/class-ppa-admin-submissions.php:827
+#: includes/admin/class-ppa-admin-submissions.php:930
 #: src/dashboard/components/RecentActivity.jsx:87
 #: src/submission-detail/components/SubmissionDetail.jsx:60
 #: src/submission-detail/components/SubmissionDetail.jsx:342
 msgid "Returned"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:992
+msgid "Filter by minimum score"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:993
+msgid "Min"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:995
+msgid "Filter by maximum score"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:996
+msgid "Max"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1010
+msgid "Any feedback"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1011
+msgid "Has feedback"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1012
+msgid "No feedback"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1016
+msgid "Filter by feedback presence"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1039
+#: templates/assignment/submission-status.php:46
+#: src/grading-interface/components/GradingForm.jsx:650
+msgid "Submitted:"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1040
+msgid "Filter by submitted date (from)"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1044
+msgctxt "date range separator between the from and to date filters"
+msgid "to"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1051
+msgid "Filter by submitted date (to)"
+msgstr ""
+
+#: includes/admin/class-ppa-admin-submissions.php:1083
+msgid "Reset Filters"
 msgstr ""
 
 #: includes/admin/class-ppa-admin.php:122
@@ -720,7 +800,7 @@ msgstr ""
 
 #: includes/admin/class-ppa-admin.php:192
 #: includes/admin/class-ppa-admin.php:193
-#: src/assignment-editor/components/AssignmentEditor.jsx:265
+#: src/assignment-editor/components/AssignmentEditor.jsx:310
 msgid "Settings"
 msgstr ""
 
@@ -751,51 +831,51 @@ msgstr ""
 msgid "Welcome back! Let's continue the tour."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:162
+#: includes/api/class-ppa-rest-assignments.php:174
 #: includes/api/class-ppa-rest-grading-queue.php:130
 #: includes/api/class-ppa-rest-submissions.php:206
 msgid "Current page of the collection."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:168
+#: includes/api/class-ppa-rest-assignments.php:180
 #: includes/api/class-ppa-rest-grading-queue.php:136
 #: includes/api/class-ppa-rest-submissions.php:212
 msgid "Maximum number of items to return."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:175
+#: includes/api/class-ppa-rest-assignments.php:187
 msgid "Search term for filtering."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:180
+#: includes/api/class-ppa-rest-assignments.php:192
 msgid "Filter by assignment status."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:186
+#: includes/api/class-ppa-rest-assignments.php:198
 #: includes/api/class-ppa-rest-grading-queue.php:159
-#: includes/api/class-ppa-rest-submissions.php:235
+#: includes/api/class-ppa-rest-submissions.php:260
 msgid "Field to order by."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:192
+#: includes/api/class-ppa-rest-assignments.php:204
 #: includes/api/class-ppa-rest-grading-queue.php:165
-#: includes/api/class-ppa-rest-submissions.php:241
+#: includes/api/class-ppa-rest-submissions.php:266
 msgid "Sort direction."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:198
+#: includes/api/class-ppa-rest-assignments.php:210
 msgid "Filter by category ID."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:419
+#: includes/api/class-ppa-rest-assignments.php:431
 msgid "You do not have permission to access this assignment."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:506
+#: includes/api/class-ppa-rest-assignments.php:518
 msgid "You do not have permission to edit this assignment."
 msgstr ""
 
-#: includes/api/class-ppa-rest-assignments.php:624
+#: includes/api/class-ppa-rest-assignments.php:636
 msgid "You do not have permission to delete this assignment."
 msgstr ""
 
@@ -839,7 +919,7 @@ msgid "Email service is not available."
 msgstr ""
 
 #: includes/api/class-ppa-rest-settings.php:401
-#: src/settings-panel/components/EmailTab.jsx:205
+#: src/settings-panel/components/EmailTab.jsx:206
 msgid "Test email sent successfully!"
 msgstr ""
 
@@ -855,8 +935,44 @@ msgstr ""
 msgid "Number of submissions to return."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:423
-#: includes/api/class-ppa-rest-submissions.php:528
+#: includes/api/class-ppa-rest-submissions.php:235
+msgid "Inclusive lower bound on score. Excludes un-graded submissions when set."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:240
+msgid "Inclusive upper bound on score. Excludes un-graded submissions when set."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:245
+msgid "Filter by feedback presence. Accepts true/false (also 1/0, yes/no). Omit for any."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:250
+msgid "Inclusive lower bound on submitted_at (ISO 8601 date)."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:255
+msgid "Inclusive upper bound on submitted_at (ISO 8601 date). Normalized to end-of-day."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:307
+msgid "score_min must be numeric."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:320
+msgid "score_max must be numeric."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:346
+msgid "submitted_from is not a valid date."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:360
+msgid "submitted_to is not a valid date."
+msgstr ""
+
+#: includes/api/class-ppa-rest-submissions.php:548
+#: includes/api/class-ppa-rest-submissions.php:653
 #: includes/services/class-ppa-grading-queue-service.php:439
 #: includes/services/class-ppa-statistics-service.php:883
 #: src/dashboard/components/RecentActivity.jsx:114
@@ -864,43 +980,43 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:473
+#: includes/api/class-ppa-rest-submissions.php:598
 msgid "You do not have permission to view this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:577
+#: includes/api/class-ppa-rest-submissions.php:702
 msgid "You do not have permission to grade this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:710
+#: includes/api/class-ppa-rest-submissions.php:835
 msgid "No valid changes provided."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:731
+#: includes/api/class-ppa-rest-submissions.php:856
 msgid "No submission IDs provided."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:755
+#: includes/api/class-ppa-rest-submissions.php:880
 msgid "You do not have permission to return this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:913
-#: includes/api/class-ppa-rest-submissions.php:987
+#: includes/api/class-ppa-rest-submissions.php:1065
+#: includes/api/class-ppa-rest-submissions.php:1139
 #: includes/frontend/class-ppa-submission-handler.php:296
 #: includes/services/class-ppa-file-service.php:460
 msgid "File not found."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:923
+#: includes/api/class-ppa-rest-submissions.php:1075
 msgid "You do not have permission to view this file."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:934
+#: includes/api/class-ppa-rest-submissions.php:1086
 #: includes/services/class-ppa-file-service.php:510
 msgid "File not found on server."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:997
+#: includes/api/class-ppa-rest-submissions.php:1149
 msgid "You do not have permission to re-extract text from this file."
 msgstr ""
 
@@ -966,7 +1082,7 @@ msgid "Text Submission"
 msgstr ""
 
 #: includes/class-ppa-privacy.php:177
-#: src/grading-interface/components/GradingForm.jsx:1114
+#: src/grading-interface/components/GradingForm.jsx:1110
 #: src/submission-detail/components/SubmissionDetail.jsx:478
 msgid "Feedback"
 msgstr ""
@@ -1032,7 +1148,7 @@ msgid "Points"
 msgstr ""
 
 #: includes/frontend/class-ppa-assignment-renderer.php:562
-#: src/assignment-editor/components/SettingsPanel.jsx:389
+#: src/assignment-editor/components/SettingsPanel.jsx:388
 msgid "Passing Score"
 msgstr ""
 
@@ -1160,7 +1276,7 @@ msgid "Saving..."
 msgstr ""
 
 #: includes/frontend/class-ppa-frontend.php:451
-#: src/grading-interface/components/GradingForm.jsx:553
+#: src/grading-interface/components/GradingForm.jsx:549
 msgid "Unsaved changes"
 msgstr ""
 
@@ -1492,7 +1608,7 @@ msgstr ""
 #: includes/integrations/class-ppa-tutorlms.php:514
 #: assets/js/learndash-editor.js:263
 #: assets/js/tutorlms-editor.js:262
-#: blocks/assignment/index.js:244
+#: blocks/assignment/index.js:256
 msgid "Select Assignment"
 msgstr ""
 
@@ -1694,7 +1810,7 @@ msgid "Passing score must be between 0 and 100,000."
 msgstr ""
 
 #: includes/models/class-ppa-assignment.php:422
-#: src/assignment-editor/components/SettingsPanel.jsx:432
+#: src/assignment-editor/components/SettingsPanel.jsx:431
 msgid "Passing score cannot be greater than maximum points."
 msgstr ""
 
@@ -1708,6 +1824,16 @@ msgstr ""
 
 #: includes/models/class-ppa-assignment.php:455
 msgid "Max resubmissions must be between 0 and 100."
+msgstr ""
+
+#: includes/models/class-ppa-assignment.php:720
+msgid "Source assignment not found."
+msgstr ""
+
+#. translators: %s: source assignment title
+#: includes/models/class-ppa-assignment.php:732
+#, php-format
+msgid "%s (Copy)"
 msgstr ""
 
 #: includes/models/class-ppa-category.php:136
@@ -2174,11 +2300,6 @@ msgstr ""
 msgid "Your submission"
 msgstr ""
 
-#: templates/assignment/submission-status.php:46
-#: src/grading-interface/components/GradingForm.jsx:654
-msgid "Submitted:"
-msgstr ""
-
 #: templates/assignment/submission-status.php:55
 msgid "Submission #:"
 msgstr ""
@@ -2220,7 +2341,7 @@ msgid "%1$s / %2$s"
 msgstr ""
 
 #: templates/assignment/submission-status.php:174
-#: src/grading-interface/components/GradingForm.jsx:983
+#: src/grading-interface/components/GradingForm.jsx:979
 msgid "points"
 msgstr ""
 
@@ -2350,7 +2471,7 @@ msgstr ""
 
 #: assets/js/learndash-editor.js:155
 #: assets/js/tutorlms-editor.js:155
-#: src/settings-panel/components/EmailTab.jsx:286
+#: src/settings-panel/components/EmailTab.jsx:287
 msgid "Remove"
 msgstr ""
 
@@ -2364,7 +2485,7 @@ msgid "— Select an Assignment —"
 msgstr ""
 
 #: blocks/assignment/index.js:111
-#: blocks/assignment/index.js:235
+#: blocks/assignment/index.js:247
 msgid "Loading assignments…"
 msgstr ""
 
@@ -2380,40 +2501,40 @@ msgstr ""
 msgid "pts to pass"
 msgstr ""
 
-#: blocks/assignment/index.js:193
+#: blocks/assignment/index.js:205
 msgid "Loading assignment details…"
 msgstr ""
 
-#: blocks/assignment/index.js:202
+#: blocks/assignment/index.js:214
 msgid "The full assignment will be displayed on the frontend."
 msgstr ""
 
-#: blocks/assignment/index.js:226
+#: blocks/assignment/index.js:238
 #: src/settings-panel/components/SettingsPage.jsx:244
 msgid "Assignment Settings"
 msgstr ""
 
-#: blocks/assignment/index.js:255
+#: blocks/assignment/index.js:267
 msgid "Choose the assignment to display on this page."
 msgstr ""
 
-#: blocks/assignment/index.js:264
+#: blocks/assignment/index.js:276
 msgid "Display Options"
 msgstr ""
 
-#: blocks/assignment/index.js:269
+#: blocks/assignment/index.js:281
 msgid "Show Description"
 msgstr ""
 
-#: blocks/assignment/index.js:280
+#: blocks/assignment/index.js:292
 msgid "Show Instructions"
 msgstr ""
 
-#: blocks/assignment/index.js:291
+#: blocks/assignment/index.js:303
 msgid "Show Max Points"
 msgstr ""
 
-#: blocks/assignment/index.js:302
+#: blocks/assignment/index.js:314
 msgid "Show File Info"
 msgstr ""
 
@@ -2481,56 +2602,64 @@ msgstr ""
 msgid "Preview not available in editor. The list will display on the frontend for logged-in users."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:184
+#: src/assignment-editor/components/AssignmentEditor.jsx:186
 msgid "Assignment saved successfully!"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:189
+#: src/assignment-editor/components/AssignmentEditor.jsx:191
 msgid "Failed to save assignment."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:212
+#: src/assignment-editor/components/AssignmentEditor.jsx:214
 msgid "Could not save: please correct the highlighted fields and try again."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:252
+#: src/assignment-editor/components/AssignmentEditor.jsx:272
+msgid "Duplicate succeeded but the response was malformed."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:281
+msgid "Failed to duplicate assignment."
+msgstr ""
+
+#: src/assignment-editor/components/AssignmentEditor.jsx:297
 msgid "Are you sure you want to cancel? Any unsaved changes will be lost."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:282
+#: src/assignment-editor/components/AssignmentEditor.jsx:327
 msgid "File Settings"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:305
+#: src/assignment-editor/components/AssignmentEditor.jsx:350
 msgid "Saving assignment…"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:354
+#: src/assignment-editor/components/AssignmentEditor.jsx:399
 msgid "Create New Assignment"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:358
+#: src/assignment-editor/components/AssignmentEditor.jsx:403
 msgid "Edit Assignment"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:380
-#: src/assignment-editor/components/AssignmentEditor.jsx:464
+#: src/assignment-editor/components/AssignmentEditor.jsx:436
+#: src/assignment-editor/components/AssignmentEditor.jsx:529
 msgid "Save Assignment"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:389
+#: src/assignment-editor/components/AssignmentEditor.jsx:445
 msgid "Assignment Editor Guide"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:398
+#: src/assignment-editor/components/AssignmentEditor.jsx:454
 msgid "Create assignments for your students. Configure settings, set grading criteria, and manage file upload requirements."
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:407
+#: src/assignment-editor/components/AssignmentEditor.jsx:463
 msgid "Pro Tip:"
 msgstr ""
 
-#: src/assignment-editor/components/AssignmentEditor.jsx:412
+#: src/assignment-editor/components/AssignmentEditor.jsx:468
 msgid "Use the Settings tab to configure grading and submission options, and the File Settings tab to control which file types and sizes students can upload."
 msgstr ""
 
@@ -2667,27 +2796,27 @@ msgstr ""
 msgid "How many files a student can upload in a single submission"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:77
+#: src/assignment-editor/components/SettingsPanel.jsx:78
 msgid "Basic Information"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:92
+#: src/assignment-editor/components/SettingsPanel.jsx:93
 msgid "Assignment Title"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:103
+#: src/assignment-editor/components/SettingsPanel.jsx:104
 msgid "Please enter an assignment title"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:111
+#: src/assignment-editor/components/SettingsPanel.jsx:112
 msgid "e.g., \"Week 5 Essay\" or \"Final Project Submission\""
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:133
+#: src/assignment-editor/components/SettingsPanel.jsx:134
 msgid "Brief description shown in assignment lists"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:151
+#: src/assignment-editor/components/SettingsPanel.jsx:152
 msgid "Brief description of the assignment…"
 msgstr ""
 
@@ -2699,20 +2828,20 @@ msgstr ""
 msgid "Provide detailed instructions for completing this assignment…"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:210
+#: src/assignment-editor/components/SettingsPanel.jsx:209
 msgid "Draft = work in progress. Published = visible to students. Archived = hidden but preserved."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:261
+#: src/assignment-editor/components/SettingsPanel.jsx:260
 #: src/settings-panel/components/StatusTab.jsx:536
 msgid "Theme"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:267
+#: src/assignment-editor/components/SettingsPanel.jsx:266
 msgid "Visual theme for this assignment. Overrides the global default set in Settings."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:289
+#: src/assignment-editor/components/SettingsPanel.jsx:288
 #: src/settings-panel/components/AppearanceTab.jsx:135
 #: src/settings-panel/components/AppearanceTab.jsx:258
 #: src/settings-panel/components/AppearanceTab.jsx:346
@@ -2721,138 +2850,138 @@ msgstr ""
 msgid "Default"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:296
+#: src/assignment-editor/components/SettingsPanel.jsx:295
 #: src/settings-panel/components/AppearanceTab.jsx:349
 #: src/settings-panel/components/AppearanceTab.jsx:1074
 msgid "Modern"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:303
+#: src/assignment-editor/components/SettingsPanel.jsx:302
 #: src/settings-panel/components/AppearanceTab.jsx:352
 #: src/settings-panel/components/AppearanceTab.jsx:1078
 msgid "Minimal"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:333
+#: src/assignment-editor/components/SettingsPanel.jsx:332
 msgid "Maximum Points"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:341
+#: src/assignment-editor/components/SettingsPanel.jsx:340
 msgid "Automatically set from rubric criteria totals"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:345
+#: src/assignment-editor/components/SettingsPanel.jsx:344
 msgid "The maximum number of points for this assignment"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:363
+#: src/assignment-editor/components/SettingsPanel.jsx:362
 msgid "Synced to rubric total."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:377
-#: src/assignment-editor/components/SettingsPanel.jsx:450
+#: src/assignment-editor/components/SettingsPanel.jsx:376
+#: src/assignment-editor/components/SettingsPanel.jsx:449
 #: src/settings-panel/components/GeneralTab.jsx:112
 msgid "pts"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:395
+#: src/assignment-editor/components/SettingsPanel.jsx:394
 msgid "Minimum points needed to pass"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:465
-#: src/grading-interface/components/GradingForm.jsx:755
+#: src/assignment-editor/components/SettingsPanel.jsx:464
+#: src/grading-interface/components/GradingForm.jsx:751
 msgid "Grading Guidelines"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:471
+#: src/assignment-editor/components/SettingsPanel.jsx:470
 msgid "Internal guidelines for graders (not shown to students)"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:489
+#: src/assignment-editor/components/SettingsPanel.jsx:488
 msgid "Grading criteria and rubric notes for graders…"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:511
+#: src/assignment-editor/components/SettingsPanel.jsx:508
 msgid "Use rubric for grading"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:517
+#: src/assignment-editor/components/SettingsPanel.jsx:514
 msgid "Replaces the grading guidelines text box with a structured rubric. Criteria and levels will be visible to students on the assignment page."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:559
+#: src/assignment-editor/components/SettingsPanel.jsx:556
 msgid "Auto-grade with AI"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:565
+#: src/assignment-editor/components/SettingsPanel.jsx:562
 msgid "When enabled, an AI grading suggestion is generated automatically after each student submission. Instructors review and apply the suggestion on the grading page."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:583
+#: src/assignment-editor/components/SettingsPanel.jsx:580
 msgid "AI grading generates feedback suggestions automatically after each submission. Instructors review, edit, and apply the suggestions before returning grades to students — the AI never grades directly."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:600
+#: src/assignment-editor/components/SettingsPanel.jsx:597
 msgid "Submission Settings"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:616
+#: src/assignment-editor/components/SettingsPanel.jsx:613
 msgid "Submission Type"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:622
+#: src/assignment-editor/components/SettingsPanel.jsx:619
 msgid "Choose how students submit their work: file upload, text editor, or either"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:644
+#: src/assignment-editor/components/SettingsPanel.jsx:641
 msgid "File Upload Only"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:651
+#: src/assignment-editor/components/SettingsPanel.jsx:648
 msgid "Text Editor Only"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:658
+#: src/assignment-editor/components/SettingsPanel.jsx:655
 msgid "Either (Student Chooses)"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:672
+#: src/assignment-editor/components/SettingsPanel.jsx:669
 msgid "Notification Email"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:678
+#: src/assignment-editor/components/SettingsPanel.jsx:675
 msgid "Additional email addresses to notify when a student submits. The assignment author always receives the notification."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:693
+#: src/assignment-editor/components/SettingsPanel.jsx:690
 msgid "Comma-separated email addresses. Leave blank to only notify the assignment author."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:699
+#: src/assignment-editor/components/SettingsPanel.jsx:696
 msgid "e.g., instructor@school.edu, ta@school.edu"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:713
+#: src/assignment-editor/components/SettingsPanel.jsx:710
 msgid "Allow Resubmission"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:719
+#: src/assignment-editor/components/SettingsPanel.jsx:716
 msgid "Allow students to resubmit after their initial submission"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:737
+#: src/assignment-editor/components/SettingsPanel.jsx:734
 msgid "When disabled, students can only submit once."
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:752
+#: src/assignment-editor/components/SettingsPanel.jsx:749
 msgid "Maximum Resubmissions"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:758
+#: src/assignment-editor/components/SettingsPanel.jsx:755
 msgid "Maximum number of times a student can resubmit"
 msgstr ""
 
-#: src/assignment-editor/components/SettingsPanel.jsx:773
+#: src/assignment-editor/components/SettingsPanel.jsx:770
 msgid "Set to 0 for unlimited resubmissions."
 msgstr ""
 
@@ -3006,139 +3135,139 @@ msgstr ""
 msgid "Return Rate (7 days)"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:157
+#: src/grading-interface/components/GradingForm.jsx:153
 #: src/submission-detail/components/SubmissionDetail.jsx:117
 msgid "Failed to load submission."
 msgstr ""
 
 #. translators: %d: maximum points
-#: src/grading-interface/components/GradingForm.jsx:243
+#: src/grading-interface/components/GradingForm.jsx:239
 #, js-format
 msgid "Please enter a score between 0 and %d."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:284
+#: src/grading-interface/components/GradingForm.jsx:280
 msgid "Saved."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:290
+#: src/grading-interface/components/GradingForm.jsx:286
 msgid "Failed to save."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:317
+#: src/grading-interface/components/GradingForm.jsx:313
 msgid "No more submissions."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:328
+#: src/grading-interface/components/GradingForm.jsx:324
 msgid "Please assign a score before returning."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:361
+#: src/grading-interface/components/GradingForm.jsx:357
 msgid "Returned to student."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:368
+#: src/grading-interface/components/GradingForm.jsx:364
 msgid "Failed to return submission."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:534
+#: src/grading-interface/components/GradingForm.jsx:530
 msgid "← Back to Queue"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:568
+#: src/grading-interface/components/GradingForm.jsx:564
 #: src/submission-detail/components/SubmissionDetail.jsx:250
 msgid "Prev"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:577
+#: src/grading-interface/components/GradingForm.jsx:573
 #: src/submission-detail/components/SubmissionDetail.jsx:257
 msgid "Next"
 msgstr ""
 
 #. translators: %d: submission number
-#: src/grading-interface/components/GradingForm.jsx:667
+#: src/grading-interface/components/GradingForm.jsx:663
 #, js-format
 msgid "Resubmission #%d"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:684
+#: src/grading-interface/components/GradingForm.jsx:680
 msgid "Student Notes:"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:712
+#: src/grading-interface/components/GradingForm.jsx:708
 msgid "Assignment Instructions"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:735
+#: src/grading-interface/components/GradingForm.jsx:731
 msgid "No instructions provided."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:778
+#: src/grading-interface/components/GradingForm.jsx:774
 msgid "No grading guidelines provided."
 msgstr ""
 
 #. translators: %d: maximum points
-#: src/grading-interface/components/GradingForm.jsx:963
+#: src/grading-interface/components/GradingForm.jsx:959
 #, js-format
 msgid "Score must be between 0 and %d."
 msgstr ""
 
 #. translators: %s: keyboard key
-#: src/grading-interface/components/GradingForm.jsx:1028
+#: src/grading-interface/components/GradingForm.jsx:1024
 #, js-format
 msgid "Press %s"
 msgstr ""
 
 #. translators: %1$d: score percentage
-#: src/grading-interface/components/GradingForm.jsx:1074
+#: src/grading-interface/components/GradingForm.jsx:1070
 #, js-format
 msgid "Passing (%1$d%%)"
 msgstr ""
 
 #. translators: %s: required passing score in points
-#: src/grading-interface/components/GradingForm.jsx:1088
+#: src/grading-interface/components/GradingForm.jsx:1084
 #: src/submission-detail/components/SubmissionDetail.jsx:454
 #, js-format
 msgid "Not Passing (requires %s pts)"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1124
+#: src/grading-interface/components/GradingForm.jsx:1119
 msgid "Enter feedback for the student…"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1145
+#: src/grading-interface/components/GradingForm.jsx:1140
 msgid "Save"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1157
+#: src/grading-interface/components/GradingForm.jsx:1152
 msgid "Save & Return to Student"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1170
+#: src/grading-interface/components/GradingForm.jsx:1165
 msgid "This submission has been returned to the student."
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1188
+#: src/grading-interface/components/GradingForm.jsx:1183
 msgid "Shortcuts:"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1190
+#: src/grading-interface/components/GradingForm.jsx:1185
 msgid "navigate"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1192
+#: src/grading-interface/components/GradingForm.jsx:1187
 msgid "quick score"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1197
+#: src/grading-interface/components/GradingForm.jsx:1192
 msgid "save"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1199
+#: src/grading-interface/components/GradingForm.jsx:1194
 msgid "save & next"
 msgstr ""
 
-#: src/grading-interface/components/GradingForm.jsx:1204
+#: src/grading-interface/components/GradingForm.jsx:1199
 msgid "close"
 msgstr ""
 
@@ -3491,244 +3620,244 @@ msgstr ""
 msgid "Choose the default display theme for all assignments. Individual assignments can override this in their settings."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:64
+#: src/settings-panel/components/EmailTab.jsx:65
 msgid "Copied!"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:66
+#: src/settings-panel/components/EmailTab.jsx:67
 msgid "Failed to copy"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:76
+#: src/settings-panel/components/EmailTab.jsx:77
 msgid "Click to copy"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:152
+#: src/settings-panel/components/EmailTab.jsx:153
 msgid "Select Email Logo"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:154
+#: src/settings-panel/components/EmailTab.jsx:155
 msgid "Use this image"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:187
+#: src/settings-panel/components/EmailTab.jsx:188
 msgid "Please enter a valid email address"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:213
-#: src/settings-panel/components/EmailTab.jsx:222
+#: src/settings-panel/components/EmailTab.jsx:214
+#: src/settings-panel/components/EmailTab.jsx:223
 msgid "Failed to send test email"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:234
+#: src/settings-panel/components/EmailTab.jsx:235
 msgid "Email Settings"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:237
+#: src/settings-panel/components/EmailTab.jsx:238
 msgid "Configure email notifications sent by the plugin."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:245
+#: src/settings-panel/components/EmailTab.jsx:246
 msgid "Email Logo"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:246
+#: src/settings-panel/components/EmailTab.jsx:247
 msgid "Logo displayed at the top of emails. Max width 400px, max height 150px."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:270
+#: src/settings-panel/components/EmailTab.jsx:271
 msgid "Email logo"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:294
+#: src/settings-panel/components/EmailTab.jsx:295
 msgid "Select Logo"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:305
+#: src/settings-panel/components/EmailTab.jsx:306
 msgid "From Name"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:306
+#: src/settings-panel/components/EmailTab.jsx:307
 msgid "Name shown in the \"From\" field of emails sent by the plugin."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:333
+#: src/settings-panel/components/EmailTab.jsx:334
 msgid "From Email Address"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:337
+#: src/settings-panel/components/EmailTab.jsx:338
 msgid "Email address shown in the \"From\" field of emails sent by the plugin."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:367
+#: src/settings-panel/components/EmailTab.jsx:368
 msgid "Notification Toggles"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:370
+#: src/settings-panel/components/EmailTab.jsx:371
 msgid "Choose which email notifications are sent automatically."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:378
-#: src/settings-panel/components/EmailTab.jsx:851
+#: src/settings-panel/components/EmailTab.jsx:379
+#: src/settings-panel/components/EmailTab.jsx:828
 msgid "Submission Confirmation"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:396
+#: src/settings-panel/components/EmailTab.jsx:397
 msgid "Email students when their submission is received"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:406
-#: src/settings-panel/components/EmailTab.jsx:858
+#: src/settings-panel/components/EmailTab.jsx:407
+#: src/settings-panel/components/EmailTab.jsx:835
 msgid "Grade Notification"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:423
+#: src/settings-panel/components/EmailTab.jsx:424
 msgid "Email students when their assignment is graded and returned"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:433
-#: src/settings-panel/components/EmailTab.jsx:865
+#: src/settings-panel/components/EmailTab.jsx:434
+#: src/settings-panel/components/EmailTab.jsx:842
 msgid "New Submission Notification"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:445
+#: src/settings-panel/components/EmailTab.jsx:446
 msgid "Email the assignment owner (and any additional addresses set on the assignment) when a student submits"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:457
+#: src/settings-panel/components/EmailTab.jsx:458
 msgid "Submission Confirmation Email"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:463
+#: src/settings-panel/components/EmailTab.jsx:464
 msgid "Customize the email sent to students when their submission is received."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:471
-#: src/settings-panel/components/EmailTab.jsx:587
-#: src/settings-panel/components/EmailTab.jsx:730
+#: src/settings-panel/components/EmailTab.jsx:472
+#: src/settings-panel/components/EmailTab.jsx:580
+#: src/settings-panel/components/EmailTab.jsx:715
 msgid "Subject Line"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:492
-#: src/settings-panel/components/EmailTab.jsx:608
-#: src/settings-panel/components/EmailTab.jsx:751
+#: src/settings-panel/components/EmailTab.jsx:493
+#: src/settings-panel/components/EmailTab.jsx:601
+#: src/settings-panel/components/EmailTab.jsx:736
 msgid "Email Body"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:518
-#: src/settings-panel/components/EmailTab.jsx:633
-#: src/settings-panel/components/EmailTab.jsx:776
+#: src/settings-panel/components/EmailTab.jsx:511
+#: src/settings-panel/components/EmailTab.jsx:618
+#: src/settings-panel/components/EmailTab.jsx:753
 msgid "Available Tokens:"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:521
-#: src/settings-panel/components/EmailTab.jsx:636
-#: src/settings-panel/components/EmailTab.jsx:779
+#: src/settings-panel/components/EmailTab.jsx:514
+#: src/settings-panel/components/EmailTab.jsx:621
+#: src/settings-panel/components/EmailTab.jsx:756
 msgid "(click to copy)"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:526
-#: src/settings-panel/components/EmailTab.jsx:641
+#: src/settings-panel/components/EmailTab.jsx:519
+#: src/settings-panel/components/EmailTab.jsx:626
 msgid "Student's first name"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:533
-#: src/settings-panel/components/EmailTab.jsx:648
-#: src/settings-panel/components/EmailTab.jsx:784
+#: src/settings-panel/components/EmailTab.jsx:526
+#: src/settings-panel/components/EmailTab.jsx:633
+#: src/settings-panel/components/EmailTab.jsx:761
 msgid "Student's full display name"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:540
-#: src/settings-panel/components/EmailTab.jsx:655
-#: src/settings-panel/components/EmailTab.jsx:798
+#: src/settings-panel/components/EmailTab.jsx:533
+#: src/settings-panel/components/EmailTab.jsx:640
+#: src/settings-panel/components/EmailTab.jsx:775
 msgid "Title of the assignment"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:547
-#: src/settings-panel/components/EmailTab.jsx:690
-#: src/settings-panel/components/EmailTab.jsx:805
+#: src/settings-panel/components/EmailTab.jsx:540
+#: src/settings-panel/components/EmailTab.jsx:675
+#: src/settings-panel/components/EmailTab.jsx:782
 msgid "Submission date and time"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:554
-#: src/settings-panel/components/EmailTab.jsx:697
-#: src/settings-panel/components/EmailTab.jsx:812
+#: src/settings-panel/components/EmailTab.jsx:547
+#: src/settings-panel/components/EmailTab.jsx:682
+#: src/settings-panel/components/EmailTab.jsx:789
 msgid "Your site name"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:561
+#: src/settings-panel/components/EmailTab.jsx:554
 msgid "Button linking to submission status page"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:573
+#: src/settings-panel/components/EmailTab.jsx:566
 msgid "Grade Notification Email"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:579
+#: src/settings-panel/components/EmailTab.jsx:572
 msgid "Customize the email sent to students when their assignment is graded."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:662
+#: src/settings-panel/components/EmailTab.jsx:647
 msgid "Score achieved"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:669
+#: src/settings-panel/components/EmailTab.jsx:654
 msgid "Maximum points possible"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:676
+#: src/settings-panel/components/EmailTab.jsx:661
 msgid "Pass/fail status text"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:683
+#: src/settings-panel/components/EmailTab.jsx:668
 msgid "Visual score summary box with pass/fail"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:704
+#: src/settings-panel/components/EmailTab.jsx:689
 msgid "Button linking to grade and feedback page"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:716
+#: src/settings-panel/components/EmailTab.jsx:701
 msgid "New Submission Notification Email"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:722
+#: src/settings-panel/components/EmailTab.jsx:707
 msgid "Customize the email sent to the assignment owner (and any additional notification addresses configured on the assignment) when a student submits."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:791
+#: src/settings-panel/components/EmailTab.jsx:768
 msgid "Student's email address"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:819
+#: src/settings-panel/components/EmailTab.jsx:796
 msgid "Button linking to the grading page"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:831
+#: src/settings-panel/components/EmailTab.jsx:808
 msgid "Test Email"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:834
+#: src/settings-panel/components/EmailTab.jsx:811
 msgid "Send a test email to verify your email configuration and preview your templates."
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:842
+#: src/settings-panel/components/EmailTab.jsx:819
 msgid "Email Type"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:877
+#: src/settings-panel/components/EmailTab.jsx:854
 msgid "Send To"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:886
+#: src/settings-panel/components/EmailTab.jsx:863
 msgid "Enter email address"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:898
+#: src/settings-panel/components/EmailTab.jsx:875
 msgid "Send Test"
 msgstr ""
 
-#: src/settings-panel/components/EmailTab.jsx:903
+#: src/settings-panel/components/EmailTab.jsx:880
 msgid "Save your settings first, then send a test email to preview your templates with sample data."
 msgstr ""
 
