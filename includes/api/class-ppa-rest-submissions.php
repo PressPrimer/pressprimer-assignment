@@ -609,6 +609,17 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Get sibling submission IDs for navigation.
 		$siblings = $this->get_siblings( $submission );
 
+		// Surface auto-cleanup notice fields. The Educator addon's data
+		// cleanup tool stamps these on the parent submission when it
+		// prunes graded-submission attachments, so the My Submissions /
+		// detail / grading surfaces can explain why files are missing
+		// while the grade and feedback remain.
+		$cleanup_pruned_count        = absint( $submission->get_meta( 'cleanup_attachments_pruned_count', 0 ) );
+		$cleanup_pruned_at           = absint( $submission->get_meta( 'cleanup_attachments_pruned_at', 0 ) );
+		$cleanup_pruned_at_formatted = $cleanup_pruned_at > 0
+			? wp_date( $date_format, $cleanup_pruned_at )
+			: '';
+
 		// Format files for response.
 		$file_data = [];
 		foreach ( $files as $file ) {
@@ -630,33 +641,36 @@ class PressPrimer_Assignment_REST_Submissions {
 		return rest_ensure_response(
 			[
 				'submission' => [
-					'id'                    => (int) $submission->id,
-					'uuid'                  => $submission->uuid,
-					'assignment_id'         => (int) $submission->assignment_id,
-					'status'                => $submission->status,
-					'submitted_at'          => $submission->submitted_at,
-					'graded_at'             => $submission->graded_at,
-					'returned_at'           => $submission->returned_at,
-					'formatted_date'        => $submission->submitted_at
+					'id'                               => (int) $submission->id,
+					'uuid'                             => $submission->uuid,
+					'assignment_id'                    => (int) $submission->assignment_id,
+					'status'                           => $submission->status,
+					'submitted_at'                     => $submission->submitted_at,
+					'graded_at'                        => $submission->graded_at,
+					'returned_at'                      => $submission->returned_at,
+					'formatted_date'                   => $submission->submitted_at
 						? wp_date( $date_format, strtotime( $submission->submitted_at ) )
 						: '',
-					'formatted_graded_at'   => $submission->graded_at
+					'formatted_graded_at'              => $submission->graded_at
 						? wp_date( $date_format, strtotime( $submission->graded_at ) )
 						: '',
-					'formatted_returned_at' => $submission->returned_at
+					'formatted_returned_at'            => $submission->returned_at
 						? wp_date( $date_format, strtotime( $submission->returned_at ) )
 						: '',
-					'submission_number'     => (int) $submission->submission_number,
-					'score'                 => null !== $submission->score ? (float) $submission->score : null,
-					'feedback'              => $submission->feedback,
-					'passed'                => null !== $submission->passed ? (bool) $submission->passed : null,
-					'student_name'          => $user ? $user->display_name : __( 'Unknown', 'pressprimer-assignment' ),
-					'student_email'         => $user ? $user->user_email : '',
-					'student_notes'         => $submission->student_notes,
-					'text_content'          => $submission->text_content,
-					'word_count'            => $submission->word_count ? (int) $submission->word_count : null,
-					'file_count'            => (int) $submission->file_count,
-					'grader_id'             => $submission->grader_id ? (int) $submission->grader_id : null,
+					'submission_number'                => (int) $submission->submission_number,
+					'score'                            => null !== $submission->score ? (float) $submission->score : null,
+					'feedback'                         => $submission->feedback,
+					'passed'                           => null !== $submission->passed ? (bool) $submission->passed : null,
+					'student_name'                     => $user ? $user->display_name : __( 'Unknown', 'pressprimer-assignment' ),
+					'student_email'                    => $user ? $user->user_email : '',
+					'student_notes'                    => $submission->student_notes,
+					'text_content'                     => $submission->text_content,
+					'word_count'                       => $submission->word_count ? (int) $submission->word_count : null,
+					'file_count'                       => (int) $submission->file_count,
+					'grader_id'                        => $submission->grader_id ? (int) $submission->grader_id : null,
+					'cleanup_attachments_pruned_count' => $cleanup_pruned_count,
+					'cleanup_attachments_pruned_at'    => $cleanup_pruned_at,
+					'cleanup_attachments_pruned_at_formatted' => $cleanup_pruned_at_formatted,
 				],
 				'assignment' => $assignment ? [
 					'id'                 => (int) $assignment->id,

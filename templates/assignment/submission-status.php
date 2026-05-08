@@ -151,6 +151,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php endforeach; ?>
 			</ul>
 		</div>
+	<?php else : ?>
+		<?php
+		$ppa_cleanup_pruned_count = absint( $submission->get_meta( 'cleanup_attachments_pruned_count', 0 ) );
+		$ppa_cleanup_pruned_at    = absint( $submission->get_meta( 'cleanup_attachments_pruned_at', 0 ) );
+		?>
+		<?php if ( $ppa_cleanup_pruned_count > 0 ) : ?>
+			<div class="ppa-notice ppa-notice-info ppa-cleanup-notice" role="status">
+				<p>
+					<?php
+					if ( $ppa_cleanup_pruned_at > 0 ) {
+						printf(
+							/* translators: %s: date the files were removed */
+							esc_html__( 'Files attached to this submission were removed by automated data cleanup on %s. Your grade and feedback are preserved.', 'pressprimer-assignment' ),
+							esc_html( date_i18n( get_option( 'date_format' ), $ppa_cleanup_pruned_at ) )
+						);
+					} else {
+						esc_html_e( 'Files attached to this submission were removed by automated data cleanup. Your grade and feedback are preserved.', 'pressprimer-assignment' );
+					}
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
 	<?php endif; ?>
 
 	<?php if ( PressPrimer_Assignment_Submission::STATUS_RETURNED === $submission->status ) : ?>

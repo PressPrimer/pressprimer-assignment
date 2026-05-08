@@ -581,6 +581,35 @@ const GradingForm = ( { submissionId } ) => {
 			<Row gutter={ 16 } className="ppa-grading-main">
 				{ /* Document Panel (left) */ }
 				<Col span={ 14 }>
+					{ /* Auto-cleanup notice — files were pruned and nothing replaced them. */ }
+					{ submission.cleanup_attachments_pruned_count > 0 &&
+						files.length === 0 &&
+						! submission.text_content && (
+							<Alert
+								type="info"
+								showIcon
+								style={ { marginBottom: 16 } }
+								message={ __(
+									'Submitted files removed by automated cleanup',
+									'pressprimer-assignment'
+								) }
+								description={
+									submission.cleanup_attachments_pruned_at_formatted
+										? sprintf(
+												/* translators: %s: date the files were removed */
+												__(
+													'The files attached to this submission were removed by the data cleanup tool on %s. The grade and feedback are preserved.',
+													'pressprimer-assignment'
+												),
+												submission.cleanup_attachments_pruned_at_formatted
+										  )
+										: __(
+												'The files attached to this submission were removed by the data cleanup tool. The grade and feedback are preserved.',
+												'pressprimer-assignment'
+										  )
+								}
+							/>
+						) }
 					<Card
 						className="ppa-grading-document-card"
 						bodyStyle={ { padding: 0 } }

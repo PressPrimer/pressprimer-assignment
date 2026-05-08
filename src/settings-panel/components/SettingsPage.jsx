@@ -21,6 +21,7 @@ import {
 	InfoCircleOutlined,
 	SkinOutlined,
 	AuditOutlined,
+	ClearOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
@@ -36,6 +37,7 @@ import StatusTab from './StatusTab';
 const ADDON_ICONS = {
 	'white-label': <SkinOutlined />,
 	'audit-log': <AuditOutlined />,
+	'data-cleanup': <ClearOutlined />,
 	default: <SettingOutlined />,
 };
 
