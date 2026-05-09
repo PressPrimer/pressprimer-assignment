@@ -638,53 +638,80 @@ class PressPrimer_Assignment_REST_Submissions {
 			];
 		}
 
-		return rest_ensure_response(
-			[
-				'submission' => [
-					'id'                               => (int) $submission->id,
-					'uuid'                             => $submission->uuid,
-					'assignment_id'                    => (int) $submission->assignment_id,
-					'status'                           => $submission->status,
-					'submitted_at'                     => $submission->submitted_at,
-					'graded_at'                        => $submission->graded_at,
-					'returned_at'                      => $submission->returned_at,
-					'formatted_date'                   => $submission->submitted_at
-						? wp_date( $date_format, strtotime( $submission->submitted_at ) )
-						: '',
-					'formatted_graded_at'              => $submission->graded_at
-						? wp_date( $date_format, strtotime( $submission->graded_at ) )
-						: '',
-					'formatted_returned_at'            => $submission->returned_at
-						? wp_date( $date_format, strtotime( $submission->returned_at ) )
-						: '',
-					'submission_number'                => (int) $submission->submission_number,
-					'score'                            => null !== $submission->score ? (float) $submission->score : null,
-					'feedback'                         => $submission->feedback,
-					'passed'                           => null !== $submission->passed ? (bool) $submission->passed : null,
-					'student_name'                     => $user ? $user->display_name : __( 'Unknown', 'pressprimer-assignment' ),
-					'student_email'                    => $user ? $user->user_email : '',
-					'student_notes'                    => $submission->student_notes,
-					'text_content'                     => $submission->text_content,
-					'word_count'                       => $submission->word_count ? (int) $submission->word_count : null,
-					'file_count'                       => (int) $submission->file_count,
-					'grader_id'                        => $submission->grader_id ? (int) $submission->grader_id : null,
-					'cleanup_attachments_pruned_count' => $cleanup_pruned_count,
-					'cleanup_attachments_pruned_at'    => $cleanup_pruned_at,
-					'cleanup_attachments_pruned_at_formatted' => $cleanup_pruned_at_formatted,
-				],
-				'assignment' => $assignment ? [
-					'id'                 => (int) $assignment->id,
-					'title'              => $assignment->title,
-					'description'        => $assignment->description,
-					'instructions'       => $assignment->instructions,
-					'max_points'         => (float) $assignment->max_points,
-					'passing_score'      => (float) $assignment->passing_score,
-					'grading_guidelines' => $assignment->grading_guidelines,
-				] : null,
-				'files'      => $file_data,
-				'siblings'   => $siblings,
-			]
+		$response_data = [
+			'submission' => [
+				'id'                               => (int) $submission->id,
+				'uuid'                             => $submission->uuid,
+				'assignment_id'                    => (int) $submission->assignment_id,
+				'status'                           => $submission->status,
+				'submitted_at'                     => $submission->submitted_at,
+				'graded_at'                        => $submission->graded_at,
+				'returned_at'                      => $submission->returned_at,
+				'formatted_date'                   => $submission->submitted_at
+					? wp_date( $date_format, strtotime( $submission->submitted_at ) )
+					: '',
+				'formatted_graded_at'              => $submission->graded_at
+					? wp_date( $date_format, strtotime( $submission->graded_at ) )
+					: '',
+				'formatted_returned_at'            => $submission->returned_at
+					? wp_date( $date_format, strtotime( $submission->returned_at ) )
+					: '',
+				'submission_number'                => (int) $submission->submission_number,
+				'score'                            => null !== $submission->score ? (float) $submission->score : null,
+				'feedback'                         => $submission->feedback,
+				'passed'                           => null !== $submission->passed ? (bool) $submission->passed : null,
+				'student_name'                     => $user ? $user->display_name : __( 'Unknown', 'pressprimer-assignment' ),
+				'student_email'                    => $user ? $user->user_email : '',
+				'student_notes'                    => $submission->student_notes,
+				'text_content'                     => $submission->text_content,
+				'word_count'                       => $submission->word_count ? (int) $submission->word_count : null,
+				'file_count'                       => (int) $submission->file_count,
+				'grader_id'                        => $submission->grader_id ? (int) $submission->grader_id : null,
+				'cleanup_attachments_pruned_count' => $cleanup_pruned_count,
+				'cleanup_attachments_pruned_at'    => $cleanup_pruned_at,
+				'cleanup_attachments_pruned_at_formatted' => $cleanup_pruned_at_formatted,
+			],
+			'assignment' => $assignment ? [
+				'id'                 => (int) $assignment->id,
+				'title'              => $assignment->title,
+				'description'        => $assignment->description,
+				'instructions'       => $assignment->instructions,
+				'max_points'         => (float) $assignment->max_points,
+				'passing_score'      => (float) $assignment->passing_score,
+				'grading_guidelines' => $assignment->grading_guidelines,
+			] : null,
+			'files'      => $file_data,
+			'siblings'   => $siblings,
+		];
+
+		/**
+		 * Filters the single-submission REST response.
+		 *
+		 * Lets addons augment the response with extra data — annotations,
+		 * audit log entries, rubric scores, etc. Addons should add their
+		 * data under their own response key and never mutate existing
+		 * keys, so the React detail/grading screens can rely on a stable
+		 * core shape.
+		 *
+		 * The free plugin's existing access checks (capability + ownership)
+		 * have already passed before this filter fires. Addons may apply
+		 * additional gating (e.g., role-specific visibility) inside their
+		 * callback.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param array                              $response_data Response data array.
+		 * @param PressPrimer_Assignment_Submission  $submission    Submission instance.
+		 * @param WP_REST_Request                    $request       The REST request.
+		 */
+		$response_data = apply_filters(
+			'pressprimer_assignment_submission_response',
+			$response_data,
+			$submission,
+			$request
 		);
+
+		return rest_ensure_response( $response_data );
 	}
 
 	/**
