@@ -46,6 +46,14 @@ class PressPrimer_Assignment_Frontend {
 	private $text_editor_enqueued = false;
 
 	/**
+	 * Whether the React submission viewer assets have been enqueued
+	 *
+	 * @since 2.1.0
+	 * @var bool
+	 */
+	private $submission_viewer_enqueued = false;
+
+	/**
 	 * Initialize frontend
 	 *
 	 * Registers the file download handler on init.
@@ -110,6 +118,117 @@ class PressPrimer_Assignment_Frontend {
 		wp_enqueue_editor();
 
 		$this->text_editor_enqueued = true;
+	}
+
+	/**
+	 * Enqueue the React submission viewer for a returned/graded submission
+	 *
+	 * Loads the frontend-submission-viewer bundle and localises file +
+	 * text-content data so the bundle can mount a read-only DocumentPanel
+	 * inside the submission-status template. Mirrors the inline preview
+	 * the grader sees on the admin side, including any annotations the
+	 * School addon overlays via PPADocumentViewerOverrides.
+	 *
+	 * Fires the `pressprimer_assignment_frontend_submission_viewer_enqueued`
+	 * action with the submission and assignment so addons (notably the
+	 * School annotation bundle) can attach overlay layers in lockstep.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param PressPrimer_Assignment_Submission $submission Submission instance.
+	 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+	 */
+	public function enqueue_submission_viewer_assets( $submission, $assignment ) {
+		if ( $this->submission_viewer_enqueued ) {
+			return;
+		}
+
+		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/frontend-submission-viewer.asset.php';
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		$asset = require $asset_file;
+
+		// Ant Design CSS reset is needed for the DocumentPanel UI.
+		$antd_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'assets/css/vendor/antd-reset.css';
+		if ( file_exists( $antd_css ) ) {
+			wp_enqueue_style(
+				'antd',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'assets/css/vendor/antd-reset.css',
+				array(),
+				'5.12.0'
+			);
+		}
+
+		wp_enqueue_script(
+			'ppa-frontend-submission-viewer',
+			PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/frontend-submission-viewer.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
+
+		$style_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/style-frontend-submission-viewer.css';
+		if ( file_exists( $style_file ) ) {
+			wp_enqueue_style(
+				'ppa-frontend-submission-viewer',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/style-frontend-submission-viewer.css',
+				array(),
+				$asset['version']
+			);
+		}
+
+		$files     = $submission->get_files();
+		$file_data = array();
+		foreach ( $files as $file ) {
+			$file_data[] = array(
+				'id'                   => (int) $file->id,
+				'original_filename'    => $file->original_filename,
+				'file_size'            => (int) $file->file_size,
+				'formatted_size'       => size_format( $file->file_size ),
+				'file_extension'       => $file->file_extension,
+				'mime_type'            => $file->mime_type,
+				'download_url'         => self::get_file_url( $file->id, 'view' ),
+				'extraction_method'    => $file->extraction_method,
+				'extraction_quality'   => null !== $file->extraction_quality ? (int) $file->extraction_quality : null,
+				'extraction_error'     => $file->extraction_error,
+				'extracted_word_count' => null !== $file->extracted_word_count ? (int) $file->extracted_word_count : null,
+			);
+		}
+
+		wp_localize_script(
+			'ppa-frontend-submission-viewer',
+			'pressprimerAssignmentFrontendSubmission',
+			array(
+				'submissionId' => (int) $submission->id,
+				'assignmentId' => (int) $assignment->id,
+				'files'        => $file_data,
+				'textContent'  => $submission->is_text_submission() ? $submission->text_content : null,
+				'wordCount'    => $submission->is_text_submission() ? (int) $submission->word_count : null,
+				'restNonce'    => wp_create_nonce( 'wp_rest' ),
+			)
+		);
+
+		$this->submission_viewer_enqueued = true;
+
+		/**
+		 * Fires after the frontend submission viewer bundle is enqueued.
+		 *
+		 * Used by the School addon to enqueue its annotation overlay
+		 * bundle alongside the viewer so any annotations the grader
+		 * created render on top of the same DocumentPanel.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param PressPrimer_Assignment_Submission $submission Submission instance.
+		 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+		 */
+		do_action(
+			'pressprimer_assignment_frontend_submission_viewer_enqueued',
+			$submission,
+			$assignment
+		);
 	}
 
 	/**

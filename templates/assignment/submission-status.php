@@ -18,6 +18,7 @@
  * @var bool                                        $can_resubmit             Whether resubmission is allowed.
  * @var int                                         $resubmissions_remaining  Number of resubmissions left.
  * @var array                                       $previous_submissions     Previous submissions array.
+ * @var bool                                        $show_react_viewer        Whether the inline React viewer is mounted (graded/returned only).
  * @var PressPrimer_Assignment_Assignment_Renderer  $this                     Renderer instance.
  *
  * @package PressPrimer_Assignment
@@ -67,7 +68,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $submission->is_text_submission() ) : ?>
+	<?php if ( ! empty( $show_react_viewer ) ) : ?>
+		<div class="ppa-submitted-react-viewer">
+			<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Your Submission', 'pressprimer-assignment' ); ?></h4>
+			<div id="ppa-frontend-submission-viewer-root"></div>
+		</div>
+	<?php elseif ( $submission->is_text_submission() ) : ?>
 		<?php
 		$ppa_max_preview_words = 500;
 		$ppa_text_content      = $submission->text_content;

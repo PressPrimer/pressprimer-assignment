@@ -119,6 +119,7 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		if ( ! isset( $allowed['div'] ) ) {
 			$allowed['div'] = [];
 		}
+		$allowed['div']['id']       = true;
 		$allowed['div']['data-*']   = true;
 		$allowed['div']['aria-*']   = true;
 		$allowed['div']['tabindex'] = true;
@@ -502,6 +503,27 @@ class PressPrimer_Assignment_Assignment_Renderer {
 				if ( $prev->id !== $submission->id ) {
 					$previous_submissions[] = $prev;
 				}
+			}
+		}
+
+		// React-based inline viewer for graded/returned submissions. Enqueueing
+		// before template render so the markup includes the mount-point div the
+		// bundle expects. Drafts and freshly submitted work keep the simpler
+		// PHP rendering — there's nothing to overlay on those yet.
+		$show_react_viewer = false;
+		if ( in_array(
+			$submission->status,
+			array(
+				PressPrimer_Assignment_Submission::STATUS_GRADED,
+				PressPrimer_Assignment_Submission::STATUS_RETURNED,
+			),
+			true
+		) ) {
+			$has_renderable = ! empty( $files ) || $submission->is_text_submission();
+			if ( $has_renderable ) {
+				$frontend = new PressPrimer_Assignment_Frontend();
+				$frontend->enqueue_submission_viewer_assets( $submission, $assignment );
+				$show_react_viewer = true;
 			}
 		}
 

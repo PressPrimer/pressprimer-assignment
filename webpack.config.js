@@ -43,6 +43,12 @@ module.exports = {
 			'submission-detail',
 			'index.js'
 		),
+		'frontend-submission-viewer': path.resolve(
+			process.cwd(),
+			'src',
+			'frontend-submission-viewer',
+			'index.js'
+		),
 		'blocks/assignment/index': path.resolve(
 			process.cwd(),
 			'blocks',
