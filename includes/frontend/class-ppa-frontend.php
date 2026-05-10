@@ -206,6 +206,7 @@ class PressPrimer_Assignment_Frontend {
 				'files'        => $file_data,
 				'textContent'  => $submission->is_text_submission() ? $submission->text_content : null,
 				'wordCount'    => $submission->is_text_submission() ? (int) $submission->word_count : null,
+				'buildUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/',
 				'restNonce'    => wp_create_nonce( 'wp_rest' ),
 			)
 		);

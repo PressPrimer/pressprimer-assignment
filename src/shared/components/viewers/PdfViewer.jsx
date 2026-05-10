@@ -22,10 +22,13 @@ import { appendNonce } from '../../utils/nonce';
 
 // Configure PDF.js worker.
 // The worker file is copied to the build directory by webpack CopyPlugin.
-// buildUrl is passed from PHP via wp_localize_script.
+// buildUrl is passed from PHP via wp_localize_script — different
+// surfaces use different globals (admin grading, submission detail,
+// frontend submission viewer), so we check all known locations.
 pdfjsLib.GlobalWorkerOptions.workerSrc =
 	( window.pressprimerAssignmentGradingData?.buildUrl ||
 		window.pressprimerAssignmentSubmissionDetailData?.buildUrl ||
+		window.pressprimerAssignmentFrontendSubmission?.buildUrl ||
 		'' ) + 'pdf.worker.min.js'; // eslint-disable-line no-undef
 
 // Expose pdfjsLib on window so addons (Assignment School's annotation
@@ -134,6 +137,8 @@ const PdfViewer = ( { url } ) => {
 							window.pressprimerAssignmentGradingData?.nonce ||
 							window.pressprimerAssignmentSubmissionDetailData
 								?.nonce ||
+							window.pressprimerAssignmentFrontendSubmission
+								?.restNonce ||
 							'',
 					},
 				} );
