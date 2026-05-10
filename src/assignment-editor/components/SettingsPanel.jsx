@@ -589,6 +589,20 @@ const SettingsPanel = ( {
 				) }
 			</Card>
 
+			{ /* Addon settings panels — registered via the
+			    window.PPAEditorSettingsAddons array so addons can
+			    inject their own settings sections without coupling.
+			    Each entry is a React component rendered with no
+			    props; the addon reads context (e.g., assignmentId)
+			    from window.pressprimerAssignmentEditorData. */ }
+			{ ( typeof window !== 'undefined' &&
+			Array.isArray( window.PPAEditorSettingsAddons )
+				? window.PPAEditorSettingsAddons
+				: []
+			).map( ( AddonPanel, index ) => (
+				<AddonPanel key={ `ppa-addon-settings-${ index }` } />
+			) ) }
+
 			{ /* Submission Settings */ }
 			<Card
 				title={

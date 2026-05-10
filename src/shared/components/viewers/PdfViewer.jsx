@@ -28,6 +28,13 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 		window.pressprimerAssignmentSubmissionDetailData?.buildUrl ||
 		'' ) + 'pdf.worker.min.js'; // eslint-disable-line no-undef
 
+// Expose pdfjsLib on window so addons (Assignment School's annotation
+// feature) can render PDFs without bundling a duplicate copy. The worker
+// is already configured above; addons reuse the same configuration.
+if ( typeof window !== 'undefined' ) {
+	window.pdfjsLib = pdfjsLib;
+}
+
 /**
  * Default scale and zoom limits.
  */

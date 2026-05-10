@@ -18,6 +18,12 @@ import { appendNonce } from '../../utils/nonce';
 // Disable verbose rtf.js debug logging.
 RTFJS.loggingEnabled( false );
 
+// Expose RTFJS on window so addons (Assignment School's TextAnnotator)
+// can render RTF into HTML without bundling a duplicate copy of the lib.
+if ( typeof window !== 'undefined' ) {
+	window.PPARTFJS = RTFJS;
+}
+
 /**
  * Convert an array of DOM elements to an HTML string.
  *

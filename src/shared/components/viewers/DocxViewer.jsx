@@ -15,6 +15,12 @@ import { DownloadOutlined } from '@ant-design/icons';
 import mammoth from 'mammoth';
 import { appendNonce } from '../../utils/nonce';
 
+// Expose mammoth on window so addons (Assignment School's TextAnnotator)
+// can render DOCX into HTML without bundling a duplicate copy of the lib.
+if ( typeof window !== 'undefined' ) {
+	window.PPAMammoth = mammoth;
+}
+
 /**
  * DocxViewer component
  *

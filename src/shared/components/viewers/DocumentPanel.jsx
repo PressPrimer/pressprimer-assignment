@@ -123,11 +123,26 @@ const DocumentPanel = ( {
 	/**
 	 * Get the appropriate viewer for a file.
 	 *
+	 * Addons may register a per-extension override on
+	 * `window.PPADocumentViewerOverrides` to replace the default viewer.
+	 * Each entry is a React component that receives the same `file` prop.
+	 * Used by Assignment School's annotation layer to swap PDF and image
+	 * viewers for annotation-capable equivalents on the grading screen.
+	 *
 	 * @param {Object} file File object.
 	 * @return {JSX.Element} Viewer component.
 	 */
 	const getViewer = ( file ) => {
 		const ext = file.file_extension?.toLowerCase() || '';
+
+		const overrides =
+			( typeof window !== 'undefined' &&
+				window.PPADocumentViewerOverrides ) ||
+			null;
+		const Override = overrides && ( overrides[ ext ] || overrides[ '*' ] );
+		if ( Override ) {
+			return <Override file={ file } />;
+		}
 
 		if ( ext === 'pdf' ) {
 			return <PdfViewer url={ file.download_url } />;
@@ -373,12 +388,32 @@ const DocumentPanel = ( {
 					overflow: 'auto',
 				} }
 			>
-				{ activeKey === 'text-content' && (
-					<TextContentViewer
-						content={ textContent }
-						wordCount={ wordCount }
-					/>
-				) }
+				{ activeKey === 'text-content' &&
+					( () => {
+						// Addons may register a replacement for the
+						// in-platform text editor view via
+						// window.PPATextContentOverride. Used by
+						// Assignment School's TextAnnotator to render
+						// the same HTML with Recogito on top.
+						const TextOverride =
+							typeof window !== 'undefined'
+								? window.PPATextContentOverride
+								: null;
+						if ( TextOverride ) {
+							return (
+								<TextOverride
+									content={ textContent }
+									wordCount={ wordCount }
+								/>
+							);
+						}
+						return (
+							<TextContentViewer
+								content={ textContent }
+								wordCount={ wordCount }
+							/>
+						);
+					} )() }
 				{ activeKey !== 'text-content' &&
 					currentFile &&
 					getViewer( currentFile ) }
