@@ -506,10 +506,13 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			}
 		}
 
-		// React-based inline viewer for graded/returned submissions. Enqueueing
-		// before template render so the markup includes the mount-point div the
-		// bundle expects. Drafts and freshly submitted work keep the simpler
-		// PHP rendering — there's nothing to overlay on those yet.
+		// React-based inline viewer for graded/returned submissions. The
+		// bundle is heavy (DocumentPanel + Ant Design + the addon overlays
+		// that hook into it), so it is opt-in via a filter — addons that
+		// actually need an in-page viewer (e.g., the School annotation
+		// overlay when the submission has saved annotations) flip it on
+		// per-submission. Without an addon opting in, the simpler PHP
+		// rendering of file links / text content still ships.
 		$show_react_viewer = false;
 		if ( in_array(
 			$submission->status,
@@ -521,9 +524,29 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		) ) {
 			$has_renderable = ! empty( $files ) || $submission->is_text_submission();
 			if ( $has_renderable ) {
-				$frontend = new PressPrimer_Assignment_Frontend();
-				$frontend->enqueue_submission_viewer_assets( $submission, $assignment );
-				$show_react_viewer = true;
+				/**
+				 * Filters whether to mount the React inline submission viewer.
+				 *
+				 * Addons return true when they need to render content inside
+				 * the viewer (e.g., to paint an annotation overlay). The
+				 * free plugin alone never loads the bundle.
+				 *
+				 * @since 2.1.0
+				 *
+				 * @param bool                              $show       Default false.
+				 * @param PressPrimer_Assignment_Submission $submission Submission instance.
+				 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+				 */
+				$show_react_viewer = (bool) apply_filters(
+					'pressprimer_assignment_show_inline_submission_viewer',
+					false,
+					$submission,
+					$assignment
+				);
+				if ( $show_react_viewer ) {
+					$frontend = new PressPrimer_Assignment_Frontend();
+					$frontend->enqueue_submission_viewer_assets( $submission, $assignment );
+				}
 			}
 		}
 
