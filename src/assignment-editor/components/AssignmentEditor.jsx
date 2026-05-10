@@ -182,6 +182,31 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				}
 			}
 
+			// Addon hook: callbacks registered on window.PPAEditorAfterSave
+			// run after the main save resolves, so addons can persist
+			// their own per-assignment settings (e.g., annotation toggles)
+			// using the saved assignment ID. A callback throwing only
+			// surfaces an inline error — the main assignment save has
+			// already succeeded by this point.
+			if ( savedId && Array.isArray( window.PPAEditorAfterSave ) ) {
+				for ( const callback of window.PPAEditorAfterSave ) {
+					if ( 'function' !== typeof callback ) {
+						continue;
+					}
+					try {
+						await callback( { id: savedId, values } );
+					} catch ( addonError ) {
+						message.error(
+							addonError?.message ||
+								__(
+									'An addon failed to save its settings.',
+									'pressprimer-assignment'
+								)
+						);
+					}
+				}
+			}
+
 			message.success(
 				__( 'Assignment saved successfully!', 'pressprimer-assignment' )
 			);
