@@ -668,10 +668,14 @@ class PressPrimer_Assignment_Submission_Handler {
 		// server can't sabotage the comparison.
 		$table = $wpdb->prefix . 'ppa_submission_files';
 
+		// CURRENT_TIMESTAMP (not UTC_TIMESTAMP) because uploaded_at is
+		// populated via the column's CURRENT_TIMESTAMP default; both use
+		// MySQL's session time zone, so the diff is the file's true age
+		// regardless of whether the server is set to UTC.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$stale_ids = $wpdb->get_col(
 			$wpdb->prepare(
-				"SELECT id FROM {$table} WHERE submission_id = %d AND TIMESTAMPDIFF(SECOND, uploaded_at, UTC_TIMESTAMP()) >= %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT id FROM {$table} WHERE submission_id = %d AND TIMESTAMPDIFF(SECOND, uploaded_at, CURRENT_TIMESTAMP) >= %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				(int) $draft->id,
 				MINUTE_IN_SECONDS
 			)
