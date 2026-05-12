@@ -561,6 +561,8 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * @return PressPrimer_Assignment_Submission|WP_Error Submission instance or WP_Error.
 	 */
 	private function get_or_create_draft( $user_id, $assignment_id ) {
+		global $wpdb;
+
 		$user_id       = absint( $user_id );
 		$assignment_id = absint( $assignment_id );
 
@@ -574,8 +576,15 @@ class PressPrimer_Assignment_Submission_Handler {
 		// Determine submission number (for resubmissions).
 		$submission_number = $this->get_next_submission_number( $user_id, $assignment_id );
 
-		// Create new draft.
-		$submission_id = PressPrimer_Assignment_Submission::create(
+		// Two file uploads firing in parallel both pass the "no draft yet"
+		// check above and race to INSERT the same (assignment, user,
+		// submission_number) triplet. The unique key catches the loser,
+		// which is the safe outcome — but $wpdb would still write the
+		// failed query to debug.log. Suppress error reporting around the
+		// insert so the duplicate doesn't show as a "WordPress database
+		// error" entry; we already handle the failure path below.
+		$previous_suppress = $wpdb->suppress_errors( true );
+		$submission_id     = PressPrimer_Assignment_Submission::create(
 			[
 				'assignment_id'     => $assignment_id,
 				'user_id'           => $user_id,
@@ -583,8 +592,15 @@ class PressPrimer_Assignment_Submission_Handler {
 				'submission_number' => $submission_number,
 			]
 		);
+		$wpdb->suppress_errors( $previous_suppress );
 
+		// When the insert lost the race, the winning request has already
+		// created the draft we need — re-query and return it.
 		if ( is_wp_error( $submission_id ) ) {
+			$draft = $this->get_draft_submission( $user_id, $assignment_id );
+			if ( $draft ) {
+				return $draft;
+			}
 			return $submission_id;
 		}
 
