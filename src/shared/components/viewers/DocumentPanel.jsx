@@ -29,7 +29,7 @@ import OdtViewer from './OdtViewer';
 import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import TextContentViewer from './TextContentViewer';
-import { appendNonce } from '../../utils/nonce';
+import { appendNonce, appendQueryParam } from '../../utils/nonce';
 
 /**
  * Quality score labels and colors for the extraction quality badge.
@@ -190,7 +190,9 @@ const DocumentPanel = ( {
 				<Button
 					type="primary"
 					icon={ <DownloadOutlined /> }
-					href={ appendNonce( file.download_url + '?download=1' ) }
+					href={ appendNonce(
+						appendQueryParam( file.download_url, 'download=1' )
+					) }
 					target="_blank"
 					rel="noopener noreferrer"
 				>
@@ -367,7 +369,10 @@ const DocumentPanel = ( {
 						<Button
 							icon={ <DownloadOutlined /> }
 							href={ appendNonce(
-								currentFile.download_url + '?download=1'
+								appendQueryParam(
+									currentFile.download_url,
+									'download=1'
+								)
 							) }
 							target="_blank"
 							rel="noopener noreferrer"
