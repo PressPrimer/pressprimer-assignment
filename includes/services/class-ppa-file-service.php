@@ -501,8 +501,30 @@ class PressPrimer_Assignment_File_Service {
 			);
 		}
 
-		// Get full path.
+		// Get full path. Addons may swap this to a companion file (e.g.,
+		// the School annotation overlay serves a flattened PDF that has
+		// annotations baked in when the per-assignment setting is on).
 		$full_path = $file->get_full_path();
+
+		/**
+		 * Filters the file path that will be served for a download.
+		 *
+		 * Returning a different path swaps the file that's actually
+		 * streamed to the user. The original file remains on disk for
+		 * re-grading / audit; only the served-on-download path changes.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string                              $full_path  Absolute filesystem path.
+		 * @param PressPrimer_Assignment_Submission_File $file    The file record.
+		 * @param PressPrimer_Assignment_Submission   $submission The submission this file belongs to.
+		 */
+		$full_path = apply_filters(
+			'pressprimer_assignment_file_download_path',
+			$full_path,
+			$file,
+			$submission
+		);
 
 		if ( ! file_exists( $full_path ) ) {
 			return new WP_Error(
