@@ -657,10 +657,34 @@ class PressPrimer_Assignment_Submission_Handler {
 
 		$known_file_ids = array_map( 'absint', $known_file_ids );
 
+		// When a student picks several files at once the browser fires
+		// multiple parallel upload requests, each carrying its own
+		// snapshot of "files the client knows about" — which doesn't
+		// include the siblings still in flight. Without the recency
+		// guard below, the second request would happily delete the file
+		// the first one just added, and only the last upload would
+		// survive. Files created in the last minute are almost certainly
+		// from the current upload batch; the stale-draft case this sync
+		// targets involves files from a previous session that have been
+		// sitting in the draft for far longer than that.
+		$now = time();
+
 		foreach ( $files as $file ) {
-			if ( ! in_array( (int) $file->id, $known_file_ids, true ) ) {
-				$file->delete();
+			if ( in_array( (int) $file->id, $known_file_ids, true ) ) {
+				continue;
 			}
+
+			// The submission_files table stores creation time as
+			// uploaded_at (not created_at like other tables), so use that
+			// column when checking how fresh a file is.
+			$uploaded_at = isset( $file->uploaded_at )
+				? strtotime( $file->uploaded_at . ' UTC' )
+				: 0;
+			if ( $uploaded_at && ( $now - $uploaded_at ) < MINUTE_IN_SECONDS ) {
+				continue;
+			}
+
+			$file->delete();
 		}
 
 		// Clear cached files so next call re-queries.
