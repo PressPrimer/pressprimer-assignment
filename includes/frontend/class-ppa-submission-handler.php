@@ -649,11 +649,7 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * @param array                             $known_file_ids File IDs the client currently tracks.
 	 */
 	private function sync_draft_files( $draft, $known_file_ids ) {
-		$files = $draft->get_files();
-
-		if ( empty( $files ) ) {
-			return;
-		}
+		global $wpdb;
 
 		$known_file_ids = array_map( 'absint', $known_file_ids );
 
@@ -663,28 +659,37 @@ class PressPrimer_Assignment_Submission_Handler {
 		// include the siblings still in flight. Without the recency
 		// guard below, the second request would happily delete the file
 		// the first one just added, and only the last upload would
-		// survive. Files created in the last minute are almost certainly
+		// survive. Files uploaded in the last minute are almost certainly
 		// from the current upload batch; the stale-draft case this sync
 		// targets involves files from a previous session that have been
-		// sitting in the draft for far longer than that.
-		$now = time();
+		// sitting in the draft for far longer than that. We use MySQL's
+		// TIMESTAMPDIFF rather than comparing PHP strtotime() output so
+		// timezone differences between the PHP process and the MySQL
+		// server can't sabotage the comparison.
+		$table = $wpdb->prefix . 'ppa_submission_files';
 
-		foreach ( $files as $file ) {
-			if ( in_array( (int) $file->id, $known_file_ids, true ) ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$stale_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE submission_id = %d AND TIMESTAMPDIFF(SECOND, uploaded_at, UTC_TIMESTAMP()) >= %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				(int) $draft->id,
+				MINUTE_IN_SECONDS
+			)
+		);
+
+		if ( empty( $stale_ids ) ) {
+			return;
+		}
+
+		foreach ( $stale_ids as $stale_id ) {
+			$stale_id = (int) $stale_id;
+			if ( in_array( $stale_id, $known_file_ids, true ) ) {
 				continue;
 			}
-
-			// The submission_files table stores creation time as
-			// uploaded_at (not created_at like other tables), so use that
-			// column when checking how fresh a file is.
-			$uploaded_at = isset( $file->uploaded_at )
-				? strtotime( $file->uploaded_at . ' UTC' )
-				: 0;
-			if ( $uploaded_at && ( $now - $uploaded_at ) < MINUTE_IN_SECONDS ) {
-				continue;
+			$file = PressPrimer_Assignment_Submission_File::get( $stale_id );
+			if ( $file ) {
+				$file->delete();
 			}
-
-			$file->delete();
 		}
 
 		// Clear cached files so next call re-queries.
