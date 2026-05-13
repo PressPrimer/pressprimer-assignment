@@ -31,36 +31,52 @@
  *
  * Files and Score only appear on the Submissions list — the grading
  * queue's column set doesn't include them, so the rules below are
- * harmless there. Without these widths the fixed-layout algorithm
- * splits unsized columns equally, which left Student too narrow and
- * Assignment unnecessarily wide.
+ * harmless there.
+ *
+ * WordPress's `widefat fixed` class applies table-layout: fixed, which
+ * honors column widths exactly and overflows horizontally instead of
+ * shrinking when the container is narrower than the sum. Override to
+ * `auto` so column widths become preferred sizes the browser can
+ * compress proportionally; the min-widths below set the floor so
+ * shrinkage stops before content becomes unreadable.
  */
+.wp-list-table.submissions {
+	table-layout: auto;
+}
+
 .wp-list-table.submissions .column-id {
 	width: 6em;
+	min-width: 4em;
 }
 
 .wp-list-table.submissions .column-student {
 	width: 20em;
+	min-width: 12em;
 }
 
 .wp-list-table.submissions .column-assignment {
 	width: 30em;
+	min-width: 14em;
 }
 
 .wp-list-table.submissions .column-status {
 	width: 8em;
+	min-width: 6em;
 }
 
 .wp-list-table.submissions .column-files {
 	width: 5em;
+	min-width: 4em;
 }
 
 .wp-list-table.submissions .column-score {
 	width: 7em;
+	min-width: 5em;
 }
 
 .wp-list-table.submissions .column-submitted_at {
 	width: 14em;
+	min-width: 10em;
 }
 
 /* Utility: hide element */
