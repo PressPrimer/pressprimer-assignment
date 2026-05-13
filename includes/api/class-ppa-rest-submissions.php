@@ -1132,10 +1132,13 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Determine disposition: attachment when ?download=1, inline otherwise.
 		$disposition = $request->get_param( 'download' ) ? 'attachment' : 'inline';
 
+		/** This filter is documented in includes/services/class-ppa-file-service.php */
+		$filename = apply_filters( 'pressprimer_assignment_file_download_filename', $file->original_filename, $file );
+
 		nocache_headers();
 		header( 'Content-Type: ' . $file->mime_type );
 		header( 'Content-Length: ' . $file->file_size );
-		header( 'Content-Disposition: ' . $disposition . '; filename="' . $file->original_filename . '"' );
+		header( 'Content-Disposition: ' . $disposition . '; filename="' . $filename . '"' );
 		header( 'X-Content-Type-Options: nosniff' );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Serving file for inline viewing.

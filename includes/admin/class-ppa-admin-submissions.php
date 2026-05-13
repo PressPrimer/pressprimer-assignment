@@ -683,7 +683,29 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			$wpdb->prepare( $items_query, $query_values ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		);
 
-		$this->items = $items ? $items : [];
+		$items = $items ? $items : [];
+
+		/**
+		 * Filters a row in the submissions list before rendering.
+		 *
+		 * Addons can rewrite identity fields (`student_name`, `student_email`,
+		 * `user_id`) and set `is_anonymous = true` to signal that the row
+		 * should render without the edit-user link. The free plugin's
+		 * `column_student()` skips the anchor when the flag is present.
+		 *
+		 * Used by the Enterprise addon to apply per-assignment anonymous
+		 * grading masking. Other addons may use it for similar redaction.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param object $item Submission row object (raw DB row with joined
+		 *                     user / assignment fields).
+		 */
+		foreach ( $items as $i => $item ) {
+			$items[ $i ] = apply_filters( 'pressprimer_assignment_submissions_list_row', $item );
+		}
+
+		$this->items = $items;
 
 		$this->set_pagination_args(
 			[
@@ -732,6 +754,18 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 	 * @return string Column content.
 	 */
 	public function column_student( $item ) {
+		// Addons can flag a row as anonymous (e.g., Enterprise's anonymous
+		// grading mask). In that case render the name as plain bold text
+		// — no edit-user anchor, since that would resolve to the
+		// student's profile and break the mask.
+		if ( ! empty( $item->is_anonymous ) ) {
+			$display = ! empty( $item->student_name )
+				? $item->student_name
+				: __( 'Unknown User', 'pressprimer-assignment' );
+
+			return sprintf( '<strong>%s</strong>', esc_html( $display ) );
+		}
+
 		if ( ! empty( $item->student_name ) ) {
 			return sprintf(
 				'<a href="%s">%s</a>',

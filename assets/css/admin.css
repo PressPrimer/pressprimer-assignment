@@ -40,6 +40,26 @@
 	width: 140px;
 }
 
+/*
+ * Grading queue list table column widths.
+ *
+ * The grading queue shares `plural = submissions` with the Submissions
+ * list (and therefore the `.wp-list-table.submissions` class) but has a
+ * different column set (no Files / Score). Without explicit widths the
+ * fixed-layout algorithm leaves Student and Assignment competing for
+ * roughly the same space, which truncates labels like "Submission #123"
+ * on narrower viewports. Give Student more room and pull Assignment
+ * back; Status and Submitted already get their widths from the rules
+ * above (they share the same class).
+ */
+.wp-list-table.ppa-grading-queue .column-student {
+	width: 30%;
+}
+
+.wp-list-table.ppa-grading-queue .column-assignment {
+	width: 20%;
+}
+
 /* Utility: hide element */
 .ppa-hidden {
 	display: none;
