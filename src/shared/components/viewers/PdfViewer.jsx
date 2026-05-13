@@ -167,9 +167,36 @@ const PdfViewer = ( { url } ) => {
 
 				pdfDocRef.current = pdfDoc;
 				setNumPages( pdfDoc.numPages );
+
+				// Fit the initial render to the container width when
+				// DEFAULT_SCALE × page width would overflow. Wider
+				// surfaces (admin grading column) keep 1.2×; narrower
+				// ones (frontend student column, mobile) scale down so
+				// the first impression fits without horizontal scroll.
+				let initialScale = DEFAULT_SCALE;
+				try {
+					const firstPage = await pdfDoc.getPage( 1 );
+					const naturalViewport = firstPage.getViewport( {
+						scale: 1,
+					} );
+					const containerWidth = containerRef.current
+						? Math.max( 0, containerRef.current.clientWidth - 32 )
+						: 0;
+					if ( containerWidth > 0 && naturalViewport.width > 0 ) {
+						const fitScale = containerWidth / naturalViewport.width;
+						initialScale = Math.min( DEFAULT_SCALE, fitScale );
+					}
+				} catch ( fitError ) {
+					// Fall back to the comfortable default if the fit
+					// math fails for any reason — better to slightly
+					// overflow than to error out.
+				}
+				if ( initialScale !== scale ) {
+					setScale( initialScale );
+				}
 				setLoading( false );
 
-				await renderPages( pdfDoc, scale );
+				await renderPages( pdfDoc, initialScale );
 			} catch ( loadError ) {
 				if ( ! cancelled ) {
 					setError(
