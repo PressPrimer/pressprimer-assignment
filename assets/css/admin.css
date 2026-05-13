@@ -9,55 +9,58 @@
 
 /* Assignments list table: constrain ID column width */
 .column-id {
-	width: 50px;
+	width: 6em;
 }
 
 /*
- * Submissions list table column widths.
+ * Submissions list and grading queue column widths.
  *
- * The default `widefat fixed` layout splits all columns equally, which
- * leaves the Student name column too narrow to fit name + email without
- * wrapping while Status / Files / Score get more room than they need.
- * Constraining those columns gives Student and Assignment the slack.
+ * Both tables share `plural = submissions` and therefore the same
+ * .wp-list-table.submissions class, so one set of rules sizes both.
+ * Widths are in em so each column tracks the admin font size and
+ * roughly matches the character count it's meant to display:
+ *   ID         6em  — 6 digits plus the sort indicator
+ *   Student   20em  — ~25 characters; covers "Submission #N" and most
+ *                     student display names
+ *   Assignment 30em  — ~40 characters of assignment title
+ *   Status     8em  — longest label ("Submitted", "Returned") plus a
+ *                     little breathing room
+ *   Files      5em  — short counts like "3 files"
+ *   Score      7em  — values like "85.5 / 100"
+ *   Submitted 14em  — date strings without wrapping
+ *
+ * Files and Score only appear on the Submissions list — the grading
+ * queue's column set doesn't include them, so the rules below are
+ * harmless there. Without these widths the fixed-layout algorithm
+ * splits unsized columns equally, which left Student too narrow and
+ * Assignment unnecessarily wide.
  */
 .wp-list-table.submissions .column-id {
-	width: 60px;
+	width: 6em;
+}
+
+.wp-list-table.submissions .column-student {
+	width: 20em;
+}
+
+.wp-list-table.submissions .column-assignment {
+	width: 30em;
 }
 
 .wp-list-table.submissions .column-status {
-	width: 100px;
+	width: 8em;
 }
 
 .wp-list-table.submissions .column-files {
-	width: 70px;
+	width: 5em;
 }
 
 .wp-list-table.submissions .column-score {
-	width: 80px;
+	width: 7em;
 }
 
 .wp-list-table.submissions .column-submitted_at {
-	width: 140px;
-}
-
-/*
- * Grading queue list table column widths.
- *
- * The grading queue shares `plural = submissions` with the Submissions
- * list (and therefore the `.wp-list-table.submissions` class) but has a
- * different column set (no Files / Score). Without explicit widths the
- * fixed-layout algorithm leaves Student and Assignment competing for
- * roughly the same space, which truncates labels like "Submission #123"
- * on narrower viewports. Give Student more room and pull Assignment
- * back; Status and Submitted already get their widths from the rules
- * above (they share the same class).
- */
-.wp-list-table.ppa-grading-queue .column-student {
-	width: 30%;
-}
-
-.wp-list-table.ppa-grading-queue .column-assignment {
-	width: 20%;
+	width: 14em;
 }
 
 /* Utility: hide element */

@@ -364,25 +364,6 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Get table classes
-	 *
-	 * Appends `ppa-grading-queue` so the grading queue's table can be
-	 * styled independently from the Submissions list (both tables share
-	 * `plural = submissions`, which is the class WP_List_Table emits by
-	 * default, so an extra distinguishing class is needed for per-page
-	 * column-width tweaks).
-	 *
-	 * @since 2.1.0
-	 *
-	 * @return string[] CSS class names applied to the rendered table.
-	 */
-	protected function get_table_classes() {
-		$classes   = parent::get_table_classes();
-		$classes[] = 'ppa-grading-queue';
-		return $classes;
-	}
-
-	/**
 	 * Get columns
 	 *
 	 * @since 1.0.0
