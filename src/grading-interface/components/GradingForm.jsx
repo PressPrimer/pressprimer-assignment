@@ -53,6 +53,12 @@ const AIGradingPanel = window.PPASAIGradingPanel || null;
 // ProofreadingPanel is registered globally by the School addon's ai-grading bundle.
 const ProofreadingPanel = window.PPASProofreadingPanel || null;
 
+// PlagiarismPanel is registered globally by the Enterprise addon's
+// plagiarism-grading bundle (ENT-004). Same cross-bundle pattern as
+// PPAERubricPanel / PPASAIGradingPanel — keeps the free plugin free of
+// direct addon imports.
+const PlagiarismPanel = window.PPAEntPlagiarismPanel || null;
+
 // School addon localizes provider configuration on the grading page.
 const schoolGrading = window.pressprimerAssignmentSchoolGrading || null;
 
@@ -951,6 +957,22 @@ const GradingForm = ( { submissionId } ) => {
 										setHasChanges( true );
 									} }
 									disabled={ isReadOnly }
+								/>
+							</>
+						) }
+
+						{ /* Plagiarism Panel (Enterprise addon) */ }
+						{ PlagiarismPanel && ! isReadOnly && (
+							<>
+								<Divider />
+								<PlagiarismPanel
+									submissionId={ submissionId }
+									onInsertFeedback={ ( text ) => {
+										setFeedback( ( prev ) =>
+											prev ? prev + '\n\n' + text : text
+										);
+										setHasChanges( true );
+									} }
 								/>
 							</>
 						) }

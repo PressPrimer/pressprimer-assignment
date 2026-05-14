@@ -22,6 +22,8 @@ import {
 	SkinOutlined,
 	AuditOutlined,
 	ClearOutlined,
+	ExperimentOutlined,
+	FileSearchOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
@@ -32,12 +34,21 @@ import AdvancedTab from './AdvancedTab';
 import StatusTab from './StatusTab';
 
 /**
- * Icon map for addon tabs
+ * Icon map for addon tabs.
+ *
+ * Keys are the tab ID an addon registers via the
+ * `pressprimer_assignment_settings_tabs` PHP filter; values are the
+ * Ant Design icon rendered next to the tab label. Matches the
+ * convention used by PressPrimer Quiz so the two suites share the
+ * same icon for the same feature (e.g., xAPI uses ExperimentOutlined
+ * in both plugins).
  */
 const ADDON_ICONS = {
 	'white-label': <SkinOutlined />,
 	'audit-log': <AuditOutlined />,
 	'data-cleanup': <ClearOutlined />,
+	xapi: <ExperimentOutlined />,
+	plagiarism: <FileSearchOutlined />,
 	default: <SettingOutlined />,
 };
 
