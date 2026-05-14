@@ -525,6 +525,11 @@ class PressPrimer_Assignment_LifterLMS {
 			return;
 		}
 
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return;
+		}
+
 		// Mark as rendered to prevent duplicate output from the content fallback.
 		$this->lesson_assignment_rendered = true;
 
@@ -563,6 +568,11 @@ class PressPrimer_Assignment_LifterLMS {
 
 		$assignment_id = get_post_meta( $post->ID, self::META_KEY_ASSIGNMENT_ID, true );
 		if ( ! $assignment_id ) {
+			return;
+		}
+
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
 			return;
 		}
 
@@ -634,6 +644,11 @@ class PressPrimer_Assignment_LifterLMS {
 
 		$assignment_id = get_post_meta( $post->ID, self::META_KEY_ASSIGNMENT_ID, true );
 		if ( ! $assignment_id ) {
+			return $content;
+		}
+
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
 			return $content;
 		}
 
@@ -724,6 +739,11 @@ class PressPrimer_Assignment_LifterLMS {
 			return $show;
 		}
 
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return $show;
+		}
+
 		$require_pass = get_post_meta( $lesson_id, self::META_KEY_REQUIRE_PASS, true );
 		if ( '1' !== $require_pass ) {
 			return $show;
@@ -774,6 +794,11 @@ class PressPrimer_Assignment_LifterLMS {
 
 		$assignment_id = get_post_meta( $object_id, self::META_KEY_ASSIGNMENT_ID, true );
 		if ( ! $assignment_id ) {
+			return $completed;
+		}
+
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
 			return $completed;
 		}
 

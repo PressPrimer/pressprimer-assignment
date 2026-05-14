@@ -566,6 +566,11 @@ class PressPrimer_Assignment_LearnPress {
 			return;
 		}
 
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return;
+		}
+
 		// Get course context for enrollment check.
 		$course    = function_exists( 'learn_press_get_course' ) ? learn_press_get_course() : null;
 		$course_id = $course ? $course->get_id() : 0;
@@ -647,6 +652,11 @@ class PressPrimer_Assignment_LearnPress {
 		$lesson_id     = $lesson->get_id();
 		$assignment_id = get_post_meta( $lesson_id, self::META_KEY_ASSIGNMENT_ID, true );
 		if ( ! $assignment_id ) {
+			return;
+		}
+
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
 			return;
 		}
 

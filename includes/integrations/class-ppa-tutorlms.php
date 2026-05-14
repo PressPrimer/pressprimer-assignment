@@ -713,6 +713,11 @@ class PressPrimer_Assignment_TutorLMS {
 			return $content;
 		}
 
+		// Stale mapping (assignment row was deleted) — treat as no mapping.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return $content;
+		}
+
 		// Mark as rendered before processing.
 		$this->lesson_assignment_rendered = true;
 
@@ -760,8 +765,17 @@ class PressPrimer_Assignment_TutorLMS {
 		}
 
 		$assignment_id = get_post_meta( $lesson_id, self::META_KEY_ASSIGNMENT_ID, true );
+		if ( ! $assignment_id ) {
+			return $has_content;
+		}
 
-		return ! empty( $assignment_id );
+		// Stale mapping (assignment row was deleted) — treat as no mapping
+		// so Tutor's normal "empty Overview tab is hidden" behavior stays.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return $has_content;
+		}
+
+		return true;
 	}
 
 	/**
@@ -775,6 +789,12 @@ class PressPrimer_Assignment_TutorLMS {
 	public function maybe_hide_complete_button( $form ) {
 		$post_id       = get_the_ID();
 		$assignment_id = get_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, true );
+
+		// Stale mapping (assignment row was deleted) — treat as no mapping
+		// so the complete button stays visible.
+		if ( $assignment_id && ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return $form;
+		}
 
 		if ( $assignment_id ) {
 			// Only hide the complete button if "Require passing grade" is enabled.
