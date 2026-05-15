@@ -111,7 +111,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 									<?php if ( PressPrimer_Assignment_Submission::STATUS_RETURNED === $item->submission->status && null !== $item->submission->score ) : ?>
 										<?php
 										$ppa_passed_class = $item->submission->passed ? 'ppa-score-passed' : 'ppa-score-failed';
-										$ppa_max_points   = $item->assignment ? $item->assignment->max_points : 0;
+										// Prefer the grade-time max_points snapshot so a later edit
+										// to the assignment's max_points doesn't shift previously
+										// graded scores. Pre-snapshot rows fall back to live max.
+										if ( null !== $item->submission->max_points_at_grading ) {
+											$ppa_max_points = $item->submission->max_points_at_grading;
+										} else {
+											$ppa_max_points = $item->assignment ? $item->assignment->max_points : 0;
+										}
 										?>
 										<span class="ppa-score-display <?php echo esc_attr( $ppa_passed_class ); ?>">
 											<?php

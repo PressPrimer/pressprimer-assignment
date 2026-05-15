@@ -490,7 +490,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Data query.
 		$select_fields = 's.id, s.uuid, s.assignment_id, s.user_id, s.status,
 			s.submitted_at, s.graded_at, s.returned_at, s.created_at,
-			s.submission_number, s.score, s.passed, s.file_count,
+			s.submission_number, s.score, s.max_points_at_grading, s.passed, s.file_count,
 			s.text_content,
 			a.title AS assignment_title, a.max_points, a.passing_score,
 			u.display_name AS student_name, u.user_email AS student_email';
@@ -528,28 +528,29 @@ class PressPrimer_Assignment_REST_Submissions {
 				$date_value = ! empty( $row->submitted_at ) ? $row->submitted_at : $row->created_at;
 
 				return [
-					'id'                => (int) $row->id,
-					'uuid'              => $row->uuid,
-					'assignment_id'     => (int) $row->assignment_id,
-					'user_id'           => (int) $row->user_id,
-					'status'            => $row->status,
-					'submission_number' => (int) $row->submission_number,
-					'score'             => null !== $row->score ? (float) $row->score : null,
-					'passed'            => null !== $row->passed ? (bool) $row->passed : null,
-					'file_count'        => (int) $row->file_count,
-					'has_text'          => ! empty( $row->text_content ),
-					'submitted_at'      => $row->submitted_at,
-					'graded_at'         => $row->graded_at,
-					'returned_at'       => $row->returned_at,
-					'formatted_date'    => $date_value ? wp_date( $date_format, strtotime( $date_value ) ) : '',
-					'time_ago'          => $date_value
+					'id'                    => (int) $row->id,
+					'uuid'                  => $row->uuid,
+					'assignment_id'         => (int) $row->assignment_id,
+					'user_id'               => (int) $row->user_id,
+					'status'                => $row->status,
+					'submission_number'     => (int) $row->submission_number,
+					'score'                 => null !== $row->score ? (float) $row->score : null,
+					'max_points_at_grading' => null !== $row->max_points_at_grading ? (float) $row->max_points_at_grading : null,
+					'passed'                => null !== $row->passed ? (bool) $row->passed : null,
+					'file_count'            => (int) $row->file_count,
+					'has_text'              => ! empty( $row->text_content ),
+					'submitted_at'          => $row->submitted_at,
+					'graded_at'             => $row->graded_at,
+					'returned_at'           => $row->returned_at,
+					'formatted_date'        => $date_value ? wp_date( $date_format, strtotime( $date_value ) ) : '',
+					'time_ago'              => $date_value
 						? human_time_diff( strtotime( $date_value ), current_time( 'timestamp' ) )
 						: '',
-					'student_name'      => $row->student_name ?: __( 'Unknown', 'pressprimer-assignment' ),
-					'student_email'     => $row->student_email ?: '',
-					'assignment_title'  => $row->assignment_title ?: '',
-					'max_points'        => (float) $row->max_points,
-					'passing_score'     => (float) $row->passing_score,
+					'student_name'          => $row->student_name ?: __( 'Unknown', 'pressprimer-assignment' ),
+					'student_email'         => $row->student_email ?: '',
+					'assignment_title'      => $row->assignment_title ?: '',
+					'max_points'            => (float) $row->max_points,
+					'passing_score'         => (float) $row->passing_score,
 				];
 			},
 			$rows
@@ -658,6 +659,7 @@ class PressPrimer_Assignment_REST_Submissions {
 					: '',
 				'submission_number'                       => (int) $submission->submission_number,
 				'score'                                   => null !== $submission->score ? (float) $submission->score : null,
+				'max_points_at_grading'                   => null !== $submission->max_points_at_grading ? (float) $submission->max_points_at_grading : null,
 				'feedback'                                => $submission->feedback,
 				'passed'                                  => null !== $submission->passed ? (bool) $submission->passed : null,
 				'student_name'                            => $user ? $user->display_name : __( 'Unknown', 'pressprimer-assignment' ),

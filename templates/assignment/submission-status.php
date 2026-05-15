@@ -188,12 +188,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<div class="ppa-grade-score">
 				<?php
+				// Prefer the max_points snapshot recorded at grade time so an
+				// admin editing the assignment's max_points later doesn't
+				// retroactively shift displayed scores. Pre-snapshot rows
+				// have a null value and fall back to the live max.
+				$ppa_max_points = null !== $submission->max_points_at_grading
+					? $submission->max_points_at_grading
+					: $assignment->max_points;
 				echo esc_html(
 					sprintf(
 						/* translators: %1$s: score, %2$s: max points */
 						__( '%1$s / %2$s', 'pressprimer-assignment' ),
 						number_format_i18n( $submission->score, 0 ),
-						number_format_i18n( $assignment->max_points, 0 )
+						number_format_i18n( $ppa_max_points, 0 )
 					)
 				);
 				?>
@@ -328,6 +335,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 						</div>
 						<div class="ppa-submission-card-actions">
 							<?php if ( null !== $prev->score ) : ?>
+								<?php
+								$ppa_prev_max_points = null !== $prev->max_points_at_grading
+									? $prev->max_points_at_grading
+									: $assignment->max_points;
+								?>
 								<span class="ppa-submission-card-points <?php echo esc_attr( $prev->passed ? 'ppa-passed' : 'ppa-failed' ); ?>">
 									<?php
 									echo esc_html(
@@ -335,7 +347,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 											/* translators: %1$s: score, %2$s: max points */
 											__( '%1$s / %2$s', 'pressprimer-assignment' ),
 											number_format_i18n( $prev->score, 0 ),
-											number_format_i18n( $assignment->max_points, 0 )
+											number_format_i18n( $ppa_prev_max_points, 0 )
 										)
 									);
 									?>

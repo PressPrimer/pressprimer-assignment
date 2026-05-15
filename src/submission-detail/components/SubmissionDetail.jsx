@@ -193,11 +193,20 @@ const SubmissionDetail = ( { submissionId } ) => {
 		submission.status === 'grading';
 	const score = submission.score;
 	const feedback = submission.feedback || '';
+	// Prefer the max_points snapshot from grade time so historical
+	// percentages stop sliding when an admin edits the assignment's
+	// max_points after the fact. Pre-1.10 rows have a null snapshot
+	// and fall back to the live assignment value.
+	const effectiveMaxPoints =
+		submission.max_points_at_grading !== null &&
+		submission.max_points_at_grading !== undefined
+			? submission.max_points_at_grading
+			: assignment && assignment.max_points;
 	const passing =
 		score !== null && assignment && score >= assignment.passing_score;
 	const percentage =
-		score !== null && assignment && assignment.max_points > 0
-			? Math.round( ( score / assignment.max_points ) * 100 )
+		score !== null && effectiveMaxPoints > 0
+			? Math.round( ( score / effectiveMaxPoints ) * 100 )
 			: null;
 
 	const detailData = window.pressprimerAssignmentSubmissionDetailData || {};
@@ -453,7 +462,7 @@ const SubmissionDetail = ( { submissionId } ) => {
 							</Text>
 							<Space align="center">
 								<Text style={ { fontSize: 18 } }>
-									{ score } / { assignment.max_points }
+									{ score } / { effectiveMaxPoints }
 								</Text>
 								{ percentage !== null && (
 									<Text type="secondary">
