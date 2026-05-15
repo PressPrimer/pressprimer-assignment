@@ -129,6 +129,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.9.0', '<' ) ) {
 			self::migrate_to_1_9_0();
 		}
+		if ( version_compare( $from_version, '1.10.0', '<' ) ) {
+			self::migrate_to_1_10_0();
+		}
 	}
 
 	/**
@@ -350,6 +353,56 @@ class PressPrimer_Assignment_Migrator {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN ai_auto_grade TINYINT(1) NOT NULL DEFAULT 0 AFTER theme" );
 		}
+	}
+
+	/**
+	 * Migration to 1.10.0
+	 *
+	 * Adds `max_points_at_grading` to submissions and snapshots the
+	 * grading-time max so historical percentages stop sliding when an
+	 * admin edits an assignment's `max_points` after the fact. The
+	 * Statistics queries now divide by COALESCE(this, a.max_points), so
+	 * a NULL value falls back to today's behaviour — which means
+	 * existing rows render exactly as they do pre-upgrade until the
+	 * backfill below populates them.
+	 *
+	 * Backfill rule: every already-graded row (score IS NOT NULL) gets
+	 * its current `a.max_points` snapshotted. This freezes the displayed
+	 * percentages at the upgrade moment, so future max_points edits
+	 * don't retroactively change them. Ungraded rows stay NULL and pick
+	 * up the snapshot the next time they're graded.
+	 *
+	 * @since 2.0.0
+	 */
+	private static function migrate_to_1_10_0() {
+		global $wpdb;
+
+		$submissions_table = $wpdb->prefix . 'ppa_submissions';
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$column_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $submissions_table, 'max_points_at_grading' )
+		);
+		if ( ! $column_exists ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE {$submissions_table} ADD COLUMN max_points_at_grading DECIMAL(10,2) DEFAULT NULL AFTER score" );
+		}
+
+		// Backfill: stamp the current max_points onto every graded row
+		// that doesn't already have a snapshot. Restrict to score IS NOT
+		// NULL so we don't pollute draft / submitted-but-ungraded rows
+		// (those snapshot at the next grade write). Idempotent — running
+		// the migration twice is a no-op the second time around.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query(
+			"UPDATE {$submissions_table} s
+			INNER JOIN {$assignments_table} a ON s.assignment_id = a.id
+			SET s.max_points_at_grading = a.max_points
+			WHERE s.score IS NOT NULL
+				AND s.max_points_at_grading IS NULL"
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 
 	/**

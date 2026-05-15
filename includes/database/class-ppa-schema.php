@@ -118,6 +118,7 @@ class PressPrimer_Assignment_Schema {
 			grader_id BIGINT UNSIGNED DEFAULT NULL,
 			grading_time_seconds INT UNSIGNED DEFAULT NULL,
 			score DECIMAL(10,2) DEFAULT NULL,
+			max_points_at_grading DECIMAL(10,2) DEFAULT NULL,
 			feedback LONGTEXT DEFAULT NULL,
 			passed TINYINT(1) DEFAULT NULL,
 			file_count INT UNSIGNED NOT NULL DEFAULT 0,

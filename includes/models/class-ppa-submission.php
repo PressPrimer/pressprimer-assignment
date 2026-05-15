@@ -284,6 +284,7 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 			'grader_id',
 			'grading_time_seconds',
 			'score',
+			'max_points_at_grading',
 			'feedback',
 			'passed',
 			'file_count',
