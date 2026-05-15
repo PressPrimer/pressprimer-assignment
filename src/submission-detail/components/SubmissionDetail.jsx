@@ -507,14 +507,21 @@ const SubmissionDetail = ( { submissionId } ) => {
 							>
 								{ __( 'Feedback', 'pressprimer-assignment' ) }
 							</Text>
-							<Paragraph
-								style={ {
-									margin: 0,
-									whiteSpace: 'pre-wrap',
+							{ /*
+							 * Feedback is authored in the grading interface's rich
+							 * text editor and stored as HTML after wp_kses_post()
+							 * sanitization on save, so it's safe to render here.
+							 * Rendering as text would leave <p>/<strong>/etc.
+							 * tags visible to the reader.
+							 */ }
+							<div
+								className="ppa-feedback-rendered"
+								style={ { margin: 0 } }
+								// eslint-disable-next-line react/no-danger
+								dangerouslySetInnerHTML={ {
+									__html: feedback,
 								} }
-							>
-								{ feedback }
-							</Paragraph>
+							/>
 						</div>
 					) }
 				</Card>
