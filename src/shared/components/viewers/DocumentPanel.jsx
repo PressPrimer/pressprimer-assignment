@@ -71,11 +71,19 @@ const FILE_ICONS = {
 /**
  * DocumentPanel component
  *
+ * The `canReExtract` prop defaults to false because the underlying
+ * /re-extract endpoint is instructor-only AND overwriting the extracted
+ * text after a submission is graded would silently replace the text the
+ * grader actually read. Callers should set it true only on instructor
+ * surfaces (admin SubmissionDetail, grading interface) and only when the
+ * submission status is pre-grade (submitted / grading).
+ *
  * @param {Object}        props              Component props.
  * @param {Array}         props.files        Array of file objects from REST API.
  * @param {string|null}   props.textContent  Text submission content (if any).
  * @param {number|null}   props.wordCount    Word count for text submissions.
  * @param {Function|null} props.onFileUpdate Callback when a file's extraction data is updated.
+ * @param {boolean}       props.canReExtract Whether to show the "Re-extract" button.
  * @return {JSX.Element} Rendered component.
  */
 const DocumentPanel = ( {
@@ -83,6 +91,7 @@ const DocumentPanel = ( {
 	textContent = null,
 	wordCount = null,
 	onFileUpdate = null,
+	canReExtract = false,
 } ) => {
 	const [ reExtracting, setReExtracting ] = useState( null );
 
@@ -331,41 +340,46 @@ const DocumentPanel = ( {
 							alignItems: 'center',
 						} }
 					>
-						<Button
-							icon={ <ReloadOutlined /> }
-							size="small"
-							loading={ reExtracting === currentFile.id }
-							onClick={ async () => {
-								setReExtracting( currentFile.id );
-								try {
-									const result = await apiFetch( {
-										path: `/ppa/v1/files/${ currentFile.id }/re-extract`,
-										method: 'POST',
-									} );
-									message.success(
-										__(
-											'Text re-extracted.',
-											'pressprimer-assignment'
-										)
-									);
-									if ( onFileUpdate ) {
-										onFileUpdate( currentFile.id, result );
-									}
-								} catch ( error ) {
-									message.error(
-										error.message ||
+						{ canReExtract && (
+							<Button
+								icon={ <ReloadOutlined /> }
+								size="small"
+								loading={ reExtracting === currentFile.id }
+								onClick={ async () => {
+									setReExtracting( currentFile.id );
+									try {
+										const result = await apiFetch( {
+											path: `/ppa/v1/files/${ currentFile.id }/re-extract`,
+											method: 'POST',
+										} );
+										message.success(
 											__(
-												'Re-extraction failed.',
+												'Text re-extracted.',
 												'pressprimer-assignment'
 											)
-									);
-								} finally {
-									setReExtracting( null );
-								}
-							} }
-						>
-							{ __( 'Re-extract', 'pressprimer-assignment' ) }
-						</Button>
+										);
+										if ( onFileUpdate ) {
+											onFileUpdate(
+												currentFile.id,
+												result
+											);
+										}
+									} catch ( error ) {
+										message.error(
+											error.message ||
+												__(
+													'Re-extraction failed.',
+													'pressprimer-assignment'
+												)
+										);
+									} finally {
+										setReExtracting( null );
+									}
+								} }
+							>
+								{ __( 'Re-extract', 'pressprimer-assignment' ) }
+							</Button>
+						) }
 						<Button
 							icon={ <DownloadOutlined /> }
 							href={ appendNonce(

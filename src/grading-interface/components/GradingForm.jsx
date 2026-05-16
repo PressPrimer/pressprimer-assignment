@@ -624,6 +624,17 @@ const GradingForm = ( { submissionId } ) => {
 							files={ files }
 							textContent={ submission.text_content }
 							wordCount={ submission.word_count }
+							/*
+							 * Allow Re-extract only on pre-grade statuses.
+							 * Once the submission is graded or returned the
+							 * grade was based on the text that existed at
+							 * that moment, and re-running extraction would
+							 * silently change the historical record.
+							 */
+							canReExtract={
+								submission.status === 'submitted' ||
+								submission.status === 'grading'
+							}
 							onFileUpdate={ ( fileId, result ) => {
 								setFiles( ( prev ) =>
 									prev.map( ( f ) =>

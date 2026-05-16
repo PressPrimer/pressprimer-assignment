@@ -422,6 +422,16 @@ const SubmissionDetail = ( { submissionId } ) => {
 						files={ files }
 						textContent={ submission.text_content }
 						wordCount={ submission.word_count }
+						/*
+						 * Re-extract is an instructor-only recovery tool —
+						 * it overwrites extracted_text in place. Allow it
+						 * only on pre-grade statuses so we never silently
+						 * change the text the grader actually read.
+						 */
+						canReExtract={
+							submission.status === 'submitted' ||
+							submission.status === 'grading'
+						}
 						onFileUpdate={ ( fileId, result ) => {
 							setFiles( ( prev ) =>
 								prev.map( ( f ) =>
