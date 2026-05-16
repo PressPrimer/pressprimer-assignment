@@ -257,6 +257,8 @@ const DocumentPanel = ( {
 						padding: '8px 12px',
 						borderBottom: '1px solid #f0f0f0',
 						background: '#fafafa',
+						flexWrap: 'wrap',
+						gap: 8,
 					} }
 				>
 					<span
@@ -266,9 +268,20 @@ const DocumentPanel = ( {
 							display: 'flex',
 							alignItems: 'center',
 							gap: 8,
+							flexWrap: 'wrap',
+							minWidth: 0,
 						} }
 					>
-						{ currentFile.original_filename }
+						<span
+							style={ {
+								overflow: 'hidden',
+								textOverflow: 'ellipsis',
+								whiteSpace: 'nowrap',
+								maxWidth: '100%',
+							} }
+						>
+							{ currentFile.original_filename }
+						</span>
 						<span
 							style={ {
 								color: '#999',
