@@ -22,6 +22,7 @@ import {
 import {
 	SaveOutlined,
 	CloseOutlined,
+	CopyOutlined,
 	QuestionCircleOutlined,
 } from '@ant-design/icons';
 
@@ -40,6 +41,7 @@ const { Title, Paragraph } = Typography;
 const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ form ] = Form.useForm();
 	const [ saving, setSaving ] = useState( false );
+	const [ duplicating, setDuplicating ] = useState( false );
 	const [ currentId, setCurrentId ] = useState( assignmentData.id || null );
 	const [ activeTab, setActiveTab ] = useState( 'settings' );
 	const [ selectedCategories, setSelectedCategories ] = useState(
@@ -180,6 +182,31 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				}
 			}
 
+			// Addon hook: callbacks registered on window.PPAEditorAfterSave
+			// run after the main save resolves, so addons can persist
+			// their own per-assignment settings (e.g., annotation toggles)
+			// using the saved assignment ID. A callback throwing only
+			// surfaces an inline error — the main assignment save has
+			// already succeeded by this point.
+			if ( savedId && Array.isArray( window.PPAEditorAfterSave ) ) {
+				for ( const callback of window.PPAEditorAfterSave ) {
+					if ( 'function' !== typeof callback ) {
+						continue;
+					}
+					try {
+						await callback( { id: savedId, values } );
+					} catch ( addonError ) {
+						message.error(
+							addonError?.message ||
+								__(
+									'An addon failed to save its settings.',
+									'pressprimer-assignment'
+								)
+						);
+					}
+				}
+			}
+
 			message.success(
 				__( 'Assignment saved successfully!', 'pressprimer-assignment' )
 			);
@@ -239,6 +266,49 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			setActiveTab( 'settings' );
 		} else {
 			setActiveTab( 'file-settings' );
+		}
+	};
+
+	/**
+	 * Handle Duplicate toolbar action.
+	 *
+	 * Calls the REST duplicate endpoint and navigates the user to the new
+	 * draft's edit screen. Disabled when the assignment is unsaved (no ID).
+	 */
+	const handleDuplicate = async () => {
+		if ( ! currentId ) {
+			return;
+		}
+
+		try {
+			setDuplicating( true );
+
+			const response = await apiFetch( {
+				path: `/ppa/v1/assignments/${ currentId }/duplicate`,
+				method: 'POST',
+			} );
+
+			if ( response && response.edit_url ) {
+				window.location.href = response.edit_url;
+				return;
+			}
+
+			message.error(
+				__(
+					'Duplicate succeeded but the response was malformed.',
+					'pressprimer-assignment'
+				)
+			);
+			setDuplicating( false );
+		} catch ( error ) {
+			message.error(
+				error.message ||
+					__(
+						'Failed to duplicate assignment.',
+						'pressprimer-assignment'
+					)
+			);
+			setDuplicating( false );
 		}
 	};
 
@@ -371,6 +441,17 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 										) }
 									</Button>
 									<Button
+										icon={ <CopyOutlined /> }
+										onClick={ handleDuplicate }
+										disabled={ isNew || saving }
+										loading={ duplicating }
+									>
+										{ __(
+											'Duplicate',
+											'pressprimer-assignment'
+										) }
+									</Button>
+									<Button
 										type="primary"
 										icon={ <SaveOutlined /> }
 										htmlType="submit"
@@ -453,6 +534,15 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 							size="large"
 						>
 							{ __( 'Cancel', 'pressprimer-assignment' ) }
+						</Button>
+						<Button
+							icon={ <CopyOutlined /> }
+							onClick={ handleDuplicate }
+							disabled={ isNew || saving }
+							loading={ duplicating }
+							size="large"
+						>
+							{ __( 'Duplicate', 'pressprimer-assignment' ) }
 						</Button>
 						<Button
 							type="primary"

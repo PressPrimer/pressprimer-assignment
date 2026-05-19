@@ -549,21 +549,28 @@ class PressPrimer_Assignment_LearnDash {
 			return $content;
 		}
 
+		// Treat a stale mapping (assignment row was deleted) as no
+		// mapping at all. Otherwise we'd render "Assignment not found."
+		// to students on a lesson the admin believes is unmapped — the
+		// metabox shows blank in that scenario because the lookup
+		// already returns null.
+		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
+		if ( ! $assignment ) {
+			return $content;
+		}
+
 		// Mark as rendered before processing.
 		$this->assignment_rendered = true;
 
 		// Check lesson restriction — assignment locked until all topics in the lesson are complete.
 		if ( 'sfwd-lessons' === get_post_type( $post_id ) ) {
 			if ( ! $this->are_lesson_topics_complete( $post_id ) ) {
-				$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
-				$title      = $assignment ? $assignment->title : __( 'Assignment', 'pressprimer-assignment' );
-
 				$restriction_message = get_option( 'pressprimer_assignment_learndash_restriction_message', '' );
 				if ( empty( $restriction_message ) ) {
 					$restriction_message = __( 'Complete all topics in this lesson to unlock the assignment.', 'pressprimer-assignment' );
 				}
 
-				return $content . $this->render_restriction_placeholder( $title, $restriction_message );
+				return $content . $this->render_restriction_placeholder( $assignment->title, $restriction_message );
 			}
 		}
 
@@ -605,6 +612,13 @@ class PressPrimer_Assignment_LearnDash {
 		$assignment_id = get_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, true );
 
 		if ( ! $assignment_id ) {
+			return $button;
+		}
+
+		// Stale mapping (assignment row was deleted) — treat as no
+		// mapping so the lesson doesn't become permanently
+		// uncompletable through a button that can never re-show.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
 			return $button;
 		}
 
@@ -710,6 +724,12 @@ class PressPrimer_Assignment_LearnDash {
 		$assignment_id = get_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, true );
 
 		if ( ! $assignment_id ) {
+			return $can_complete;
+		}
+
+		// Stale mapping (assignment row was deleted) — treat as no
+		// mapping so the lesson remains completable.
+		if ( ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
 			return $can_complete;
 		}
 

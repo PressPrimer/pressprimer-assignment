@@ -584,6 +584,64 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			$where_values    = array_merge( $where_values, array_map( 'absint', $visible_user_ids ) );
 		}
 
+		// 2.1: Score range filter. Either bound excludes un-graded rows
+		// (s.score IS NULL); the explicit IS NOT NULL is added when either
+		// bound is set, mirroring the REST endpoint and the 006 spec.
+		// Invalid (non-numeric) values are silently ignored — list tables
+		// don't surface validation errors for query-string params.
+		$score_constraint_added = false;
+
+		$score_min_raw = isset( $_GET['score_min'] ) ? sanitize_text_field( wp_unslash( $_GET['score_min'] ) ) : '';
+		if ( '' !== $score_min_raw && is_numeric( $score_min_raw ) ) {
+			$where_clauses[]        = 's.score >= %f';
+			$where_values[]         = (float) $score_min_raw;
+			$score_constraint_added = true;
+		}
+
+		$score_max_raw = isset( $_GET['score_max'] ) ? sanitize_text_field( wp_unslash( $_GET['score_max'] ) ) : '';
+		if ( '' !== $score_max_raw && is_numeric( $score_max_raw ) ) {
+			$where_clauses[]        = 's.score <= %f';
+			$where_values[]         = (float) $score_max_raw;
+			$score_constraint_added = true;
+		}
+
+		if ( $score_constraint_added ) {
+			$where_clauses[] = 's.score IS NOT NULL';
+		}
+
+		// 2.1: Has-feedback filter. TRIM handles whitespace-only content;
+		// HTML wrappers like "<p></p>" are not stripped (rare in practice
+		// and stripping HTML in the query would prevent index use).
+		$has_feedback_raw = isset( $_GET['has_feedback'] ) ? sanitize_key( wp_unslash( $_GET['has_feedback'] ) ) : '';
+		if ( in_array( $has_feedback_raw, [ 'yes', '1', 'true' ], true ) ) {
+			$where_clauses[] = '(s.feedback IS NOT NULL AND TRIM(s.feedback) != %s)';
+			$where_values[]  = '';
+		} elseif ( in_array( $has_feedback_raw, [ 'no', '0', 'false' ], true ) ) {
+			$where_clauses[] = '(s.feedback IS NULL OR TRIM(s.feedback) = %s)';
+			$where_values[]  = '';
+		}
+
+		// 2.1: submitted_at date range filter. submitted_to normalized to
+		// end-of-day so the day is fully inclusive. Invalid dates are
+		// silently ignored.
+		$submitted_from_raw = isset( $_GET['submitted_from'] ) ? sanitize_text_field( wp_unslash( $_GET['submitted_from'] ) ) : '';
+		if ( '' !== $submitted_from_raw ) {
+			$ts = strtotime( $submitted_from_raw );
+			if ( false !== $ts ) {
+				$where_clauses[] = 's.submitted_at >= %s';
+				$where_values[]  = gmdate( 'Y-m-d 00:00:00', $ts );
+			}
+		}
+
+		$submitted_to_raw = isset( $_GET['submitted_to'] ) ? sanitize_text_field( wp_unslash( $_GET['submitted_to'] ) ) : '';
+		if ( '' !== $submitted_to_raw ) {
+			$ts = strtotime( $submitted_to_raw );
+			if ( false !== $ts ) {
+				$where_clauses[] = 's.submitted_at <= %s';
+				$where_values[]  = gmdate( 'Y-m-d 23:59:59', $ts );
+			}
+		}
+
 		// Build orderby and order.
 		$allowed_orderby = [ 'id', 'status', 'submitted_at', 'score' ];
 		$orderby         = isset( $_GET['orderby'] ) && '' !== $_GET['orderby'] ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'submitted_at';
@@ -625,7 +683,29 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			$wpdb->prepare( $items_query, $query_values ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		);
 
-		$this->items = $items ? $items : [];
+		$items = $items ? $items : [];
+
+		/**
+		 * Filters a row in the submissions list before rendering.
+		 *
+		 * Addons can rewrite identity fields (`student_name`, `student_email`,
+		 * `user_id`) and set `is_anonymous = true` to signal that the row
+		 * should render without the edit-user link. The free plugin's
+		 * `column_student()` skips the anchor when the flag is present.
+		 *
+		 * Used by the Enterprise addon to apply per-assignment anonymous
+		 * grading masking. Other addons may use it for similar redaction.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param object $item Submission row object (raw DB row with joined
+		 *                     user / assignment fields).
+		 */
+		foreach ( $items as $i => $item ) {
+			$items[ $i ] = apply_filters( 'pressprimer_assignment_submissions_list_row', $item );
+		}
+
+		$this->items = $items;
 
 		$this->set_pagination_args(
 			[
@@ -674,6 +754,18 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 	 * @return string Column content.
 	 */
 	public function column_student( $item ) {
+		// Addons can flag a row as anonymous (e.g., Enterprise's anonymous
+		// grading mask). In that case render the name as plain bold text
+		// — no edit-user anchor, since that would resolve to the
+		// student's profile and break the mask.
+		if ( ! empty( $item->is_anonymous ) ) {
+			$display = ! empty( $item->student_name )
+				? $item->student_name
+				: __( 'Unknown User', 'pressprimer-assignment' );
+
+			return sprintf( '<strong>%s</strong>', esc_html( $display ) );
+		}
+
 		if ( ! empty( $item->student_name ) ) {
 			return sprintf(
 				'<a href="%s">%s</a>',
@@ -845,7 +937,11 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			<?php
 			$this->render_status_filter();
 			$this->render_assignment_filter();
+			$this->render_score_filter();
+			$this->render_has_feedback_filter();
+			$this->render_date_filter();
 			submit_button( __( 'Filter', 'pressprimer-assignment' ), '', 'filter_action', false );
+			$this->render_reset_link();
 			?>
 		</div>
 		<?php
@@ -912,6 +1008,114 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 				</option>
 			<?php endforeach; ?>
 		</select>
+		<?php
+	}
+
+	/**
+	 * Render score range filter (min/max number inputs)
+	 *
+	 * @since 2.1.0
+	 */
+	private function render_score_filter() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state.
+		$score_min = isset( $_GET['score_min'] ) ? sanitize_text_field( wp_unslash( $_GET['score_min'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state.
+		$score_max = isset( $_GET['score_max'] ) ? sanitize_text_field( wp_unslash( $_GET['score_max'] ) ) : '';
+
+		?>
+		<label class="screen-reader-text" for="filter-by-score-min"><?php esc_html_e( 'Filter by minimum score', 'pressprimer-assignment' ); ?></label>
+		<input type="number" name="score_min" id="filter-by-score-min" class="small-text" value="<?php echo esc_attr( $score_min ); ?>" placeholder="<?php esc_attr_e( 'Min', 'pressprimer-assignment' ); ?>" min="0">
+
+		<label class="screen-reader-text" for="filter-by-score-max"><?php esc_html_e( 'Filter by maximum score', 'pressprimer-assignment' ); ?></label>
+		<input type="number" name="score_max" id="filter-by-score-max" class="small-text" value="<?php echo esc_attr( $score_max ); ?>" placeholder="<?php esc_attr_e( 'Max', 'pressprimer-assignment' ); ?>" min="0">
+		<?php
+	}
+
+	/**
+	 * Render has-feedback filter dropdown
+	 *
+	 * @since 2.1.0
+	 */
+	private function render_has_feedback_filter() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state.
+		$current = isset( $_GET['has_feedback'] ) ? sanitize_key( wp_unslash( $_GET['has_feedback'] ) ) : '';
+
+		$options = [
+			''    => __( 'Any feedback', 'pressprimer-assignment' ),
+			'yes' => __( 'Has feedback', 'pressprimer-assignment' ),
+			'no'  => __( 'No feedback', 'pressprimer-assignment' ),
+		];
+
+		?>
+		<label class="screen-reader-text" for="filter-by-has-feedback"><?php esc_html_e( 'Filter by feedback presence', 'pressprimer-assignment' ); ?></label>
+		<select name="has_feedback" id="filter-by-has-feedback">
+			<?php foreach ( $options as $value => $label ) : ?>
+				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current, $value ); ?>>
+					<?php echo esc_html( $label ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Render submitted-date range filter (from/to date inputs)
+	 *
+	 * @since 2.1.0
+	 */
+	private function render_date_filter() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state.
+		$from = isset( $_GET['submitted_from'] ) ? sanitize_text_field( wp_unslash( $_GET['submitted_from'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter state.
+		$to = isset( $_GET['submitted_to'] ) ? sanitize_text_field( wp_unslash( $_GET['submitted_to'] ) ) : '';
+
+		?>
+		<label for="filter-by-submitted-from"><?php esc_html_e( 'Submitted:', 'pressprimer-assignment' ); ?></label>
+		<input type="date" name="submitted_from" id="filter-by-submitted-from" value="<?php echo esc_attr( $from ); ?>" aria-label="<?php esc_attr_e( 'Filter by submitted date (from)', 'pressprimer-assignment' ); ?>">
+
+		<label for="filter-by-submitted-to">
+			<?php
+			echo esc_html_x(
+				'to',
+				'date range separator between the from and to date filters',
+				'pressprimer-assignment'
+			);
+			?>
+		</label>
+		<input type="date" name="submitted_to" id="filter-by-submitted-to" value="<?php echo esc_attr( $to ); ?>" aria-label="<?php esc_attr_e( 'Filter by submitted date (to)', 'pressprimer-assignment' ); ?>">
+		<?php
+	}
+
+	/**
+	 * Render the Reset Filters link, only when at least one filter is active.
+	 *
+	 * @since 2.1.0
+	 */
+	private function render_reset_link() {
+		$filter_keys = [ 'status', 'assignment', 'score_min', 'score_max', 'has_feedback', 'submitted_from', 'submitted_to', 's' ];
+		$has_filter  = false;
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only filter state for display.
+		foreach ( $filter_keys as $key ) {
+			if ( ! isset( $_GET[ $key ] ) ) {
+				continue;
+			}
+			$value = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+			if ( '' !== $value && 'all' !== $value ) {
+				$has_filter = true;
+				break;
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $has_filter ) {
+			return;
+		}
+
+		$reset_url = admin_url( 'admin.php?page=pressprimer-assignment-submissions' );
+		?>
+		<a href="<?php echo esc_url( $reset_url ); ?>" class="button">
+			<?php esc_html_e( 'Reset Filters', 'pressprimer-assignment' ); ?>
+		</a>
 		<?php
 	}
 }

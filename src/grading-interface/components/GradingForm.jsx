@@ -26,7 +26,6 @@ import {
 	Tooltip,
 	Typography,
 	Divider,
-	Input,
 	Alert,
 } from 'antd';
 import {
@@ -38,9 +37,9 @@ import {
 	SendOutlined,
 } from '@ant-design/icons';
 import DocumentPanel from '../../shared/components/viewers/DocumentPanel';
+import RichTextEditor from '../../shared/components/RichTextEditor';
 
 const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
 
 // RubricPanel is registered globally by the Educator addon's rubric-builder bundle.
 const RubricPanel = window.PPAERubricPanel || null;
@@ -53,6 +52,12 @@ const AIGradingPanel = window.PPASAIGradingPanel || null;
 
 // ProofreadingPanel is registered globally by the School addon's ai-grading bundle.
 const ProofreadingPanel = window.PPASProofreadingPanel || null;
+
+// PlagiarismPanel is registered globally by the Enterprise addon's
+// plagiarism-grading bundle (ENT-004). Same cross-bundle pattern as
+// PPAERubricPanel / PPASAIGradingPanel — keeps the free plugin free of
+// direct addon imports.
+const PlagiarismPanel = window.PPAEntPlagiarismPanel || null;
 
 // School addon localizes provider configuration on the grading page.
 const schoolGrading = window.pressprimerAssignmentSchoolGrading || null;
@@ -112,9 +117,6 @@ const GradingForm = ( { submissionId } ) => {
 
 	// Ref to track if a save is in progress (for keyboard shortcut debouncing).
 	const savingRef = useRef( false );
-
-	// Ref for feedback textarea to detect focus.
-	const feedbackRef = useRef( null );
 
 	// Active grading time tracking.
 	const gradingTimeRef = useRef( {
@@ -585,6 +587,35 @@ const GradingForm = ( { submissionId } ) => {
 			<Row gutter={ 16 } className="ppa-grading-main">
 				{ /* Document Panel (left) */ }
 				<Col span={ 14 }>
+					{ /* Auto-cleanup notice — files were pruned and nothing replaced them. */ }
+					{ submission.cleanup_attachments_pruned_count > 0 &&
+						files.length === 0 &&
+						! submission.text_content && (
+							<Alert
+								type="info"
+								showIcon
+								style={ { marginBottom: 16 } }
+								message={ __(
+									'Submitted files removed by automated cleanup',
+									'pressprimer-assignment'
+								) }
+								description={
+									submission.cleanup_attachments_pruned_at_formatted
+										? sprintf(
+												/* translators: %s: date the files were removed */
+												__(
+													'The files attached to this submission were removed by the data cleanup tool on %s. The grade and feedback are preserved.',
+													'pressprimer-assignment'
+												),
+												submission.cleanup_attachments_pruned_at_formatted
+										  )
+										: __(
+												'The files attached to this submission were removed by the data cleanup tool. The grade and feedback are preserved.',
+												'pressprimer-assignment'
+										  )
+								}
+							/>
+						) }
 					<Card
 						className="ppa-grading-document-card"
 						bodyStyle={ { padding: 0 } }
@@ -593,6 +624,17 @@ const GradingForm = ( { submissionId } ) => {
 							files={ files }
 							textContent={ submission.text_content }
 							wordCount={ submission.word_count }
+							/*
+							 * Allow Re-extract only on pre-grade statuses.
+							 * Once the submission is graded or returned the
+							 * grade was based on the text that existed at
+							 * that moment, and re-running extraction would
+							 * silently change the historical record.
+							 */
+							canReExtract={
+								submission.status === 'submitted' ||
+								submission.status === 'grading'
+							}
 							onFileUpdate={ ( fileId, result ) => {
 								setFiles( ( prev ) =>
 									prev.map( ( f ) =>
@@ -930,6 +972,22 @@ const GradingForm = ( { submissionId } ) => {
 							</>
 						) }
 
+						{ /* Plagiarism Panel (Enterprise addon) */ }
+						{ PlagiarismPanel && ! isReadOnly && (
+							<>
+								<Divider />
+								<PlagiarismPanel
+									submissionId={ submissionId }
+									onInsertFeedback={ ( text ) => {
+										setFeedback( ( prev ) =>
+											prev ? prev + '\n\n' + text : text
+										);
+										setHasChanges( true );
+									} }
+								/>
+							</>
+						) }
+
 						<Divider />
 
 						{ /* Score Section */ }
@@ -1113,12 +1171,11 @@ const GradingForm = ( { submissionId } ) => {
 							>
 								{ __( 'Feedback', 'pressprimer-assignment' ) }
 							</label>
-							<TextArea
+							<RichTextEditor
 								id="ppa-feedback-input"
-								ref={ feedbackRef }
 								value={ feedback }
-								onChange={ ( e ) => {
-									setFeedback( e.target.value );
+								onChange={ ( html ) => {
+									setFeedback( html );
 									setHasChanges( true );
 								} }
 								placeholder={ __(
@@ -1126,7 +1183,7 @@ const GradingForm = ( { submissionId } ) => {
 									'pressprimer-assignment'
 								) }
 								disabled={ isReadOnly }
-								autoSize={ { minRows: 4, maxRows: 12 } }
+								rows={ 8 }
 							/>
 						</div>
 

@@ -179,6 +179,19 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 	public $score = null;
 
 	/**
+	 * Assignment max_points snapshot recorded at grade time
+	 *
+	 * Captured by the grading service so a later edit to the assignment's
+	 * max_points doesn't retroactively shift the displayed score. Null on
+	 * rows graded before this column existed; consumers should fall back
+	 * to the live assignment max_points in that case.
+	 *
+	 * @since 2.1.0
+	 * @var float|null
+	 */
+	public $max_points_at_grading = null;
+
+	/**
 	 * Grader feedback
 	 *
 	 * @since 1.0.0
@@ -284,6 +297,7 @@ class PressPrimer_Assignment_Submission extends PressPrimer_Assignment_Model {
 			'grader_id',
 			'grading_time_seconds',
 			'score',
+			'max_points_at_grading',
 			'feedback',
 			'passed',
 			'file_count',

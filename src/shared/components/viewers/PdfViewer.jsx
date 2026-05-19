@@ -22,11 +22,21 @@ import { appendNonce } from '../../utils/nonce';
 
 // Configure PDF.js worker.
 // The worker file is copied to the build directory by webpack CopyPlugin.
-// buildUrl is passed from PHP via wp_localize_script.
+// buildUrl is passed from PHP via wp_localize_script — different
+// surfaces use different globals (admin grading, submission detail,
+// frontend submission viewer), so we check all known locations.
 pdfjsLib.GlobalWorkerOptions.workerSrc =
 	( window.pressprimerAssignmentGradingData?.buildUrl ||
 		window.pressprimerAssignmentSubmissionDetailData?.buildUrl ||
+		window.pressprimerAssignmentFrontendSubmission?.buildUrl ||
 		'' ) + 'pdf.worker.min.js'; // eslint-disable-line no-undef
+
+// Expose pdfjsLib on window so addons (Assignment School's annotation
+// feature) can render PDFs without bundling a duplicate copy. The worker
+// is already configured above; addons reuse the same configuration.
+if ( typeof window !== 'undefined' ) {
+	window.pdfjsLib = pdfjsLib;
+}
 
 /**
  * Default scale and zoom limits.
@@ -127,6 +137,8 @@ const PdfViewer = ( { url } ) => {
 							window.pressprimerAssignmentGradingData?.nonce ||
 							window.pressprimerAssignmentSubmissionDetailData
 								?.nonce ||
+							window.pressprimerAssignmentFrontendSubmission
+								?.restNonce ||
 							'',
 					},
 				} );
@@ -155,9 +167,36 @@ const PdfViewer = ( { url } ) => {
 
 				pdfDocRef.current = pdfDoc;
 				setNumPages( pdfDoc.numPages );
+
+				// Fit the initial render to the container width when
+				// DEFAULT_SCALE × page width would overflow. Wider
+				// surfaces (admin grading column) keep 1.2×; narrower
+				// ones (frontend student column, mobile) scale down so
+				// the first impression fits without horizontal scroll.
+				let initialScale = DEFAULT_SCALE;
+				try {
+					const firstPage = await pdfDoc.getPage( 1 );
+					const naturalViewport = firstPage.getViewport( {
+						scale: 1,
+					} );
+					const containerWidth = containerRef.current
+						? Math.max( 0, containerRef.current.clientWidth - 32 )
+						: 0;
+					if ( containerWidth > 0 && naturalViewport.width > 0 ) {
+						const fitScale = containerWidth / naturalViewport.width;
+						initialScale = Math.min( DEFAULT_SCALE, fitScale );
+					}
+				} catch ( fitError ) {
+					// Fall back to the comfortable default if the fit
+					// math fails for any reason — better to slightly
+					// overflow than to error out.
+				}
+				if ( initialScale !== scale ) {
+					setScale( initialScale );
+				}
 				setLoading( false );
 
-				await renderPages( pdfDoc, scale );
+				await renderPages( pdfDoc, initialScale );
 			} catch ( loadError ) {
 				if ( ! cancelled ) {
 					setError(

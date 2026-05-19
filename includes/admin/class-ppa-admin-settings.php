@@ -88,12 +88,17 @@ class PressPrimer_Assignment_Admin_Settings {
 		// Enqueue WordPress media library for logo selection.
 		wp_enqueue_media();
 
+		// Enqueue WordPress TinyMCE editor scripts (used by RichTextEditor wrapper).
+		wp_enqueue_editor();
+
 		// Enqueue built React app.
 		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/settings-panel.asset.php';
 		$asset      = file_exists( $asset_file ) ? require $asset_file : [
 			'dependencies' => [ 'wp-element', 'wp-i18n', 'wp-api-fetch' ],
 			'version'      => PRESSPRIMER_ASSIGNMENT_VERSION,
 		];
+
+		$asset['dependencies'] = array_unique( array_merge( $asset['dependencies'], [ 'wp-editor' ] ) );
 
 		wp_enqueue_script(
 			'ppa-settings-panel',
@@ -109,6 +114,20 @@ class PressPrimer_Assignment_Admin_Settings {
 			wp_enqueue_style(
 				'ppa-settings-panel',
 				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/style-settings-panel.css',
+				[],
+				$asset['version']
+			);
+		}
+
+		// wp-scripts emits two CSS bundles per entry: style-{entry}.css for
+		// styles imported via the entry's index.js style.css, and {entry}.css
+		// for CSS imported from any other component (e.g. shared
+		// RichTextEditor.css). Enqueue both so component-level styles load.
+		$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/settings-panel.css';
+		if ( file_exists( $component_css ) ) {
+			wp_enqueue_style(
+				'ppa-settings-panel-components',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/settings-panel.css',
 				[],
 				$asset['version']
 			);

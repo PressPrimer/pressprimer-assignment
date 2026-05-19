@@ -764,8 +764,26 @@ class PressPrimer_Assignment_File_Service {
 		// Prevent caching of downloaded files.
 		nocache_headers();
 
+		/**
+		 * Filters the filename used in the Content-Disposition header
+		 * when a submission file is downloaded.
+		 *
+		 * Returning a different filename does not rename the file on
+		 * disk — only the served filename changes. The Enterprise addon
+		 * uses this filter to apply anonymous-grading masking
+		 * (e.g., "submission-142.pdf" instead of "jane-essay.pdf") so
+		 * the file lands in the grader's Downloads folder without
+		 * revealing student identity.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string                                 $filename The original filename.
+		 * @param PressPrimer_Assignment_Submission_File $file     The file record.
+		 */
+		$filename = apply_filters( 'pressprimer_assignment_file_download_filename', $file->original_filename, $file );
+
 		header( 'Content-Type: ' . $file->mime_type );
-		header( 'Content-Disposition: attachment; filename="' . $file->original_filename . '"' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 		header( 'Content-Length: ' . $file->file_size );
 		header( 'Content-Transfer-Encoding: binary' );
 		header( 'X-Content-Type-Options: nosniff' );

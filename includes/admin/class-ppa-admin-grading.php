@@ -268,10 +268,14 @@ class PressPrimer_Assignment_Admin_Grading {
 			PRESSPRIMER_ASSIGNMENT_VERSION
 		);
 
+		// Enqueue WordPress TinyMCE editor scripts (used by RichTextEditor wrapper).
+		wp_enqueue_editor();
+
 		// Enqueue the built React bundle.
 		$asset_file = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/grading-interface.asset.php';
 		if ( file_exists( $asset_file ) ) {
-			$asset = require $asset_file;
+			$asset                 = require $asset_file;
+			$asset['dependencies'] = array_unique( array_merge( $asset['dependencies'], [ 'wp-editor' ] ) );
 
 			wp_enqueue_script(
 				'ppa-grading-interface',
@@ -290,12 +294,26 @@ class PressPrimer_Assignment_Admin_Grading {
 					$asset['version']
 				);
 			}
+
+			// wp-scripts emits two CSS bundles per entry: style-{entry}.css for
+			// styles imported via the entry's index.js style.css, and {entry}.css
+			// for CSS imported from any other component (e.g. shared
+			// RichTextEditor.css). Enqueue both so component-level styles load.
+			$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/grading-interface.css';
+			if ( file_exists( $component_css ) ) {
+				wp_enqueue_style(
+					'ppa-grading-interface-components',
+					PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/grading-interface.css',
+					[],
+					$asset['version']
+				);
+			}
 		} else {
-			// Fallback: use wp-element, wp-i18n, wp-api-fetch as dependencies.
+			// Fallback: use wp-element, wp-i18n, wp-api-fetch, wp-editor as dependencies.
 			wp_enqueue_script(
 				'ppa-grading-interface',
 				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/grading-interface.js',
-				[ 'wp-element', 'wp-i18n', 'wp-api-fetch' ],
+				[ 'wp-element', 'wp-i18n', 'wp-api-fetch', 'wp-editor' ],
 				PRESSPRIMER_ASSIGNMENT_VERSION,
 				true
 			);
@@ -453,7 +471,26 @@ class PressPrimer_Assignment_Grading_List_Table extends WP_List_Table {
 		// Fetch from the grading queue service.
 		$result = PressPrimer_Assignment_Grading_Queue_Service::get_queue( $args );
 
-		$this->items = $result['items'];
+		$items = is_array( $result['items'] ) ? $result['items'] : [];
+
+		/**
+		 * Filters a row in the grading queue list before rendering.
+		 *
+		 * Addons can rewrite identity fields (`student_name`, `student_email`,
+		 * `user_id`) and set `is_anonymous = true` to signal that the row
+		 * should render without identity-revealing affordances. Mirrors the
+		 * submissions-list filter; used by the Enterprise addon to apply
+		 * per-assignment anonymous grading masking.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param object $item Grading queue row object.
+		 */
+		foreach ( $items as $i => $item ) {
+			$items[ $i ] = apply_filters( 'pressprimer_assignment_grading_queue_row', $item );
+		}
+
+		$this->items = $items;
 
 		// Set pagination.
 		$this->set_pagination_args(

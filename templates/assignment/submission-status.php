@@ -18,6 +18,7 @@
  * @var bool                                        $can_resubmit             Whether resubmission is allowed.
  * @var int                                         $resubmissions_remaining  Number of resubmissions left.
  * @var array                                       $previous_submissions     Previous submissions array.
+ * @var bool                                        $show_react_viewer        Whether the inline React viewer is mounted (graded/returned only).
  * @var PressPrimer_Assignment_Assignment_Renderer  $this                     Renderer instance.
  *
  * @package PressPrimer_Assignment
@@ -67,7 +68,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $submission->is_text_submission() ) : ?>
+	<?php if ( ! empty( $show_react_viewer ) ) : ?>
+		<div class="ppa-submitted-react-viewer">
+			<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Your Submission', 'pressprimer-assignment' ); ?></h4>
+			<div id="ppa-frontend-submission-viewer-root"></div>
+		</div>
+	<?php elseif ( $submission->is_text_submission() ) : ?>
 		<?php
 		$ppa_max_preview_words = 500;
 		$ppa_text_content      = $submission->text_content;
@@ -151,6 +157,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php endforeach; ?>
 			</ul>
 		</div>
+	<?php else : ?>
+		<?php
+		$ppa_cleanup_pruned_count = absint( $submission->get_meta( 'cleanup_attachments_pruned_count', 0 ) );
+		$ppa_cleanup_pruned_at    = absint( $submission->get_meta( 'cleanup_attachments_pruned_at', 0 ) );
+		?>
+		<?php if ( $ppa_cleanup_pruned_count > 0 ) : ?>
+			<div class="ppa-notice ppa-notice-info ppa-cleanup-notice" role="status">
+				<p>
+					<?php
+					if ( $ppa_cleanup_pruned_at > 0 ) {
+						printf(
+							/* translators: %s: date the files were removed */
+							esc_html__( 'Files attached to this submission were removed by automated data cleanup on %s. Your grade and feedback are preserved.', 'pressprimer-assignment' ),
+							esc_html( date_i18n( get_option( 'date_format' ), $ppa_cleanup_pruned_at ) )
+						);
+					} else {
+						esc_html_e( 'Files attached to this submission were removed by automated data cleanup. Your grade and feedback are preserved.', 'pressprimer-assignment' );
+					}
+					?>
+				</p>
+			</div>
+		<?php endif; ?>
 	<?php endif; ?>
 
 	<?php if ( PressPrimer_Assignment_Submission::STATUS_RETURNED === $submission->status ) : ?>
@@ -160,12 +188,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<div class="ppa-grade-score">
 				<?php
+				// Prefer the max_points snapshot recorded at grade time so an
+				// admin editing the assignment's max_points later doesn't
+				// retroactively shift displayed scores. Pre-snapshot rows
+				// have a null value and fall back to the live max.
+				$ppa_max_points = null !== $submission->max_points_at_grading
+					? $submission->max_points_at_grading
+					: $assignment->max_points;
 				echo esc_html(
 					sprintf(
 						/* translators: %1$s: score, %2$s: max points */
 						__( '%1$s / %2$s', 'pressprimer-assignment' ),
 						number_format_i18n( $submission->score, 0 ),
-						number_format_i18n( $assignment->max_points, 0 )
+						number_format_i18n( $ppa_max_points, 0 )
 					)
 				);
 				?>
@@ -205,7 +240,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="ppa-feedback">
 				<h4 class="ppa-feedback-heading"><?php esc_html_e( 'Instructor Feedback', 'pressprimer-assignment' ); ?></h4>
 				<div class="ppa-feedback-content">
-					<?php echo wp_kses_post( wpautop( $submission->feedback ) ); ?>
+					<?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $submission->feedback ) ) ); ?>
 				</div>
 				<?php if ( ! empty( $formatted_graded_date ) ) : ?>
 					<p class="ppa-form-hint">
@@ -300,6 +335,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 						</div>
 						<div class="ppa-submission-card-actions">
 							<?php if ( null !== $prev->score ) : ?>
+								<?php
+								$ppa_prev_max_points = null !== $prev->max_points_at_grading
+									? $prev->max_points_at_grading
+									: $assignment->max_points;
+								?>
 								<span class="ppa-submission-card-points <?php echo esc_attr( $prev->passed ? 'ppa-passed' : 'ppa-failed' ); ?>">
 									<?php
 									echo esc_html(
@@ -307,7 +347,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 											/* translators: %1$s: score, %2$s: max points */
 											__( '%1$s / %2$s', 'pressprimer-assignment' ),
 											number_format_i18n( $prev->score, 0 ),
-											number_format_i18n( $assignment->max_points, 0 )
+											number_format_i18n( $ppa_prev_max_points, 0 )
 										)
 									);
 									?>
@@ -344,7 +384,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<div class="ppa-submission-card-feedback">
 								<span class="ppa-submission-card-feedback-label"><?php esc_html_e( 'Feedback:', 'pressprimer-assignment' ); ?></span>
 								<div class="ppa-submission-card-feedback-text">
-									<?php echo wp_kses_post( wpautop( $prev->feedback ) ); ?>
+									<?php echo wp_kses_post( PressPrimer_Assignment_Content_Utils::strip_trailing_empty_paragraphs( wpautop( $prev->feedback ) ) ); ?>
 								</div>
 							</div>
 						<?php endif; ?>

@@ -29,7 +29,7 @@ import OdtViewer from './OdtViewer';
 import ImageViewer from './ImageViewer';
 import TextViewer from './TextViewer';
 import TextContentViewer from './TextContentViewer';
-import { appendNonce } from '../../utils/nonce';
+import { appendNonce, appendQueryParam } from '../../utils/nonce';
 
 /**
  * Quality score labels and colors for the extraction quality badge.
@@ -71,11 +71,19 @@ const FILE_ICONS = {
 /**
  * DocumentPanel component
  *
+ * The `canReExtract` prop defaults to false because the underlying
+ * /re-extract endpoint is instructor-only AND overwriting the extracted
+ * text after a submission is graded would silently replace the text the
+ * grader actually read. Callers should set it true only on instructor
+ * surfaces (admin SubmissionDetail, grading interface) and only when the
+ * submission status is pre-grade (submitted / grading).
+ *
  * @param {Object}        props              Component props.
  * @param {Array}         props.files        Array of file objects from REST API.
  * @param {string|null}   props.textContent  Text submission content (if any).
  * @param {number|null}   props.wordCount    Word count for text submissions.
  * @param {Function|null} props.onFileUpdate Callback when a file's extraction data is updated.
+ * @param {boolean}       props.canReExtract Whether to show the "Re-extract" button.
  * @return {JSX.Element} Rendered component.
  */
 const DocumentPanel = ( {
@@ -83,6 +91,7 @@ const DocumentPanel = ( {
 	textContent = null,
 	wordCount = null,
 	onFileUpdate = null,
+	canReExtract = false,
 } ) => {
 	const [ reExtracting, setReExtracting ] = useState( null );
 
@@ -123,11 +132,26 @@ const DocumentPanel = ( {
 	/**
 	 * Get the appropriate viewer for a file.
 	 *
+	 * Addons may register a per-extension override on
+	 * `window.PPADocumentViewerOverrides` to replace the default viewer.
+	 * Each entry is a React component that receives the same `file` prop.
+	 * Used by Assignment School's annotation layer to swap PDF and image
+	 * viewers for annotation-capable equivalents on the grading screen.
+	 *
 	 * @param {Object} file File object.
 	 * @return {JSX.Element} Viewer component.
 	 */
 	const getViewer = ( file ) => {
 		const ext = file.file_extension?.toLowerCase() || '';
+
+		const overrides =
+			( typeof window !== 'undefined' &&
+				window.PPADocumentViewerOverrides ) ||
+			null;
+		const Override = overrides && ( overrides[ ext ] || overrides[ '*' ] );
+		if ( Override ) {
+			return <Override file={ file } />;
+		}
 
 		if ( ext === 'pdf' ) {
 			return <PdfViewer url={ file.download_url } />;
@@ -175,7 +199,9 @@ const DocumentPanel = ( {
 				<Button
 					type="primary"
 					icon={ <DownloadOutlined /> }
-					href={ appendNonce( file.download_url + '?download=1' ) }
+					href={ appendNonce(
+						appendQueryParam( file.download_url, 'download=1' )
+					) }
 					target="_blank"
 					rel="noopener noreferrer"
 				>
@@ -231,6 +257,8 @@ const DocumentPanel = ( {
 						padding: '8px 12px',
 						borderBottom: '1px solid #f0f0f0',
 						background: '#fafafa',
+						flexWrap: 'wrap',
+						gap: 8,
 					} }
 				>
 					<span
@@ -240,9 +268,20 @@ const DocumentPanel = ( {
 							display: 'flex',
 							alignItems: 'center',
 							gap: 8,
+							flexWrap: 'wrap',
+							minWidth: 0,
 						} }
 					>
-						{ currentFile.original_filename }
+						<span
+							style={ {
+								overflow: 'hidden',
+								textOverflow: 'ellipsis',
+								whiteSpace: 'nowrap',
+								maxWidth: '100%',
+							} }
+						>
+							{ currentFile.original_filename }
+						</span>
 						<span
 							style={ {
 								color: '#999',
@@ -314,45 +353,53 @@ const DocumentPanel = ( {
 							alignItems: 'center',
 						} }
 					>
-						<Button
-							icon={ <ReloadOutlined /> }
-							size="small"
-							loading={ reExtracting === currentFile.id }
-							onClick={ async () => {
-								setReExtracting( currentFile.id );
-								try {
-									const result = await apiFetch( {
-										path: `/ppa/v1/files/${ currentFile.id }/re-extract`,
-										method: 'POST',
-									} );
-									message.success(
-										__(
-											'Text re-extracted.',
-											'pressprimer-assignment'
-										)
-									);
-									if ( onFileUpdate ) {
-										onFileUpdate( currentFile.id, result );
-									}
-								} catch ( error ) {
-									message.error(
-										error.message ||
+						{ canReExtract && (
+							<Button
+								icon={ <ReloadOutlined /> }
+								size="small"
+								loading={ reExtracting === currentFile.id }
+								onClick={ async () => {
+									setReExtracting( currentFile.id );
+									try {
+										const result = await apiFetch( {
+											path: `/ppa/v1/files/${ currentFile.id }/re-extract`,
+											method: 'POST',
+										} );
+										message.success(
 											__(
-												'Re-extraction failed.',
+												'Text re-extracted.',
 												'pressprimer-assignment'
 											)
-									);
-								} finally {
-									setReExtracting( null );
-								}
-							} }
-						>
-							{ __( 'Re-extract', 'pressprimer-assignment' ) }
-						</Button>
+										);
+										if ( onFileUpdate ) {
+											onFileUpdate(
+												currentFile.id,
+												result
+											);
+										}
+									} catch ( error ) {
+										message.error(
+											error.message ||
+												__(
+													'Re-extraction failed.',
+													'pressprimer-assignment'
+												)
+										);
+									} finally {
+										setReExtracting( null );
+									}
+								} }
+							>
+								{ __( 'Re-extract', 'pressprimer-assignment' ) }
+							</Button>
+						) }
 						<Button
 							icon={ <DownloadOutlined /> }
 							href={ appendNonce(
-								currentFile.download_url + '?download=1'
+								appendQueryParam(
+									currentFile.download_url,
+									'download=1'
+								)
 							) }
 							target="_blank"
 							rel="noopener noreferrer"
@@ -373,12 +420,32 @@ const DocumentPanel = ( {
 					overflow: 'auto',
 				} }
 			>
-				{ activeKey === 'text-content' && (
-					<TextContentViewer
-						content={ textContent }
-						wordCount={ wordCount }
-					/>
-				) }
+				{ activeKey === 'text-content' &&
+					( () => {
+						// Addons may register a replacement for the
+						// in-platform text editor view via
+						// window.PPATextContentOverride. Used by
+						// Assignment School's TextAnnotator to render
+						// the same HTML with Recogito on top.
+						const TextOverride =
+							typeof window !== 'undefined'
+								? window.PPATextContentOverride
+								: null;
+						if ( TextOverride ) {
+							return (
+								<TextOverride
+									content={ textContent }
+									wordCount={ wordCount }
+								/>
+							);
+						}
+						return (
+							<TextContentViewer
+								content={ textContent }
+								wordCount={ wordCount }
+							/>
+						);
+					} )() }
 				{ activeKey !== 'text-content' &&
 					currentFile &&
 					getViewer( currentFile ) }

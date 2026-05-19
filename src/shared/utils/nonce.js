@@ -33,3 +33,25 @@ export const appendNonce = ( url ) => {
 	const separator = url.includes( '?' ) ? '&' : '?';
 	return url + separator + '_wpnonce=' + encodeURIComponent( nonce );
 };
+
+/**
+ * Append a query parameter to a URL using the right separator.
+ *
+ * The admin file-content URL is REST-formed and has no query string,
+ * but the legacy frontend file URL already carries action/id/nonce as
+ * query params. A hardcoded "?download=1" works on the first but
+ * breaks the second by introducing a double "?", which lets the
+ * download=1 value bleed into the previous param. This helper picks
+ * "&" vs "?" based on whether the URL already has a query string.
+ *
+ * @param {string} url   The URL to extend.
+ * @param {string} param The key=value pair to append.
+ * @return {string} URL with the param appended.
+ */
+export const appendQueryParam = ( url, param ) => {
+	if ( ! url || ! param ) {
+		return url;
+	}
+	const separator = url.includes( '?' ) ? '&' : '?';
+	return url + separator + param;
+};

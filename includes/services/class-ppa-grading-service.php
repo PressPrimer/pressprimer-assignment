@@ -103,12 +103,17 @@ class PressPrimer_Assignment_Grading_Service {
 		$passed = apply_filters( 'pressprimer_assignment_passed', $passed, $submission_id, $score, $passing_score );
 
 		// Update submission record.
-		$submission->status    = PressPrimer_Assignment_Submission::STATUS_GRADED;
-		$submission->score     = $score;
-		$submission->feedback  = $feedback;
-		$submission->passed    = $passed ? 1 : 0;
-		$submission->grader_id = get_current_user_id();
-		$submission->graded_at = current_time( 'mysql', true );
+		$submission->status = PressPrimer_Assignment_Submission::STATUS_GRADED;
+		$submission->score  = $score;
+		// Snapshot the assignment's max_points at the moment of grading
+		// so historical percentages don't shift if an admin later edits
+		// the assignment's max. The Statistics queries divide by this
+		// column (falling back to a.max_points for pre-1.10 rows).
+		$submission->max_points_at_grading = (float) $assignment->max_points;
+		$submission->feedback              = $feedback;
+		$submission->passed                = $passed ? 1 : 0;
+		$submission->grader_id             = get_current_user_id();
+		$submission->graded_at             = current_time( 'mysql', true );
 
 		// Accumulate active grading time.
 		$grading_time_delta = absint( $grading_time_delta );

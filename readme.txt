@@ -2,8 +2,8 @@
 Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
-Tested up to: 6.9
-Stable tag: 2.0.0
+Tested up to: 6.9.4
+Stable tag: 2.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -14,9 +14,11 @@ Collect, review, and grade student assignments in WordPress. File uploads, text 
 
 **PressPrimer Assignment** is a professional assignment submission and grading plugin that gives WordPress educators everything they need to collect student work, provide meaningful feedback, and track grades, all without juggling email attachments, shared drives, or clunky LMS add-ons.
 
-Students get a clean, focused submission experience. Teachers get a centralized grading dashboard. And you keep full control of your data on your own WordPress site.
+Students get a clean, focused submission experience. Teachers get a centralized grading dashboard with a built-in document viewer, rich text feedback, and inline annotations available via the School addon. And you keep full control of your data on your own WordPress site.
 
-**This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for, not by crippling what you get for free.
+**This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for — group management, rubric grading, AI-assisted grading and proofreading, document annotations, anonymous grading, AI content and plagiarism detection, xAPI / LRS support, automated data retention, audit logging, and white-label branding — not by crippling what you get for free.
+
+https://www.youtube.com/watch?v=6hh4blc4dNQ
 
 = Why PressPrimer Assignment? =
 
@@ -37,11 +39,11 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 
 **Assignment Creation**
 
-* Unlimited assignments with title, description, instructions, and grading guidelines
+* Unlimited assignments and submissions
 * Configurable maximum points and passing score
 * Three submission types: file upload, text/rich text, or student's choice
 * Configurable file types, file size limits, and multiple files per submission
-* Resubmission support with configurable attempt limits
+* Duplicate any assignment to copy its settings
 
 **Student Submission Experience**
 
@@ -57,6 +59,8 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 * Side-by-side grading interface: document viewer on the left, grading panel on the right
 * Built-in viewers render PDF, DOCX, images, and text files directly in WordPress; no downloading required
 * Automatic text extraction from PDF, DOCX, ODT, RTF, and TXT files with quality scoring
+* Rich text feedback editor with bold, italic, lists, and links — feedback is rendered with its formatting on the student view, not as plain text
+* Submissions list filterable by score range, feedback presence, and submission date range
 * Grading guidelines reference panel pulled from the assignment
 
 **Email Notifications**
@@ -64,8 +68,6 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 * Submission confirmation, grade notification, and new submission alert emails
 * Customizable subject and body templates per email type
 * Token placeholders: student name, assignment title, score, feedback URL, and more
-* Custom from name, from email, and logo
-* Test email feature in settings
 
 **Admin Dashboard & Reports**
 
@@ -95,27 +97,43 @@ PressPrimer Assignment automatically detects and integrates with popular WordPre
 
 **LearnDash:** Attach assignments to lessons or topics via the editor sidebar. Passing an assignment can automatically mark the lesson or topic complete. LearnDash Group Leaders are granted teacher-level permissions to create assignments and grade their students' submissions. The "Mark Complete" button is hidden until a required assignment is passed.
 
-**Tutor LMS:** Attach assignments to lessons via the course builder. Passing an assignment can auto-complete the lesson and trigger course completion when all lessons are done. Tutor LMS Instructors are granted teacher-level permissions. If both PressPrimer Quiz and PressPrimer Assignment are attached to a lesson, both must be passed before the lesson completes.
+**Tutor LMS:** Attach assignments to lessons via the course builder. Passing an assignment can auto-complete the lesson and trigger course completion when all lessons are done. Tutor LMS Instructors are granted teacher-level permissions. 
 
 **LifterLMS:** Attach assignments to lessons via meta box. Passing an assignment can auto-complete the lesson and course. Works with open/free courses, enrolled students, and instructor roles.
 
 **LearnPress:** Attach assignments to lessons via the lesson settings panel. Link passing an assignment to lesson and course completion. Works with open courses, enrolled students, and instructor roles.
 
-**Uncanny Automator:** Four triggers available—user submits an assignment, user is graded, user passes, user fails. Each trigger includes a full set of tokens (assignment title, score, feedback, student info, grader info, and more) for use in automated workflows.
+**Uncanny Automator:** Four triggers available—user submits an assignment, user is graded, user passes, user fails. 
 
 All integrations are bundled in the free version.
 
 = Premium Features =
 
-Unlock additional premium features at [pressprimer.com](https://pressprimer.com/pressprimer-assignment-pricing/):
+Unlock additional premium features at [pressprimer.com](https://pressprimer.com/pressprimer-assignment-pricing/). Premium capabilities are organized across three tiers — Educator, School, and Enterprise — each building on the one below it:
 
-* **AI-Assisted Grading** – Generate suggested scores and feedback for submissions using OpenAI or Anthropic. Rubric-aware: returns per-criterion scores when a rubric is attached. Optional auto-grade queues suggestions on submission. Teachers review, edit, and save all suggestions manually.
-* **AI Proofreading** – Detect spelling and grammar issues in student submissions with one-click insertion of notes into feedback. Configurable locale for regional spelling variants.
+**Educator**
+
 * **Groups & Assignments** – Organize students into groups, distribute assignments with per-group due dates, and track completion progress
+* **Group Reports** – Per-group completion dashboards with submission status grids, score distributions with pass-threshold coloring, drill-down student data
 * **Rubric Builder** – Create analytic rubrics with criteria and performance levels, attach them to assignments for structured grading with automatic score calculation and per-criterion feedback
+* **Per-Criteria Report** – See where students are struggling at the rubric-criterion level
 * **Teacher Role** – Teachers manage their own groups and grade only their students' submissions, while admins retain full access to all data
+* **Data Retention & Cleanup** – Automatically prune old submission files and orphaned data
+
+**School** *(everything in Educator, plus)*
+
+* **Inline Document Annotations** – Mark up PDFs, images, and text submissions directly in the grading interface with highlights, underline, strikethrough, freehand drawing, and comments. 
+* **AI-Assisted Grading** – Generate suggested scores and feedback for submissions using OpenAI or Anthropic. Rubric-aware: returns per-criterion scores when a rubric is attached.
+* **AI Proofreading** – Detect spelling and grammar issues in student submissions with one-click insertion of notes into feedback. Configurable locale for regional spelling variants.
+* **xAPI / LRS Integration** – Send Experience API statements to your Learning Record Store. Built-in queueing system ensures reliable delivery.
+
+**Enterprise** *(everything in School, plus)*
+
+* **AI Content & Plagiarism Detection** – Run submitted text through Winston AI, GPTZero, or Originality.ai to surface AI-generated content and plagiarism scores. Auto-check on submission or run manually. Provider-aware grading panel shows scores and interpretation.
+* **Plagiarism Report** – Cohort-wide report with AI-likelihood and originality-score distributions, stat cards, a per-provider confidence breakdown, and a paginated flagged-submissions table with colour-coded scores and tooltips explaining exactly why each row was flagged.
+* **Anonymous Grading** – Per-assignment toggle that masks student identity throughout the grading window so grades aren't biased by who wrote the work. Identity stays hidden until submissions have been graded and returned.
+* **Audit Logging** – Immutable log of every assignment, submission, grading, settings change, annotation, xAPI emission, plagiarism check, and cleanup run with configurable retention, role-based viewer, and export. Audit Trail report on the Reports page surfaces filterable events with object links and a search box.
 * **White-Label Branding** – Remove all PressPrimer branding and customize with your own plugin name, logos, colors, and custom CSS
-* **Audit Logging** – Immutable log of every assignment, submission, grading, and settings change with configurable retention, role-based viewer, and export
 
 = Built for Developers =
 
@@ -178,10 +196,6 @@ Yes. PressPrimer Assignment integrates natively with LearnDash. Attach assignmen
 
 Yes. Assignments integrate with Tutor LMS lessons via the editor sidebar and course builder. Passing grades can auto-complete lessons, and course completion triggers when all lessons are done. Tutor LMS Instructors receive teacher-level permissions automatically.
 
-= Does this work with LifterLMS or LearnPress? =
-
-Yes. Both LifterLMS and LearnPress are fully supported. Attach assignments to lessons, and passing grades can auto-complete lessons and courses. Instructor roles are mapped automatically. These integrations were added in version 2.0.0.
-
 = Can I use this without an LMS plugin? =
 
 Absolutely. PressPrimer Assignment works as a standalone plugin. Use the `[pressprimer_assignment]` shortcode to embed assignments on any page or post. The LMS integrations are a bonus that enable automatically when an LMS is detected—they don't restrict standalone use.
@@ -206,6 +220,18 @@ The grading interface uses a side-by-side layout. The student's submitted docume
 
 Yes. Each email type (submission confirmation, grade notification, admin alert) has its own customizable subject and body template. Templates support token placeholders for dynamic content like student name, assignment title, score, and feedback. You can also set a custom from name, from email, and upload a logo for the email header.
 
+= Can graders annotate student documents directly? =
+
+Yes, with the School addon. Inline document annotations let you highlight, underline, strikethrough, freehand draw, and drop sticky-note comments on PDFs, images, and text submissions — all without leaving the WordPress grading interface. Annotations save automatically, are visible to students when the submission is returned, and the PDF viewer includes a zoom toolbar so you can dig into details on long documents.
+
+= Can I check submissions for AI-generated content or plagiarism? =
+
+Yes, with the Enterprise addon. AI Content & Plagiarism Detection runs submitted text through your choice of Winston AI, GPTZero, or Originality.ai. Checks can run automatically on submission or be triggered manually per submission. The grading panel surfaces the scores with colour-coded interpretation labels, matched-source counts, and a one-click "Insert plagiarism summary" button that drops a provider-specific summary into your feedback. A cohort-wide Plagiarism Report shows AI-likelihood and originality distributions plus a paginated flagged-submissions table.
+
+= Does PressPrimer Assignment integrate with my LRS or xAPI pipeline? =
+
+Yes, with the School addon. PressPrimer Assignment can emit Experience API (xAPI) statements to your Learning Record Store when students submit, grades are saved, and submissions are returned. The settings page includes a Test Connection workflow, a queue with retry handling, and per-event toggles so you can decide which actions are reported.
+
 == Screenshots ==
 
 1. Dashboard showing key stats, quick actions, and assignment activity
@@ -215,6 +241,22 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
+
+= 2.1.0 =
+* Added: Rich text editing in assignment description, instructions, grading guidelines, instructor feedback, and email template body fields. Toolbar supports bold, italic, bulleted and numbered lists, links, undo, and redo.
+* Added: Submissions list filters for score range, feedback presence (any / has feedback / no feedback), and submission date range
+* Added: Duplicate assignment action available as a row action, bulk action, and editor toolbar button — copies all settings and taxonomy into a new draft owned by the current user
+* Added: New `pressprimer_assignment_assignment_duplicated` action hook so addons can copy their own per-assignment data
+* Added: Returned submissions render inline on the student view so grader annotations from the School addon are visible to students
+* Fixed: Submission scores no longer shift retroactively when an assignment's max points is later edited — the Reports page, admin submission detail, the student assignment page (current returned card and the resubmission history), and the [ppa_my_submissions] dashboard widget all use the max points value recorded at grade time
+* Fixed: The Re-extract text button is no longer shown to students on the assignment page and no longer appears on submissions that have already been graded or returned (it overwrites the extracted text, which shouldn't happen after grading)
+* Fixed: The submission viewer's file header reflows cleanly on narrow screens
+* Fixed: PDFs render at a scale that fits the available column width on the student frontend viewer instead of overflowing
+* Fixed: Download URLs work correctly when the file URL already contains a query string
+* Fixed: Concurrent file uploads no longer create duplicate draft submissions for the same student
+* Fixed: LearnDash, LifterLMS, LearnPress, and Tutor LMS lesson pages no longer display "Assignment not found" when the mapped assignment has been deleted — the lesson renders normally with the assignment block omitted
+* Fixed: Submissions list and grading-queue tables resize sensibly as the admin window shrinks, with column widths sized in em units so they scale with the user's font size
+* Fixed: Submissions list column widths so the Student column no longer wraps when name and email don't fit
 
 = 2.0.0 =
 * Added: LifterLMS integration with lesson embedding, completion triggers, and instructor role mapping
@@ -243,6 +285,9 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 * Initial release
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+New: rich text editing across content fields, submissions list filters for score / feedback / date, and a Duplicate assignment action.
 
 = 2.0.0 =
 New: LifterLMS and LearnPress integrations, multi-format text extraction, unlimited resubmissions, and premium addon support.

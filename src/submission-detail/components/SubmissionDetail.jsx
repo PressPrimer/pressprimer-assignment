@@ -193,11 +193,20 @@ const SubmissionDetail = ( { submissionId } ) => {
 		submission.status === 'grading';
 	const score = submission.score;
 	const feedback = submission.feedback || '';
+	// Prefer the max_points snapshot from grade time so historical
+	// percentages stop sliding when an admin edits the assignment's
+	// max_points after the fact. Pre-1.10 rows have a null snapshot
+	// and fall back to the live assignment value.
+	const effectiveMaxPoints =
+		submission.max_points_at_grading !== null &&
+		submission.max_points_at_grading !== undefined
+			? submission.max_points_at_grading
+			: assignment && assignment.max_points;
 	const passing =
 		score !== null && assignment && score >= assignment.passing_score;
 	const percentage =
-		score !== null && assignment && assignment.max_points > 0
-			? Math.round( ( score / assignment.max_points ) * 100 )
+		score !== null && effectiveMaxPoints > 0
+			? Math.round( ( score / effectiveMaxPoints ) * 100 )
 			: null;
 
 	const detailData = window.pressprimerAssignmentSubmissionDetailData || {};
@@ -365,6 +374,36 @@ const SubmissionDetail = ( { submissionId } ) => {
 				</Card>
 			) }
 
+			{ /* Auto-cleanup notice — files were pruned and nothing replaced them. */ }
+			{ submission.cleanup_attachments_pruned_count > 0 &&
+				files.length === 0 &&
+				! submission.text_content && (
+					<Alert
+						type="info"
+						showIcon
+						style={ { marginBottom: 16 } }
+						message={ __(
+							'Submitted files removed by automated cleanup',
+							'pressprimer-assignment'
+						) }
+						description={
+							submission.cleanup_attachments_pruned_at_formatted
+								? sprintf(
+										/* translators: %s: date the files were removed */
+										__(
+											'The files attached to this submission were removed by the data cleanup tool on %s. The grade and feedback are preserved.',
+											'pressprimer-assignment'
+										),
+										submission.cleanup_attachments_pruned_at_formatted
+								  )
+								: __(
+										'The files attached to this submission were removed by the data cleanup tool. The grade and feedback are preserved.',
+										'pressprimer-assignment'
+								  )
+						}
+					/>
+				) }
+
 			{ /* Document Viewer */ }
 			{ ( files.length > 0 || submission.text_content ) && (
 				<Card
@@ -383,6 +422,16 @@ const SubmissionDetail = ( { submissionId } ) => {
 						files={ files }
 						textContent={ submission.text_content }
 						wordCount={ submission.word_count }
+						/*
+						 * Re-extract is an instructor-only recovery tool —
+						 * it overwrites extracted_text in place. Allow it
+						 * only on pre-grade statuses so we never silently
+						 * change the text the grader actually read.
+						 */
+						canReExtract={
+							submission.status === 'submitted' ||
+							submission.status === 'grading'
+						}
 						onFileUpdate={ ( fileId, result ) => {
 							setFiles( ( prev ) =>
 								prev.map( ( f ) =>
@@ -423,7 +472,7 @@ const SubmissionDetail = ( { submissionId } ) => {
 							</Text>
 							<Space align="center">
 								<Text style={ { fontSize: 18 } }>
-									{ score } / { assignment.max_points }
+									{ score } / { effectiveMaxPoints }
 								</Text>
 								{ percentage !== null && (
 									<Text type="secondary">
@@ -477,14 +526,21 @@ const SubmissionDetail = ( { submissionId } ) => {
 							>
 								{ __( 'Feedback', 'pressprimer-assignment' ) }
 							</Text>
-							<Paragraph
-								style={ {
-									margin: 0,
-									whiteSpace: 'pre-wrap',
+							{ /*
+							 * Feedback is authored in the grading interface's rich
+							 * text editor and stored as HTML after wp_kses_post()
+							 * sanitization on save, so it's safe to render here.
+							 * Rendering as text would leave <p>/<strong>/etc.
+							 * tags visible to the reader.
+							 */ }
+							<div
+								className="ppa-feedback-rendered"
+								style={ { margin: 0 } }
+								// eslint-disable-next-line react/no-danger
+								dangerouslySetInnerHTML={ {
+									__html: feedback,
 								} }
-							>
-								{ feedback }
-							</Paragraph>
+							/>
 						</div>
 					) }
 				</Card>

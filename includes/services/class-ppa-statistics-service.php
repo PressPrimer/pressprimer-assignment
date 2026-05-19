@@ -210,13 +210,13 @@ class PressPrimer_Assignment_Statistics_Service {
 			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from assignment IDs.
 			$wpdb->prepare(
 				"SELECT
-					ROUND(AVG( (s.score / a.max_points) * 100 ), 1) AS avg_score,
+					ROUND(AVG( (s.score / COALESCE(s.max_points_at_grading, a.max_points)) * 100 ), 1) AS avg_score,
 					ROUND( (SUM(CASE WHEN s.passed = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0)) * 100, 1 ) AS pass_rate
 				FROM {$submissions_table} s
 				INNER JOIN {$assignments_table} a ON s.assignment_id = a.id
 				WHERE s.status IN ('graded', 'returned')
 					AND s.score IS NOT NULL
-					AND a.max_points > 0
+					AND COALESCE(s.max_points_at_grading, a.max_points) > 0
 					{$assignment_filter}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table from $wpdb->prefix, filter built with placeholders.
 				$score_params
 			)
@@ -335,7 +335,9 @@ class PressPrimer_Assignment_Statistics_Service {
 		}
 
 		// Build graded-only date filter for score/pass calculations.
-		$graded_where = "s.status IN ('graded', 'returned') AND s.score IS NOT NULL AND a.max_points > 0";
+		// COALESCE: pre-1.10 graded rows have NULL max_points_at_grading
+		// and fall back to the live a.max_points value.
+		$graded_where = "s.status IN ('graded', 'returned') AND s.score IS NOT NULL AND COALESCE(s.max_points_at_grading, a.max_points) > 0";
 		if ( $args['date_from'] ) {
 			$graded_where .= $wpdb->prepare( ' AND s.submitted_at >= %s', sanitize_text_field( $args['date_from'] ) );
 		}
@@ -370,7 +372,7 @@ class PressPrimer_Assignment_Statistics_Service {
 					a.id,
 					a.title,
 					COUNT(CASE WHEN {$date_where} THEN s.id END) AS submissions,
-					ROUND(AVG(CASE WHEN {$graded_where} THEN (s.score / a.max_points) * 100 END), 1) AS avg_score,
+					ROUND(AVG(CASE WHEN {$graded_where} THEN (s.score / COALESCE(s.max_points_at_grading, a.max_points)) * 100 END), 1) AS avg_score,
 					ROUND(
 						(SUM(CASE WHEN {$graded_where} AND s.passed = 1 THEN 1 ELSE 0 END) /
 						NULLIF(COUNT(CASE WHEN {$graded_where} THEN s.id END), 0)) * 100,
@@ -574,7 +576,7 @@ class PressPrimer_Assignment_Statistics_Service {
 				WHERE s.status IN ('graded', 'returned')
 					AND s.graded_at >= %s
 					AND s.score IS NOT NULL
-					AND a.max_points > 0
+					AND COALESCE(s.max_points_at_grading, a.max_points) > 0
 					{$assignment_filter}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table from $wpdb->prefix, filter built with placeholders.
 				$avg_params
 			)
@@ -594,13 +596,13 @@ class PressPrimer_Assignment_Statistics_Service {
 			$avg_pct = $wpdb->get_var(
 				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from assignment IDs.
 				$wpdb->prepare(
-					"SELECT ROUND(AVG( (s.score / a.max_points) * 100 ), 1)
+					"SELECT ROUND(AVG( (s.score / COALESCE(s.max_points_at_grading, a.max_points)) * 100 ), 1)
 					FROM {$submissions_table} s
 					INNER JOIN {$assignments_table} a ON s.assignment_id = a.id
 					WHERE s.status IN ('graded', 'returned')
 						AND s.graded_at >= %s
 						AND s.score IS NOT NULL
-						AND a.max_points > 0
+						AND COALESCE(s.max_points_at_grading, a.max_points) > 0
 						{$assignment_filter}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table from $wpdb->prefix, filter built with placeholders.
 					$pct_params
 				)
@@ -744,8 +746,8 @@ class PressPrimer_Assignment_Statistics_Service {
 				"SELECT DATE(s.submitted_at) AS date,
 					COUNT(*) AS submissions,
 					ROUND(AVG(
-						CASE WHEN s.score IS NOT NULL AND a.max_points > 0
-							THEN (s.score / a.max_points) * 100
+						CASE WHEN s.score IS NOT NULL AND COALESCE(s.max_points_at_grading, a.max_points) > 0
+							THEN (s.score / COALESCE(s.max_points_at_grading, a.max_points)) * 100
 							ELSE NULL
 						END
 					), 1) AS avg_score
@@ -842,7 +844,7 @@ class PressPrimer_Assignment_Statistics_Service {
 			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from assignment IDs + per_page.
 			$wpdb->prepare(
 				"SELECT s.id, s.assignment_id, s.user_id, s.status,
-					s.score, s.submitted_at, s.text_content, s.file_count,
+					s.score, s.max_points_at_grading, s.submitted_at, s.text_content, s.file_count,
 					a.title AS assignment_title, a.max_points
 				FROM {$submissions_table} s
 				INNER JOIN {$assignments_table} a ON s.assignment_id = a.id
@@ -860,11 +862,17 @@ class PressPrimer_Assignment_Statistics_Service {
 			foreach ( $rows as $row ) {
 				$user = get_userdata( (int) $row->user_id );
 
+				// Snapshot the per-row max at grading time when present;
+				// fall back to live max_points for pre-1.10 rows.
+				$effective_max = null !== $row->max_points_at_grading
+					? (float) $row->max_points_at_grading
+					: (float) $row->max_points;
+
 				$score_percent = null;
 				$passed        = null;
-				if ( null !== $row->score && (float) $row->max_points > 0 ) {
-					$score_percent = round( ( (float) $row->score / (float) $row->max_points ) * 100, 1 );
-					$passed        = (float) $row->score >= ( (float) $row->max_points * 0.6 ); // Default 60% pass.
+				if ( null !== $row->score && $effective_max > 0 ) {
+					$score_percent = round( ( (float) $row->score / $effective_max ) * 100, 1 );
+					$passed        = (float) $row->score >= ( $effective_max * 0.6 ); // Default 60% pass.
 				}
 
 				// Determine submission type.

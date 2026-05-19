@@ -561,6 +561,8 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * @return PressPrimer_Assignment_Submission|WP_Error Submission instance or WP_Error.
 	 */
 	private function get_or_create_draft( $user_id, $assignment_id ) {
+		global $wpdb;
+
 		$user_id       = absint( $user_id );
 		$assignment_id = absint( $assignment_id );
 
@@ -574,8 +576,15 @@ class PressPrimer_Assignment_Submission_Handler {
 		// Determine submission number (for resubmissions).
 		$submission_number = $this->get_next_submission_number( $user_id, $assignment_id );
 
-		// Create new draft.
-		$submission_id = PressPrimer_Assignment_Submission::create(
+		// Two file uploads firing in parallel both pass the "no draft yet"
+		// check above and race to INSERT the same (assignment, user,
+		// submission_number) triplet. The unique key catches the loser,
+		// which is the safe outcome — but $wpdb would still write the
+		// failed query to debug.log. Suppress error reporting around the
+		// insert so the duplicate doesn't show as a "WordPress database
+		// error" entry; we already handle the failure path below.
+		$previous_suppress = $wpdb->suppress_errors( true );
+		$submission_id     = PressPrimer_Assignment_Submission::create(
 			[
 				'assignment_id'     => $assignment_id,
 				'user_id'           => $user_id,
@@ -583,8 +592,15 @@ class PressPrimer_Assignment_Submission_Handler {
 				'submission_number' => $submission_number,
 			]
 		);
+		$wpdb->suppress_errors( $previous_suppress );
 
+		// When the insert lost the race, the winning request has already
+		// created the draft we need — re-query and return it.
 		if ( is_wp_error( $submission_id ) ) {
+			$draft = $this->get_draft_submission( $user_id, $assignment_id );
+			if ( $draft ) {
+				return $draft;
+			}
 			return $submission_id;
 		}
 
@@ -633,16 +649,49 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * @param array                             $known_file_ids File IDs the client currently tracks.
 	 */
 	private function sync_draft_files( $draft, $known_file_ids ) {
-		$files = $draft->get_files();
-
-		if ( empty( $files ) ) {
-			return;
-		}
+		global $wpdb;
 
 		$known_file_ids = array_map( 'absint', $known_file_ids );
 
-		foreach ( $files as $file ) {
-			if ( ! in_array( (int) $file->id, $known_file_ids, true ) ) {
+		// When a student picks several files at once the browser fires
+		// multiple parallel upload requests, each carrying its own
+		// snapshot of "files the client knows about" — which doesn't
+		// include the siblings still in flight. Without the recency
+		// guard below, the second request would happily delete the file
+		// the first one just added, and only the last upload would
+		// survive. Files uploaded in the last minute are almost certainly
+		// from the current upload batch; the stale-draft case this sync
+		// targets involves files from a previous session that have been
+		// sitting in the draft for far longer than that. We use MySQL's
+		// TIMESTAMPDIFF rather than comparing PHP strtotime() output so
+		// timezone differences between the PHP process and the MySQL
+		// server can't sabotage the comparison.
+		$table = $wpdb->prefix . 'ppa_submission_files';
+
+		// CURRENT_TIMESTAMP (not UTC_TIMESTAMP) because uploaded_at is
+		// populated via the column's CURRENT_TIMESTAMP default; both use
+		// MySQL's session time zone, so the diff is the file's true age
+		// regardless of whether the server is set to UTC.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$stale_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE submission_id = %d AND TIMESTAMPDIFF(SECOND, uploaded_at, CURRENT_TIMESTAMP) >= %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				(int) $draft->id,
+				MINUTE_IN_SECONDS
+			)
+		);
+
+		if ( empty( $stale_ids ) ) {
+			return;
+		}
+
+		foreach ( $stale_ids as $stale_id ) {
+			$stale_id = (int) $stale_id;
+			if ( in_array( $stale_id, $known_file_ids, true ) ) {
+				continue;
+			}
+			$file = PressPrimer_Assignment_Submission_File::get( $stale_id );
+			if ( $file ) {
 				$file->delete();
 			}
 		}
