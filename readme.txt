@@ -18,6 +18,8 @@ Students get a clean, focused submission experience. Teachers get a centralized 
 
 **This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for — group management, rubric grading, AI-assisted grading and proofreading, document annotations, anonymous grading, AI content and plagiarism detection, xAPI / LRS support, automated data retention, audit logging, and white-label branding — not by crippling what you get for free.
 
+https://www.youtube.com/watch?v=6hh4blc4dNQ
+
 = Why PressPrimer Assignment? =
 
 Built-in assignment tools in WordPress LMS plugins are often afterthoughts, limited to basic file uploads with no real grading workflow, limited feedback options, and dated interfaces. Dedicated assignment platforms charge monthly fees with per-student pricing that gets expensive fast.
