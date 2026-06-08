@@ -16,7 +16,7 @@ Collect, review, and grade student assignments in WordPress. File uploads, text 
 
 Students get a clean, focused submission experience. Teachers get a centralized grading dashboard with a built-in document viewer, rich text feedback, and inline annotations available via the School addon. And you keep full control of your data on your own WordPress site.
 
-**This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for — group management, rubric grading, AI-assisted grading and proofreading, document annotations, anonymous grading, AI content and plagiarism detection, xAPI / LRS support, automated data retention, audit logging, and white-label branding — not by crippling what you get for free.
+**This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for —  likegroup management, rubric grading, AI-assisted grading and proofreading, document annotations, anonymous grading, AI content and plagiarism detection, xAPI / LRS support, automated data retention, audit logging, and white-label branding — not by crippling what you get for free.
 
 https://www.youtube.com/watch?v=6hh4blc4dNQ
 
@@ -113,12 +113,12 @@ Unlock additional premium features at [pressprimer.com](https://pressprimer.com/
 
 **Educator**
 
-* **Groups & Assignments** – Organize students into groups, distribute assignments with per-group due dates, and track completion progress
-* **Group Reports** – Per-group completion dashboards with submission status grids, score distributions with pass-threshold coloring, drill-down student data
-* **Rubric Builder** – Create analytic rubrics with criteria and performance levels, attach them to assignments for structured grading with automatic score calculation and per-criterion feedback
-* **Per-Criteria Report** – See where students are struggling at the rubric-criterion level
-* **Teacher Role** – Teachers manage their own groups and grade only their students' submissions, while admins retain full access to all data
-* **Data Retention & Cleanup** – Automatically prune old submission files and orphaned data
+* **Groups & Assignments** – Organize students into groups, distribute assignments with per-group due dates, and track completion progress.
+* **Group Reports** – Per-group completion dashboards with submission status grids, score distributions with pass-threshold coloring, drill-down student data.
+* **Rubric Builder** – Create analytic rubrics with criteria and performance levels, attach them to assignments for structured grading with automatic score calculation and per-criterion feedback.
+* **Per-Criteria Report** – See where students are struggling at the rubric-criterion level.
+* **Teacher Role** – Teachers manage their own groups and grade only their students' submissions, while admins retain full access to all data.
+* **Data Retention & Cleanup** – Automatically prune old submission files and orphaned data.
 
 **School** *(everything in Educator, plus)*
 
@@ -130,10 +130,10 @@ Unlock additional premium features at [pressprimer.com](https://pressprimer.com/
 **Enterprise** *(everything in School, plus)*
 
 * **AI Content & Plagiarism Detection** – Run submitted text through Winston AI, GPTZero, or Originality.ai to surface AI-generated content and plagiarism scores. Auto-check on submission or run manually. Provider-aware grading panel shows scores and interpretation.
-* **Plagiarism Report** – Cohort-wide report with AI-likelihood and originality-score distributions, stat cards, a per-provider confidence breakdown, and a paginated flagged-submissions table with colour-coded scores and tooltips explaining exactly why each row was flagged.
+* **Plagiarism Report** – Cohort-wide report with AI-likelihood and originality-score distributions, stat cards, a per-provider confidence breakdown, and a paginated flagged-submissions table with color-coded scores and tooltips explaining exactly why each row was flagged.
 * **Anonymous Grading** – Per-assignment toggle that masks student identity throughout the grading window so grades aren't biased by who wrote the work. Identity stays hidden until submissions have been graded and returned.
 * **Audit Logging** – Immutable log of every assignment, submission, grading, settings change, annotation, xAPI emission, plagiarism check, and cleanup run with configurable retention, role-based viewer, and export. Audit Trail report on the Reports page surfaces filterable events with object links and a search box.
-* **White-Label Branding** – Remove all PressPrimer branding and customize with your own plugin name, logos, colors, and custom CSS
+* **White-Label Branding** – Remove all PressPrimer branding and customize with your own plugin name, logos, colors, and custom CSS.
 
 = Built for Developers =
 
@@ -222,15 +222,15 @@ Yes. Each email type (submission confirmation, grade notification, admin alert) 
 
 = Can graders annotate student documents directly? =
 
-Yes, with the School addon. Inline document annotations let you highlight, underline, strikethrough, freehand draw, and drop sticky-note comments on PDFs, images, and text submissions — all without leaving the WordPress grading interface. Annotations save automatically, are visible to students when the submission is returned, and the PDF viewer includes a zoom toolbar so you can dig into details on long documents.
+Yes, with the School add-on. Inline document annotations let you highlight, underline, strikethrough, freehand draw, and drop sticky-note comments on PDFs, images, and text submissions — all without leaving the WordPress grading interface. Annotations save automatically, are visible to students when the submission is returned, and the PDF viewer includes a zoom toolbar so you can dig into details on long documents.
 
 = Can I check submissions for AI-generated content or plagiarism? =
 
-Yes, with the Enterprise addon. AI Content & Plagiarism Detection runs submitted text through your choice of Winston AI, GPTZero, or Originality.ai. Checks can run automatically on submission or be triggered manually per submission. The grading panel surfaces the scores with colour-coded interpretation labels, matched-source counts, and a one-click "Insert plagiarism summary" button that drops a provider-specific summary into your feedback. A cohort-wide Plagiarism Report shows AI-likelihood and originality distributions plus a paginated flagged-submissions table.
+Yes, with the Enterprise add-on. AI Content & Plagiarism Detection runs submitted text through your choice of Winston AI, GPTZero, or Originality.ai. Checks can run automatically on submission or be triggered manually per submission. The grading panel shows the scores with color-coded interpretation labels, matched-source counts, and a one-click "Insert plagiarism summary" button that drops a provider-specific summary into your feedback. A cohort-wide Plagiarism Report shows AI-likelihood and originality distributions plus a paginated flagged-submissions table.
 
 = Does PressPrimer Assignment integrate with my LRS or xAPI pipeline? =
 
-Yes, with the School addon. PressPrimer Assignment can emit Experience API (xAPI) statements to your Learning Record Store when students submit, grades are saved, and submissions are returned. The settings page includes a Test Connection workflow, a queue with retry handling, and per-event toggles so you can decide which actions are reported.
+Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAPI) statements to your Learning Record Store when students submit, grades are saved, and submissions are returned. The settings page includes a Test Connection workflow, a queue with retry handling, and per-event toggles so you can decide which actions are reported.
 
 == Screenshots ==
 
