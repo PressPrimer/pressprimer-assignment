@@ -16,7 +16,7 @@ Collect, review, and grade student assignments in WordPress. File uploads, text 
 
 Students get a clean, focused submission experience. Teachers get a centralized grading dashboard with a built-in document viewer, rich text feedback, and inline annotations available via the School addon. And you keep full control of your data on your own WordPress site.
 
-**This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for —  likegroup management, rubric grading, AI-assisted grading and proofreading, document annotations, anonymous grading, AI content and plagiarism detection, xAPI / LRS support, automated data retention, audit logging, and white-label branding — not by crippling what you get for free.
+**This is a genuinely free plugin.** Unlimited assignments, unlimited submissions, full grading tools, LMS integration, and email notifications are all included at no cost. We earn upgrades by building specialized features worth paying for — like group management, rubric grading, AI-assisted grading and proofreading, document annotations, anonymous grading, AI content and plagiarism detection, xAPI / LRS support, automated data retention, audit logging, and white-label branding — not by crippling what you get for free.
 
 https://www.youtube.com/watch?v=6hh4blc4dNQ
 
