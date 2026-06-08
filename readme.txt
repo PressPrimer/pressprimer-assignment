@@ -2,8 +2,8 @@
 Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
-Tested up to: 6.9.4
-Stable tag: 2.1.0
+Tested up to: 7.0
+Stable tag: 2.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -242,6 +242,9 @@ Yes, with the School addon. PressPrimer Assignment can emit Experience API (xAPI
 
 == Changelog ==
 
+= 2.1.1 =
+* Improved: Tightened permission checks on the categories REST endpoint so teachers can only view individual categories they own or have access to. Single-teacher sites are unaffected.
+
 = 2.1.0 =
 * Added: Rich text editing in assignment description, instructions, grading guidelines, instructor feedback, and email template body fields. Toolbar supports bold, italic, bulleted and numbered lists, links, undo, and redo.
 * Added: Submissions list filters for score range, feedback presence (any / has feedback / no feedback), and submission date range
@@ -285,6 +288,9 @@ Yes, with the School addon. PressPrimer Assignment can emit Experience API (xAPI
 * Initial release
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+Minor improvement: tightened permission checks on the categories REST endpoint. Single-teacher sites are unaffected.
 
 = 2.1.0 =
 New: rich text editing across content fields, submissions list filters for score / feedback / date, and a Duplicate assignment action.
