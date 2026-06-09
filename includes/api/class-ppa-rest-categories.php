@@ -293,6 +293,14 @@ class PressPrimer_Assignment_REST_Categories {
 			);
 		}
 
+		if ( ! $this->can_access_category( $category ) ) {
+			return new WP_Error(
+				'pressprimer_assignment_forbidden',
+				__( 'You do not have permission to access this category.', 'pressprimer-assignment' ),
+				[ 'status' => 403 ]
+			);
+		}
+
 		return rest_ensure_response( $this->prepare_item_for_response( $category ) );
 	}
 
