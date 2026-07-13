@@ -129,6 +129,48 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	public $submission_type = 'file';
 
 	/**
+	 * Due date (UTC), or null when the assignment has no due date
+	 *
+	 * MySQL DATETIME string. Stored in UTC like the other datetime
+	 * columns (submitted_at, graded_at). When null, nothing is ever
+	 * late and the late policy is inert.
+	 *
+	 * @since 2.2.0
+	 * @var string|null
+	 */
+	public $due_at = null;
+
+	/**
+	 * Late submission policy
+	 *
+	 * - accept:  late submissions accepted with no penalty (default —
+	 *            matches pre-2.2 behavior, where lateness didn't exist)
+	 * - penalty: late submissions accepted; a graduated penalty schedule
+	 *            (late_penalty_schedule_json) is applied at grading time
+	 * - reject:  late submissions refused at submission time
+	 *
+	 * @since 2.2.0
+	 * @var string accept|penalty|reject
+	 */
+	public $late_policy = 'accept';
+
+	/**
+	 * Graduated late penalty schedule (JSON), used when late_policy is 'penalty'
+	 *
+	 * Shape: {"tiers":[{"late_by_hours":24,"penalty_percent":10},...],"cutoff_hours":168}
+	 * - 1–5 tiers, strictly increasing thresholds, penalties 0–100 non-decreasing
+	 * - A single tier may use late_by_hours null (any lateness — the flat case)
+	 * - cutoff_hours (optional): submissions refused entirely beyond it
+	 *
+	 * Always rebuilt server-side from validated numeric fields before
+	 * storage — raw client JSON is never stored as-is.
+	 *
+	 * @since 2.2.0
+	 * @var string|null
+	 */
+	public $late_penalty_schedule_json = null;
+
+	/**
 	 * Assignment status
 	 *
 	 * @since 1.0.0
@@ -251,6 +293,9 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'max_file_size',
 			'max_files',
 			'submission_type',
+			'due_at',
+			'late_policy',
+			'late_penalty_schedule_json',
 			'status',
 			'theme',
 			'ai_auto_grade',
@@ -389,6 +434,25 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			);
 		}
 
+		// Validate late_policy.
+		if ( ! empty( $data['late_policy'] ) && ! in_array( $data['late_policy'], [ 'accept', 'penalty', 'reject' ], true ) ) {
+			return new WP_Error(
+				'pressprimer_assignment_invalid_late_policy',
+				__( 'Invalid late policy. Must be accept, penalty, or reject.', 'pressprimer-assignment' )
+			);
+		}
+
+		// Validate due_at (null clears; otherwise a parseable MySQL datetime).
+		if ( isset( $data['due_at'] ) && null !== $data['due_at'] && '' !== $data['due_at'] ) {
+			$due_timestamp = strtotime( (string) $data['due_at'] );
+			if ( false === $due_timestamp ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_due_at',
+					__( 'Invalid due date format.', 'pressprimer-assignment' )
+				);
+			}
+		}
+
 		// Validate max_points.
 		if ( isset( $data['max_points'] ) ) {
 			$points = floatval( $data['max_points'] );
@@ -511,6 +575,97 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 		}
 
 		return $types;
+	}
+
+	/**
+	 * Get the decoded late penalty schedule
+	 *
+	 * Decodes late_penalty_schedule_json and normalizes its shape. Returns
+	 * null when no usable schedule is stored (empty, malformed, or no
+	 * tiers) — callers treat null as "no penalty applies".
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array|null Array with 'tiers' (list of ['late_by_hours' =>
+	 *                    float|null, 'penalty_percent' => float]) and
+	 *                    'cutoff_hours' (float|null), or null.
+	 */
+	public function get_late_penalty_schedule() {
+		if ( null === $this->late_penalty_schedule_json || '' === $this->late_penalty_schedule_json ) {
+			return null;
+		}
+
+		$decoded = json_decode( $this->late_penalty_schedule_json, true );
+
+		if ( ! is_array( $decoded ) || empty( $decoded['tiers'] ) || ! is_array( $decoded['tiers'] ) ) {
+			return null;
+		}
+
+		$tiers = [];
+		foreach ( $decoded['tiers'] as $tier ) {
+			if ( ! is_array( $tier ) || ! isset( $tier['penalty_percent'] ) ) {
+				continue;
+			}
+
+			$tiers[] = [
+				'late_by_hours'   => isset( $tier['late_by_hours'] ) && null !== $tier['late_by_hours']
+					? (float) $tier['late_by_hours']
+					: null,
+				'penalty_percent' => (float) $tier['penalty_percent'],
+			];
+		}
+
+		if ( empty( $tiers ) ) {
+			return null;
+		}
+
+		return [
+			'tiers'        => $tiers,
+			'cutoff_hours' => isset( $decoded['cutoff_hours'] ) && null !== $decoded['cutoff_hours']
+				? (float) $decoded['cutoff_hours']
+				: null,
+		];
+	}
+
+	/**
+	 * Get the effective due date for a specific user
+	 *
+	 * Starts from the assignment's own due date and lets addons supersede
+	 * it: Educator's per-group dates already hook this filter, and
+	 * Educator 2.2's per-student overrides will use the same path. This
+	 * is the single effective-due-date calculation path — every lateness
+	 * decision (penalty resolution, cutoff enforcement, display) must go
+	 * through it. No addon-specific branches.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $user_id User ID.
+	 * @return string|null Effective due date as a UTC MySQL datetime, or
+	 *                     null when the user has no due date.
+	 */
+	public function get_due_date_for_user( $user_id ) {
+		/**
+		 * Filters the effective due date for a user on an assignment.
+		 *
+		 * The default is the assignment's own due_at (UTC MySQL datetime,
+		 * or null when the assignment has no due date). Addons return a
+		 * superseding date for users they manage — Educator returns
+		 * per-group distribution dates (the latest wins when the user is
+		 * in several groups); per-student overrides arrive in Educator
+		 * 2.2 through this same filter.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param string|null $due_date      Due date (UTC MySQL datetime) or null.
+		 * @param int         $assignment_id Assignment ID.
+		 * @param int         $user_id       User ID.
+		 */
+		return apply_filters(
+			'pressprimer_assignment_due_date_for_user',
+			$this->due_at,
+			(int) $this->id,
+			absint( $user_id )
+		);
 	}
 
 	/**

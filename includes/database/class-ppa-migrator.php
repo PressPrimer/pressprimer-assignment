@@ -132,6 +132,9 @@ class PressPrimer_Assignment_Migrator {
 		if ( version_compare( $from_version, '1.10.0', '<' ) ) {
 			self::migrate_to_1_10_0();
 		}
+		if ( version_compare( $from_version, '1.11.0', '<' ) ) {
+			self::migrate_to_1_11_0();
+		}
 	}
 
 	/**
@@ -403,6 +406,45 @@ class PressPrimer_Assignment_Migrator {
 				AND s.max_points_at_grading IS NULL"
 		);
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
+	/**
+	 * Migration to 1.11.0
+	 *
+	 * Adds the due date and late policy columns to the assignments table
+	 * (2.2, feature 009). Due dates and late policies are new in 2.2 —
+	 * there is no legacy flat-penalty data to convert, so this migration
+	 * is purely additive. All existing assignments keep the defaults
+	 * (no due date, late_policy 'accept'), which preserves their current
+	 * behavior exactly.
+	 *
+	 * dbDelta in update_schema() also adds these columns on upgrade; this
+	 * explicit pass keeps the column placement tidy and matches the
+	 * established idempotent-migration pattern (1.8.0 / 1.10.0).
+	 *
+	 * @since 2.2.0
+	 */
+	private static function migrate_to_1_11_0() {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		$new_columns = [
+			'due_at'                     => 'DATETIME DEFAULT NULL AFTER submission_type',
+			'late_policy'                => "ENUM('accept', 'penalty', 'reject') NOT NULL DEFAULT 'accept' AFTER due_at",
+			'late_penalty_schedule_json' => 'TEXT DEFAULT NULL AFTER late_policy',
+		];
+
+		foreach ( $new_columns as $column_name => $column_def ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
+			$column_exists = $wpdb->get_var(
+				$wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $assignments_table, $column_name )
+			);
+			if ( ! $column_exists ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( "ALTER TABLE {$assignments_table} ADD COLUMN {$column_name} {$column_def}" );
+			}
+		}
 	}
 
 	/**

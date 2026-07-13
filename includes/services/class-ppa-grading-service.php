@@ -86,6 +86,27 @@ class PressPrimer_Assignment_Grading_Service {
 		 */
 		do_action( 'pressprimer_assignment_before_grade', $submission_id );
 
+		// Apply the graduated late penalty (2.2, feature 009). The grader
+		// enters the raw score; when the assignment's late policy is
+		// 'penalty' and the submission is late, the schedule resolves a
+		// deduction and the stored score becomes the penalized final. The
+		// breakdown is kept in submission meta so the grading interface
+		// and student view can itemize it. Pass/fail uses the final score.
+		$late_penalty = null;
+		if ( 'penalty' === $assignment->late_policy ) {
+			$late_penalty = $this->resolve_late_penalty( $submission, $assignment, $score );
+		}
+
+		if ( null !== $late_penalty ) {
+			$score = $late_penalty['final_score'];
+			$submission->set_meta( 'late_penalty', $late_penalty );
+		} elseif ( null !== $submission->get_meta( 'late_penalty' ) ) {
+			// Regrade after the policy or schedule stopped applying —
+			// clear the stale breakdown so nothing itemizes a penalty
+			// that no longer exists.
+			$submission->set_meta( 'late_penalty', null );
+		}
+
 		// Determine pass/fail.
 		$passing_score = floatval( $assignment->passing_score );
 		$passed        = $score >= $passing_score;
@@ -207,6 +228,116 @@ class PressPrimer_Assignment_Grading_Service {
 			'passed'        => $passed,
 			'grader_id'     => $submission->grader_id,
 			'graded_at'     => $submission->graded_at,
+		];
+	}
+
+	/**
+	 * Resolve the late penalty for a submission from the assignment's schedule
+	 *
+	 * Measures lateness against the student's effective due date — the
+	 * assignment default superseded by addon-supplied dates (Educator's
+	 * per-group dates today, per-student overrides in Educator 2.2) via
+	 * the pressprimer_assignment_due_date_for_user filter. One calculation
+	 * path, no addon-specific branches.
+	 *
+	 * Tier matching: comparisons happen in minutes. The first tier whose
+	 * threshold covers the lateness applies (a null threshold covers any
+	 * lateness — the single-tier flat case). Lateness beyond the last tier
+	 * takes the last tier's penalty; the schedule's cutoff is enforced at
+	 * submission time, not here — a submission that exists is graded.
+	 *
+	 * The penalty is a percentage of the earned raw score ("deduct 10%"
+	 * takes 10% of what the student scored, not of max points).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param PressPrimer_Assignment_Submission $submission The submission.
+	 * @param PressPrimer_Assignment_Assignment $assignment Its assignment.
+	 * @param float                             $raw_score  Raw score before penalty.
+	 * @return array|null Breakdown array (late_minutes, tier_index,
+	 *                    penalty_percent, raw_score, deduction, final_score)
+	 *                    or null when no penalty applies.
+	 */
+	public function resolve_late_penalty( $submission, $assignment, $raw_score ) {
+		if ( empty( $submission->submitted_at ) ) {
+			return null;
+		}
+
+		$schedule = $assignment->get_late_penalty_schedule();
+		if ( null === $schedule ) {
+			return null;
+		}
+
+		// Effective due date for this student (addon filters applied).
+		$due_at = $assignment->get_due_date_for_user( (int) $submission->user_id );
+		if ( empty( $due_at ) ) {
+			// No due date for this student — nothing is ever late.
+			return null;
+		}
+
+		// Both datetimes are stored as UTC MySQL strings.
+		$due_timestamp       = strtotime( $due_at . ' UTC' );
+		$submitted_timestamp = strtotime( $submission->submitted_at . ' UTC' );
+
+		if ( false === $due_timestamp || false === $submitted_timestamp ) {
+			return null;
+		}
+
+		$late_seconds = $submitted_timestamp - $due_timestamp;
+		if ( $late_seconds <= 0 ) {
+			// On time.
+			return null;
+		}
+
+		// Whole minutes, rounded up: 30 seconds late is late.
+		$late_minutes = (int) ceil( $late_seconds / 60 );
+
+		// First tier whose threshold covers the lateness applies; beyond
+		// the last tier, the last tier applies.
+		$tiers      = $schedule['tiers'];
+		$tier_index = count( $tiers ) - 1;
+		foreach ( $tiers as $index => $tier ) {
+			if ( null === $tier['late_by_hours'] || $late_minutes <= $tier['late_by_hours'] * 60 ) {
+				$tier_index = $index;
+				break;
+			}
+		}
+
+		$penalty_percent = (float) $tiers[ $tier_index ]['penalty_percent'];
+		$raw_score       = (float) $raw_score;
+		$penalty         = round( $raw_score * $penalty_percent / 100, 2 );
+
+		/**
+		 * Filters the late penalty resolved from a graduated schedule.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param float $penalty       Penalty amount in points (deducted from the raw score).
+		 * @param int   $submission_id The submission ID.
+		 * @param float $raw_score     Raw score before penalty.
+		 * @param array $schedule      The decoded schedule array (tiers + cutoff_hours).
+		 * @param int   $late_minutes  Lateness in minutes past the effective due date.
+		 */
+		$penalty = apply_filters(
+			'pressprimer_assignment_late_penalty_calculated',
+			$penalty,
+			(int) $submission->id,
+			$raw_score,
+			$schedule,
+			$late_minutes
+		);
+
+		// Clamp: a filtered penalty can neither add points nor push the
+		// final score below zero.
+		$penalty = max( 0.0, min( (float) $penalty, $raw_score ) );
+
+		return [
+			'late_minutes'    => $late_minutes,
+			'tier_index'      => $tier_index,
+			'penalty_percent' => $penalty_percent,
+			'raw_score'       => $raw_score,
+			'deduction'       => $penalty,
+			'final_score'     => round( $raw_score - $penalty, 2 ),
 		];
 	}
 
