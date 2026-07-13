@@ -253,6 +253,41 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* Locked (upsell) report cards: shown when the providing add-on is inactive. */
+.ppa-report-card--locked {
+	cursor: default;
+	background: #fafafa;
+}
+
+.ppa-report-card--locked:hover {
+	transform: none;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ppa-report-card--locked .ppa-report-card-title {
+	color: #646970;
+}
+
+.ppa-report-card-lock {
+	font-size: 13px;
+	color: #8c8c8c;
+}
+
+.ppa-report-card-upsell {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 14px;
+	flex-wrap: wrap;
+}
+
+.ppa-report-card-requires {
+	font-size: 12px;
+	font-weight: 500;
+	color: #8c8c8c;
+}
+
 /* ==========================================================================
    Reports Content
    ========================================================================== */

@@ -9,9 +9,19 @@
  */
 
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Spin, Alert, Card, Row, Col, Select, Empty } from 'antd';
+import {
+	Spin,
+	Alert,
+	Card,
+	Row,
+	Col,
+	Select,
+	Empty,
+	Tooltip as AntTooltip,
+	Button,
+} from 'antd';
 import {
 	TrophyOutlined,
 	ClockCircleOutlined,
@@ -25,6 +35,8 @@ import {
 	SafetyCertificateOutlined,
 	ExperimentOutlined,
 	DeleteOutlined,
+	TeamOutlined,
+	LockOutlined,
 } from '@ant-design/icons';
 import {
 	LineChart,
@@ -57,6 +69,7 @@ const ICON_MAP = {
 	SafetyCertificateOutlined: <SafetyCertificateOutlined />,
 	ExperimentOutlined: <ExperimentOutlined />,
 	DeleteOutlined: <DeleteOutlined />,
+	TeamOutlined: <TeamOutlined />,
 };
 
 /**
@@ -465,49 +478,109 @@ const Reports = () => {
 							) }
 						</h2>
 						<Row gutter={ [ 16, 16 ] }>
-							{ reports.map( ( report ) => (
-								<Col
-									key={ report.key }
-									xs={ 24 }
-									sm={ 12 }
-									lg={ 8 }
-								>
-									<Card
-										className={ `ppa-report-card ${
-											report.comingSoon
-												? 'ppa-report-card--coming-soon'
-												: ''
-										}` }
-										hoverable={ report.available }
-										onClick={ () => {
-											if (
-												report.available &&
-												report.href
-											) {
-												window.location.href =
-													report.href;
-											}
-										} }
+							{ reports.map( ( report ) => {
+								const locked = !! report.locked;
+								return (
+									<Col
+										key={ report.key }
+										xs={ 24 }
+										sm={ 12 }
+										lg={ 8 }
 									>
-										<div
-											className="ppa-report-card-icon"
-											style={ {
-												backgroundColor: report.color,
+										<Card
+											className={ `ppa-report-card ${
+												report.comingSoon
+													? 'ppa-report-card--coming-soon'
+													: ''
+											}${
+												locked
+													? ' ppa-report-card--locked'
+													: ''
+											}` }
+											hoverable={
+												report.available && ! locked
+											}
+											onClick={ () => {
+												if (
+													! locked &&
+													report.available &&
+													report.href
+												) {
+													window.location.href =
+														report.href;
+												}
 											} }
 										>
-											{ report.icon }
-										</div>
-										<div className="ppa-report-card-content">
-											<h3 className="ppa-report-card-title">
-												{ report.title }
-											</h3>
-											<p className="ppa-report-card-description">
-												{ report.description }
-											</p>
-										</div>
-									</Card>
-								</Col>
-							) ) }
+											<div
+												className="ppa-report-card-icon"
+												style={ {
+													backgroundColor: locked
+														? '#94a3b8'
+														: report.color,
+												} }
+											>
+												{ report.icon }
+											</div>
+											<div className="ppa-report-card-content">
+												<h3 className="ppa-report-card-title">
+													{ report.title }
+													{ locked &&
+														report.tierName && (
+															<AntTooltip
+																title={ sprintf(
+																	/* translators: %s: premium tier name (Educator, School, or Enterprise). */
+																	__(
+																		'Available in the %s add-on',
+																		'pressprimer-assignment'
+																	),
+																	report.tierName
+																) }
+															>
+																<LockOutlined className="ppa-report-card-lock" />
+															</AntTooltip>
+														) }
+												</h3>
+												<p className="ppa-report-card-description">
+													{ report.description }
+												</p>
+												{ locked && (
+													<div className="ppa-report-card-upsell">
+														<span className="ppa-report-card-requires">
+															{ report.tierName
+																? sprintf(
+																		/* translators: %s: premium tier name (Educator, School, or Enterprise). */
+																		__(
+																			'Requires the %s add-on.',
+																			'pressprimer-assignment'
+																		),
+																		report.tierName
+																  )
+																: __(
+																		'Requires a premium add-on.',
+																		'pressprimer-assignment'
+																  ) }
+														</span>
+														<Button
+															type="primary"
+															size="small"
+															href={
+																report.upgradeUrl
+															}
+															target="_blank"
+															rel="noopener noreferrer"
+														>
+															{ __(
+																'Upgrade',
+																'pressprimer-assignment'
+															) }
+														</Button>
+													</div>
+												) }
+											</div>
+										</Card>
+									</Col>
+								);
+							} ) }
 						</Row>
 					</div>
 				</div>

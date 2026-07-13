@@ -100,18 +100,42 @@ class PressPrimer_Assignment_Upgrade_Page {
 	 * @return bool True when the Enterprise addon is active.
 	 */
 	public function enterprise_addon_active() {
-		if ( defined( 'PRESSPRIMER_ASSIGNMENT_ENTERPRISE_VERSION' ) ) {
-			return true;
+		return self::tier_active( 'enterprise' );
+	}
+
+	/**
+	 * Check whether a premium tier's addon is currently active.
+	 *
+	 * The tier version constants are checked first: each addon defines its
+	 * constant on load, and (as shipped in 2.1) Enterprise never registers
+	 * with the addon manager, so the constant is the authoritative signal.
+	 * The addon-manager tier lookup is a fallback in case a future addon
+	 * build registers with the manager without defining its constant.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $tier Tier slug: 'educator', 'school', or 'enterprise'.
+	 * @return bool True when the tier's addon is active.
+	 */
+	public static function tier_active( $tier ) {
+		if ( ! class_exists( 'PressPrimer_Assignment_Addon_Manager' ) ) {
+			// Defensive — without the manager no tier can be detected.
+			return false;
 		}
 
-		if ( ! class_exists( 'PressPrimer_Assignment_Addon_Manager' ) ) {
-			// Defensive — if the manager is missing, show the page.
-			return false;
+		$by_constant = [
+			'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
+			'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
+			'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
+		];
+
+		if ( ! empty( $by_constant[ $tier ] ) ) {
+			return true;
 		}
 
 		$manager = PressPrimer_Assignment_Addon_Manager::get_instance();
 
-		foreach ( array_keys( $manager->get_by_tier( 'enterprise' ) ) as $slug ) {
+		foreach ( array_keys( $manager->get_by_tier( $tier ) ) as $slug ) {
 			if ( $manager->is_active( $slug ) ) {
 				return true;
 			}
@@ -654,5 +678,151 @@ class PressPrimer_Assignment_Upgrade_Page {
 				'url'         => 'https://pressprimer.com/pressprimer-assignment-enterprise/',
 			],
 		];
+	}
+
+	/**
+	 * Ordered catalog of premium report cards shown on the Reports page.
+	 *
+	 * The free plugin's own knowledge of the reports each premium tier adds,
+	 * so the Reports page can advertise them (locked) even when the providing
+	 * addon is not installed. Order is meaningful — it is the display order,
+	 * grouped by tier (Educator, then School, then Enterprise) — and MUST
+	 * stay stable whether a report is locked or available, so the grid does
+	 * not reflow when an addon is activated.
+	 *
+	 * Keys, titles, descriptions, icon types, and colors mirror the cards
+	 * each addon registers via `pressprimer_assignment_reports_addon_reports`
+	 * (verified against Educator 2.1 and Enterprise 2.1), so a locked card
+	 * sits exactly where its real card appears once the addon is active.
+	 * The `group-performance` entry fronts a report School has not shipped
+	 * yet (School 2.2) — when it ships, School must register it under this
+	 * same key so the locked card resolves in place.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array<int, array<string, string>> Ordered premium report catalog.
+	 */
+	public static function get_premium_report_catalog() {
+		return [
+			[
+				'key'         => 'group-completion',
+				'tier'        => 'educator',
+				'title'       => __( 'Group Completion Reports', 'pressprimer-assignment' ),
+				'description' => __( 'See per-group submission status, score distribution, and completion grids. Drill down into individual member submission histories.', 'pressprimer-assignment' ),
+				'iconType'    => 'PieChartOutlined',
+				'color'       => '#14b8a6',
+			],
+			[
+				'key'         => 'per-criteria-breakdown',
+				'tier'        => 'educator',
+				'title'       => __( 'Per-Criteria Grade Breakdown', 'pressprimer-assignment' ),
+				'description' => __( 'See how every student performs on each rubric criterion. Identify class-wide weak spots and drill into the level-by-level distribution per criterion. Filter by group when you need to compare cohorts.', 'pressprimer-assignment' ),
+				'iconType'    => 'BarChartOutlined',
+				'color'       => '#8b5cf6',
+			],
+			[
+				'key'         => 'group-performance',
+				'tier'        => 'school',
+				'title'       => __( 'Group Performance Comparison', 'pressprimer-assignment' ),
+				'description' => __( 'Compare submission rates, average scores, and grading turnaround across your groups side by side.', 'pressprimer-assignment' ),
+				'iconType'    => 'TeamOutlined',
+				'color'       => '#f59e0b',
+			],
+			[
+				'key'         => 'audit-trail',
+				'tier'        => 'enterprise',
+				'title'       => __( 'Audit Trail', 'pressprimer-assignment' ),
+				'description' => __( 'View a complete audit log of all assignment, submission, and grading activity for compliance and troubleshooting.', 'pressprimer-assignment' ),
+				'iconType'    => 'AuditOutlined',
+				'color'       => '#722ed1',
+			],
+		];
+	}
+
+	/**
+	 * Premium report cards merged with the addon-registered real cards.
+	 *
+	 * Walks the catalog in order and resolves each entry against reality:
+	 *
+	 * - Tier active and the addon registered a card with the same key →
+	 *   the real card, in the catalog position.
+	 * - Tier active but no matching card (the user lacks the capability the
+	 *   addon gates the card behind, or the installed addon version does not
+	 *   ship the report yet) → skipped silently. Never show an owner of a
+	 *   tier an upgrade prompt for that tier.
+	 * - Tier inactive → a locked card (lock flag, tier label, pricing URL),
+	 *   built for administrators only. For non-admins locked entries are
+	 *   skipped, so teachers receive only reports from active tiers.
+	 *
+	 * Registered cards the catalog does not know about (e.g. Enterprise's
+	 * Plagiarism report, future addon reports) are appended after the catalog
+	 * entries in their registration order. The catalog order never changes
+	 * with which tiers are active, so the grid does not reflow when an addon
+	 * is enabled or disabled.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array $registered_cards Cards from the
+	 *                                pressprimer_assignment_reports_addon_reports filter.
+	 * @return array<int, array<string, mixed>> Ordered report cards for the Reports app.
+	 */
+	public static function get_premium_report_cards( $registered_cards ) {
+		if ( ! is_array( $registered_cards ) ) {
+			$registered_cards = [];
+		}
+
+		$by_key = [];
+		foreach ( $registered_cards as $card ) {
+			if ( is_array( $card ) && ! empty( $card['key'] ) ) {
+				$by_key[ (string) $card['key'] ] = $card;
+			}
+		}
+
+		$tiers    = self::get_tiers();
+		$is_admin = current_user_can( 'manage_options' );
+
+		$cards        = [];
+		$catalog_keys = [];
+
+		foreach ( self::get_premium_report_catalog() as $entry ) {
+			$key                  = $entry['key'];
+			$tier                 = $entry['tier'];
+			$catalog_keys[ $key ] = true;
+
+			if ( self::tier_active( $tier ) ) {
+				if ( isset( $by_key[ $key ] ) ) {
+					$cards[] = $by_key[ $key ];
+				}
+				continue;
+			}
+
+			// Locked (upsell) cards are for administrators only — a teacher
+			// can neither buy an upgrade nor reach a locked report.
+			if ( ! $is_admin ) {
+				continue;
+			}
+
+			$cards[] = [
+				'key'         => $key,
+				'title'       => $entry['title'],
+				'description' => $entry['description'],
+				'iconType'    => $entry['iconType'],
+				'color'       => $entry['color'],
+				'tier'        => $tier,
+				'tierName'    => isset( $tiers[ $tier ]['name'] ) ? $tiers[ $tier ]['name'] : ucfirst( $tier ),
+				'locked'      => true,
+				'available'   => false,
+				'upgradeUrl'  => self::get_pricing_url( 'locked-card-' . $key, 'reports' ),
+			];
+		}
+
+		// Forward-compat: registered cards outside the catalog keep working.
+		foreach ( $registered_cards as $card ) {
+			if ( is_array( $card ) && ! empty( $card['key'] ) && ! isset( $catalog_keys[ (string) $card['key'] ] ) ) {
+				$cards[] = $card;
+			}
+		}
+
+		return $cards;
 	}
 }

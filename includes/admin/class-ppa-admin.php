@@ -435,6 +435,14 @@ class PressPrimer_Assignment_Admin {
 		 */
 		$addon_reports = apply_filters( 'pressprimer_assignment_reports_addon_reports', [] );
 
+		// Merge the registered cards with the premium report catalog: active
+		// tiers resolve to the real cards registered above, inactive tiers
+		// render as locked upgrade cards (administrators only), in a stable
+		// catalog order so the grid never reflows when an addon is toggled.
+		if ( class_exists( 'PressPrimer_Assignment_Upgrade_Page' ) ) {
+			$addon_reports = PressPrimer_Assignment_Upgrade_Page::get_premium_report_cards( $addon_reports );
+		}
+
 		/**
 		 * Filters the reports mascot image URL.
 		 *
