@@ -39,6 +39,7 @@ class PressPrimer_Assignment_Extraction_Dispatcher {
 	private static $extractable_types = array(
 		'pdf'  => 'PressPrimer_Assignment_PDF_Service',
 		'docx' => 'PressPrimer_Assignment_DOCX_Service',
+		'pptx' => 'PressPrimer_Assignment_PPTX_Text_Service',
 		'odt'  => 'PressPrimer_Assignment_ODT_Service',
 		'rtf'  => 'PressPrimer_Assignment_RTF_Service',
 		'txt'  => 'PressPrimer_Assignment_Text_Service',

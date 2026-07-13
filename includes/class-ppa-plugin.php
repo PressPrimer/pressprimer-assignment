@@ -161,6 +161,7 @@ class PressPrimer_Assignment_Plugin {
 		$extraction_hooks = array(
 			'pressprimer_assignment_extract_pdf_text'  => 'PressPrimer_Assignment_PDF_Service',
 			'pressprimer_assignment_extract_docx_text' => 'PressPrimer_Assignment_DOCX_Service',
+			'pressprimer_assignment_extract_pptx_text' => 'PressPrimer_Assignment_PPTX_Text_Service',
 			'pressprimer_assignment_extract_odt_text'  => 'PressPrimer_Assignment_ODT_Service',
 			'pressprimer_assignment_extract_rtf_text'  => 'PressPrimer_Assignment_RTF_Service',
 			'pressprimer_assignment_extract_txt_text'  => 'PressPrimer_Assignment_Text_Service',

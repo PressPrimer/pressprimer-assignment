@@ -109,6 +109,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				max_file_size:
 					parseInt( assignmentData.max_file_size, 10 ) || 5242880,
 				max_files: parseInt( assignmentData.max_files, 10 ) || 5,
+				// Fallback list for legacy rows with no saved types —
+				// deliberately excludes pptx (2.2): existing assignments
+				// never gain a new allowed type from an update.
 				allowed_file_types: assignmentData.allowed_file_types || [
 					'pdf',
 					'docx',
@@ -496,6 +499,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						allowed_file_types: [
 							'pdf',
 							'docx',
+							'pptx',
 							'txt',
 							'rtf',
 							'odt',
