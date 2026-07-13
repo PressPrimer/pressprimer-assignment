@@ -333,6 +333,11 @@ class PressPrimer_Assignment_Admin_Grading {
 					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
 					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
 				],
+				// Premium touchpoints eligible for this user (empty for
+				// non-admins) — resolved server-side by the registry.
+				'touchpoints'  => class_exists( 'PressPrimer_Assignment_Touchpoints' )
+					? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'grading' )
+					: [],
 			]
 		);
 	}

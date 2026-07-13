@@ -32,11 +32,16 @@ import {
 } from '@ant-design/icons';
 
 import RichTextEditor from '../../shared/components/RichTextEditor';
+import UpsellPrompt from '../../shared/components/UpsellPrompt';
 
 const { Title } = Typography;
 
 // Rubric editor is registered globally by the Educator addon.
 const RubricEditor = window.PPAERubricEditor || null;
+
+// Premium touchpoints for this surface, resolved server-side by the
+// touchpoint registry (empty for non-admins or when the addons are active).
+const editorTouchpoints = window.pressprimerAssignmentAdmin?.touchpoints || {};
 
 // Check if the Educator addon is active.
 const educatorActive =
@@ -309,6 +314,15 @@ const SettingsPanel = ( {
 						</Form.Item>
 					</Col>
 				</Row>
+
+				{ /* Groups touchpoint — where the group assignment selector
+				    lives once Educator is active. Server-gated. */ }
+				{ editorTouchpoints[ 'editor-sidebar' ] && (
+					<UpsellPrompt
+						touchpoint={ editorTouchpoints[ 'editor-sidebar' ] }
+						style={ { marginTop: 8 } }
+					/>
+				) }
 			</Card>
 
 			{ /* Grading Settings */ }
@@ -584,6 +598,19 @@ const SettingsPanel = ( {
 							style={ {
 								marginBottom: 0,
 							} }
+						/>
+					</>
+				) }
+
+				{ /* Anonymous grading touchpoint — where the Enterprise
+				    per-assignment toggle lives once active. Server-gated. */ }
+				{ editorTouchpoints[ 'grading-options' ] && (
+					<>
+						<Divider />
+						<UpsellPrompt
+							touchpoint={
+								editorTouchpoints[ 'grading-options' ]
+							}
 						/>
 					</>
 				) }

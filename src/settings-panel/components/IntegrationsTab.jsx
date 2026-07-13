@@ -24,6 +24,8 @@ import {
 } from 'antd';
 import { CheckCircleOutlined, SettingOutlined } from '@ant-design/icons';
 
+import UpsellPrompt from '../../shared/components/UpsellPrompt';
+
 const { Title, Paragraph, Text } = Typography;
 
 /**
@@ -477,6 +479,17 @@ const IntegrationsTab = ( { settings, updateSetting, settingsData } ) => {
 						)
 					) }
 				</div>
+
+				{ /* xAPI touchpoint — replaced by the School addon's xAPI
+				    settings tab once active. Server-gated. */ }
+				{ settingsData.touchpoints?.[ 'integrations-tab' ] && (
+					<UpsellPrompt
+						touchpoint={
+							settingsData.touchpoints[ 'integrations-tab' ]
+						}
+						style={ { marginTop: 24 } }
+					/>
+				) }
 			</div>
 
 			{ /* AI Settings - rendered by the School addon when active. */ }

@@ -1,0 +1,44 @@
+/**
+ * UpsellPrompt - inline premium touchpoint styles.
+ *
+ * Quiet info-blue tint per the 004/012 touchpoint design principles:
+ * contextual, ignorable, never blocking. Colors follow the admin palette
+ * (active background #e6f7ff, secondary text #50575e, muted icon #8c8c8c).
+ */
+
+.ppa-upsell-prompt {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 10px 12px;
+	background: #e6f7ff;
+	border: 1px solid #91d5ff;
+	border-radius: 6px;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.ppa-upsell-prompt--compact {
+	padding: 5px 10px;
+	border-radius: 4px;
+	font-size: 12px;
+}
+
+.ppa-upsell-prompt-icon {
+	color: #8c8c8c;
+	font-size: 13px;
+	align-self: center;
+	flex-shrink: 0;
+}
+
+.ppa-upsell-prompt .ppa-upsell-prompt-copy {
+	color: #50575e;
+	font-size: inherit;
+}
+
+.ppa-upsell-prompt-link {
+	font-weight: 500;
+	white-space: nowrap;
+	text-decoration: none;
+}

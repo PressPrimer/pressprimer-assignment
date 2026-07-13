@@ -38,6 +38,7 @@ import {
 } from '@ant-design/icons';
 import DocumentPanel from '../../shared/components/viewers/DocumentPanel';
 import RichTextEditor from '../../shared/components/RichTextEditor';
+import UpsellPrompt from '../../shared/components/UpsellPrompt';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -61,6 +62,11 @@ const PlagiarismPanel = window.PPAEntPlagiarismPanel || null;
 
 // School addon localizes provider configuration on the grading page.
 const schoolGrading = window.pressprimerAssignmentSchoolGrading || null;
+
+// Premium touchpoints for this surface, resolved server-side by the
+// touchpoint registry (empty for non-admins or when the addons are active).
+const gradingTouchpoints =
+	window.pressprimerAssignmentGradingData?.touchpoints || {};
 
 /**
  * Navigate to a grading URL for a given submission ID.
@@ -624,6 +630,18 @@ const GradingForm = ( { submissionId } ) => {
 							files={ files }
 							textContent={ submission.text_content }
 							wordCount={ submission.word_count }
+							toolbarNotice={
+								gradingTouchpoints[ 'viewer-toolbar' ] ? (
+									<UpsellPrompt
+										touchpoint={
+											gradingTouchpoints[
+												'viewer-toolbar'
+											]
+										}
+										compact
+									/>
+								) : null
+							}
 							/*
 							 * Allow Re-extract only on pre-grade statuses.
 							 * Once the submission is graded or returned the
@@ -946,6 +964,20 @@ const GradingForm = ( { submissionId } ) => {
 								</>
 							) }
 
+						{ /* Rubric touchpoint — where the rubric panel lives
+						    once Educator is active. Server-gated: present
+						    only for admins with Educator inactive. */ }
+						{ gradingTouchpoints[ 'rubric-panel' ] && (
+							<>
+								<Divider />
+								<UpsellPrompt
+									touchpoint={
+										gradingTouchpoints[ 'rubric-panel' ]
+									}
+								/>
+							</>
+						) }
+
 						{ /* Rubric Panel (Educator addon) */ }
 						{ RubricPanel && educatorGrading?.rubric && (
 							<>
@@ -968,6 +1000,19 @@ const GradingForm = ( { submissionId } ) => {
 										setHasChanges( true );
 									} }
 									disabled={ isReadOnly }
+								/>
+							</>
+						) }
+
+						{ /* Detection touchpoint — where the plagiarism panel
+						    lives once Enterprise is active. Server-gated. */ }
+						{ gradingTouchpoints[ 'plagiarism-panel' ] && (
+							<>
+								<Divider />
+								<UpsellPrompt
+									touchpoint={
+										gradingTouchpoints[ 'plagiarism-panel' ]
+									}
 								/>
 							</>
 						) }

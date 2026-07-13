@@ -11,6 +11,8 @@ import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Form, InputNumber, Select, Typography } from 'antd';
 
+import UpsellPrompt from '../../shared/components/UpsellPrompt';
+
 const { Title, Paragraph } = Typography;
 
 /**
@@ -162,6 +164,15 @@ const GeneralTab = ( { settings, updateSetting, settingsData } ) => {
 					</Form.Item>
 				</div>
 			</div>
+
+			{ /* White-label touchpoint — replaced by the Enterprise addon's
+			    White-Label settings tab once active. Server-gated. */ }
+			{ settingsData.touchpoints?.[ 'general-tab' ] && (
+				<UpsellPrompt
+					touchpoint={ settingsData.touchpoints[ 'general-tab' ] }
+					style={ { marginTop: 24 } }
+				/>
+			) }
 		</div>
 	);
 };
