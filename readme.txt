@@ -188,7 +188,9 @@ The plugin bundles the following open-source JavaScript libraries (compiled into
 
 * **PDF.js** (`pdfjs-dist` 3.11.174) — Apache-2.0 by Mozilla — renders PDF submissions in the browser. https://github.com/mozilla/pdf.js
 * **Mammoth** (`mammoth` 1.8.0) — BSD-2-Clause — renders Word (.docx) submissions in the browser. https://github.com/mwilliamson/mammoth.js
-* **pptxtojson** (`pptxtojson` 2.0.6) — MIT — parses PowerPoint (.pptx) submissions for the plugin's own slide viewer. Rendering is approximate; the original file is always downloadable. https://github.com/pipipi-pikachu/pptxtojson
+* **PptxViewJS** (`pptxviewjs` 1.1.9, pinned) — MIT — renders PowerPoint (.pptx) submissions as slides on a canvas. Rendering is approximate for exotic constructs; the original file is always downloadable. https://github.com/gptsci/pptxviewjs
+* **Chart.js** (`chart.js` 4.x) — MIT — used by PptxViewJS to draw charts embedded in presentations. https://github.com/chartjs/Chart.js
+* **JSZip** (`jszip` 3.x) — MIT — reads the PPTX (ZIP) container in the browser. https://github.com/Stuk/jszip
 
 == Frequently Asked Questions ==
 
