@@ -255,6 +255,13 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_Onboarding' ) ) {
 			PressPrimer_Assignment_Onboarding::get_instance();
 		}
+
+		// Initialize Upgrade page (2.2). Admin-only marketing surface —
+		// the class registers nothing when the Enterprise addon is active.
+		if ( class_exists( 'PressPrimer_Assignment_Upgrade_Page' ) ) {
+			$upgrade_page = new PressPrimer_Assignment_Upgrade_Page();
+			$upgrade_page->init();
+		}
 	}
 
 	/**
