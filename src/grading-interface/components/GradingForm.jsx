@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Row,
@@ -69,6 +69,58 @@ const gradingTouchpoints =
 	window.pressprimerAssignmentGradingData?.touchpoints || {};
 
 /**
+ * Format lateness minutes as a human-readable duration.
+ *
+ * "2 days, 4 hours", "5 hours, 30 minutes", or "12 minutes" — the two
+ * most significant non-zero units.
+ *
+ * @param {number} totalMinutes Lateness in minutes.
+ * @return {string} Localized duration string.
+ */
+const formatLateness = ( totalMinutes ) => {
+	const days = Math.floor( totalMinutes / 1440 );
+	const hours = Math.floor( ( totalMinutes % 1440 ) / 60 );
+	const minutes = totalMinutes % 60;
+
+	const parts = [];
+
+	if ( days > 0 ) {
+		parts.push(
+			sprintf(
+				/* translators: %d: number of days */
+				_n( '%d day', '%d days', days, 'pressprimer-assignment' ),
+				days
+			)
+		);
+	}
+	if ( hours > 0 ) {
+		parts.push(
+			sprintf(
+				/* translators: %d: number of hours */
+				_n( '%d hour', '%d hours', hours, 'pressprimer-assignment' ),
+				hours
+			)
+		);
+	}
+	if ( days === 0 && minutes > 0 ) {
+		parts.push(
+			sprintf(
+				/* translators: %d: number of minutes */
+				_n(
+					'%d minute',
+					'%d minutes',
+					minutes,
+					'pressprimer-assignment'
+				),
+				minutes
+			)
+		);
+	}
+
+	return parts.slice( 0, 2 ).join( ', ' );
+};
+
+/**
  * Navigate to a grading URL for a given submission ID.
  *
  * @param {number} id Submission ID.
@@ -117,6 +169,7 @@ const GradingForm = ( { submissionId } ) => {
 
 	// Navigation state.
 	const [ siblings, setSiblings ] = useState( { prev: null, next: null } );
+	const [ lateStatus, setLateStatus ] = useState( null );
 
 	// Ref for auto-save timer.
 	const autoSaveTimerRef = useRef( null );
@@ -148,6 +201,7 @@ const GradingForm = ( { submissionId } ) => {
 			setFeedback( data.submission.feedback || '' );
 			setCurrentStatus( data.submission.status );
 			setSiblings( data.siblings );
+			setLateStatus( data.late_status || null );
 			setHasChanges( false );
 
 			// Auto-set status to 'grading' if currently 'submitted'.
@@ -1104,6 +1158,108 @@ const GradingForm = ( { submissionId } ) => {
 									</Text>
 								</div>
 							) }
+
+							{ /* Late penalty itemization (2.2): the stored
+							    breakdown after grading, or a live preview of
+							    the tier that will apply before it. */ }
+							{ ( () => {
+								const stored = submission.late_penalty;
+								const info = stored || lateStatus;
+
+								if ( ! info ) {
+									return null;
+								}
+
+								const tierLabel = sprintf(
+									/* translators: 1: tier number, 2: penalty percentage */
+									__(
+										'Tier %1$d: −%2$s%%',
+										'pressprimer-assignment'
+									),
+									Number( info.tier_index ) + 1,
+									info.penalty_percent
+								);
+
+								const basisLabel =
+									info.basis === 'raw_score'
+										? __(
+												'of the earned score',
+												'pressprimer-assignment'
+										  )
+										: __(
+												'of the maximum points',
+												'pressprimer-assignment'
+										  );
+
+								let breakdown = null;
+
+								if ( stored ) {
+									breakdown = sprintf(
+										/* translators: 1: raw score, 2: deduction, 3: final score */
+										__(
+											'Raw score %1$s − %2$s late deduction = %3$s final',
+											'pressprimer-assignment'
+										),
+										stored.raw_score,
+										stored.deduction,
+										stored.final_score
+									);
+								} else if (
+									score !== null &&
+									score !== undefined
+								) {
+									const pct =
+										parseFloat( info.penalty_percent ) || 0;
+									const base =
+										info.basis === 'raw_score'
+											? score
+											: assignment.max_points;
+									const deduction = Math.min(
+										Math.round( base * pct ) / 100,
+										score
+									);
+									breakdown = sprintf(
+										/* translators: 1: deduction preview, 2: final score preview */
+										__(
+											'Deduction preview: −%1$s → final %2$s (applied when the grade is saved)',
+											'pressprimer-assignment'
+										),
+										deduction.toFixed( 2 ),
+										( score - deduction ).toFixed( 2 )
+									);
+								} else {
+									breakdown = __(
+										'The deduction is applied automatically when the grade is saved.',
+										'pressprimer-assignment'
+									);
+								}
+
+								return (
+									<div style={ { marginTop: 12 } }>
+										<Alert
+											type="warning"
+											showIcon
+											message={ sprintf(
+												/* translators: %s: duration like "2 days, 4 hours" */
+												__(
+													'Submitted %s late',
+													'pressprimer-assignment'
+												),
+												formatLateness(
+													Number( info.late_minutes )
+												)
+											) }
+											description={
+												<>
+													{ tierLabel } { basisLabel }
+													<br />
+													{ breakdown }
+												</>
+											}
+										/>
+									</div>
+								);
+							} )() }
 
 							{ /* Quick Score Buttons */ }
 							{ ! isReadOnly && (

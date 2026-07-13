@@ -610,6 +610,23 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Get sibling submission IDs for navigation.
 		$siblings = $this->get_siblings( $submission );
 
+		// Lateness context (2.2, feature 009). late_penalty is the stored
+		// breakdown written at grading time; late_status is the live
+		// preview (lateness + covering tier) the grading interface shows
+		// before a score exists. Computed only for the penalty policy.
+		$late_penalty = $submission->get_meta( 'late_penalty' );
+		$late_status  = null;
+
+		if ( $assignment && 'penalty' === $assignment->late_policy && class_exists( 'PressPrimer_Assignment_Grading_Service' ) ) {
+			$grading_service = new PressPrimer_Assignment_Grading_Service();
+			$late_status     = $grading_service->get_late_status( $submission, $assignment );
+
+			if ( null !== $late_status ) {
+				// The assignment block below already carries the schedule.
+				unset( $late_status['schedule'] );
+			}
+		}
+
 		// Surface auto-cleanup notice fields. The Educator addon's data
 		// cleanup tool stamps these on the parent submission when it
 		// prunes graded-submission attachments, so the My Submissions /
@@ -640,7 +657,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		}
 
 		$response_data = [
-			'submission' => [
+			'submission'  => [
 				'id'                                      => (int) $submission->id,
 				'uuid'                                    => $submission->uuid,
 				'assignment_id'                           => (int) $submission->assignment_id,
@@ -672,18 +689,22 @@ class PressPrimer_Assignment_REST_Submissions {
 				'cleanup_attachments_pruned_count'        => $cleanup_pruned_count,
 				'cleanup_attachments_pruned_at'           => $cleanup_pruned_at,
 				'cleanup_attachments_pruned_at_formatted' => $cleanup_pruned_at_formatted,
+				'late_penalty'                            => is_array( $late_penalty ) ? $late_penalty : null,
 			],
-			'assignment' => $assignment ? [
-				'id'                 => (int) $assignment->id,
-				'title'              => $assignment->title,
-				'description'        => $assignment->description,
-				'instructions'       => $assignment->instructions,
-				'max_points'         => (float) $assignment->max_points,
-				'passing_score'      => (float) $assignment->passing_score,
-				'grading_guidelines' => $assignment->grading_guidelines,
+			'assignment'  => $assignment ? [
+				'id'                    => (int) $assignment->id,
+				'title'                 => $assignment->title,
+				'description'           => $assignment->description,
+				'instructions'          => $assignment->instructions,
+				'max_points'            => (float) $assignment->max_points,
+				'passing_score'         => (float) $assignment->passing_score,
+				'grading_guidelines'    => $assignment->grading_guidelines,
+				'late_policy'           => $assignment->late_policy,
+				'late_penalty_schedule' => $assignment->get_late_penalty_schedule(),
 			] : null,
-			'files'      => $file_data,
-			'siblings'   => $siblings,
+			'late_status' => $late_status,
+			'files'       => $file_data,
+			'siblings'    => $siblings,
 		];
 
 		/**

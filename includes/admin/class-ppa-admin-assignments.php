@@ -463,6 +463,11 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'status'             => $assignment->status,
 					'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
 					'categories'         => $category_ids,
+					// Due date in site-local time for the editor's picker;
+					// the REST layer converts back to UTC on save.
+					'due_at'             => $assignment->due_at ? get_date_from_gmt( $assignment->due_at ) : null,
+					'late_policy'        => $assignment->late_policy,
+					'late_penalty_schedule' => $assignment->get_late_penalty_schedule(),
 				];
 			}
 		}

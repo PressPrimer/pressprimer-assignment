@@ -312,6 +312,9 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			$this->render_meta( $assignment, $display );
 		}
 
+		// Due date and late policy (2.2, feature 009).
+		$this->render_late_policy( $assignment );
+
 		// Instructions.
 		if ( ! empty( $display['show_instructions'] ) && ! empty( $assignment->instructions ) ) {
 			?>
@@ -623,6 +626,147 @@ class PressPrimer_Assignment_Assignment_Renderer {
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Render the due date and late policy notice
+	 *
+	 * Shows the student's effective due date (their group or override
+	 * date when an addon supplies one) and, per the late policy:
+	 * - reject: a "late submissions are not accepted" line
+	 * - penalty: the schedule as a readable list, the cutoff when set,
+	 *   and what the percentages are deducted from
+	 * - accept: nothing beyond the due date itself
+	 *
+	 * Renders nothing when the student has no effective due date — the
+	 * policy is inert without one.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+	 */
+	private function render_late_policy( $assignment ) {
+		$due_at = $assignment->get_due_date_for_user( get_current_user_id() );
+
+		if ( empty( $due_at ) ) {
+			return;
+		}
+
+		$due_timestamp = strtotime( $due_at . ' UTC' );
+		if ( false === $due_timestamp ) {
+			return;
+		}
+
+		$datetime_format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
+		$schedule        = 'penalty' === $assignment->late_policy ? $assignment->get_late_penalty_schedule() : null;
+		?>
+		<div class="ppa-notice ppa-notice-info ppa-late-policy">
+			<p class="ppa-late-policy-due">
+				<span class="ppa-late-policy-due-label"><?php esc_html_e( 'Due:', 'pressprimer-assignment' ); ?></span>
+				<span class="ppa-late-policy-due-date"><?php echo esc_html( wp_date( $datetime_format, $due_timestamp ) ); ?></span>
+			</p>
+
+			<?php if ( 'reject' === $assignment->late_policy ) : ?>
+				<p class="ppa-late-policy-note"><?php esc_html_e( 'Late submissions are not accepted.', 'pressprimer-assignment' ); ?></p>
+			<?php elseif ( null !== $schedule ) : ?>
+				<ul class="ppa-late-policy-list">
+					<?php foreach ( $schedule['tiers'] as $tier ) : ?>
+						<li>
+							<?php
+							$tier_percent = $this->format_percent( $tier['penalty_percent'] );
+
+							if ( null === $tier['late_by_hours'] ) {
+								printf(
+									/* translators: %s: penalty percentage */
+									esc_html__( 'Any late submission: −%s%%', 'pressprimer-assignment' ),
+									esc_html( $tier_percent )
+								);
+							} else {
+								printf(
+									/* translators: 1: a duration like "1 day" or "12 hours", 2: penalty percentage */
+									esc_html__( 'Up to %1$s late: −%2$s%%', 'pressprimer-assignment' ),
+									esc_html( $this->format_hours( $tier['late_by_hours'] ) ),
+									esc_html( $tier_percent )
+								);
+							}
+							?>
+						</li>
+					<?php endforeach; ?>
+
+					<?php if ( null !== $schedule['cutoff_hours'] ) : ?>
+						<li class="ppa-late-policy-cutoff">
+							<?php
+							printf(
+								/* translators: %s: a duration like "7 days" */
+								esc_html__( 'Not accepted after %s.', 'pressprimer-assignment' ),
+								esc_html( $this->format_hours( $schedule['cutoff_hours'] ) )
+							);
+							?>
+						</li>
+					<?php endif; ?>
+				</ul>
+
+				<p class="ppa-late-policy-note">
+					<?php
+					if ( 'raw_score' === $schedule['basis'] ) {
+						esc_html_e( 'Late penalties are deducted from your earned score.', 'pressprimer-assignment' );
+					} else {
+						esc_html_e( 'Late penalties are deducted from the assignment\'s maximum points.', 'pressprimer-assignment' );
+					}
+					?>
+				</p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Format an hour count as a human-readable duration
+	 *
+	 * Whole multiples of 24 render as days ("1 day", "3 days"); anything
+	 * else renders as hours ("12 hours", "1.5 hours").
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param float $hours Duration in hours.
+	 * @return string Localized duration string.
+	 */
+	private function format_hours( $hours ) {
+		$hours = (float) $hours;
+
+		if ( $hours >= 24 && 0.0 === fmod( $hours, 24 ) ) {
+			$days = (int) round( $hours / 24 );
+
+			return sprintf(
+				/* translators: %s: number of days */
+				_n( '%s day', '%s days', $days, 'pressprimer-assignment' ),
+				number_format_i18n( $days )
+			);
+		}
+
+		$is_singular = 1.0 === $hours;
+
+		return sprintf(
+			/* translators: %s: number of hours */
+			_n( '%s hour', '%s hours', $is_singular ? 1 : 2, 'pressprimer-assignment' ),
+			0.0 === fmod( $hours, 1 ) ? number_format_i18n( (int) $hours ) : number_format_i18n( $hours, 2 )
+		);
+	}
+
+	/**
+	 * Format a percentage for display, trimming meaningless decimals
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param float $percent Percentage value.
+	 * @return string Localized number string.
+	 */
+	private function format_percent( $percent ) {
+		$percent = (float) $percent;
+
+		return 0.0 === fmod( $percent, 1 )
+			? number_format_i18n( (int) $percent )
+			: number_format_i18n( $percent, 2 );
 	}
 
 	/**

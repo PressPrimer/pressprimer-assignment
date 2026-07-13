@@ -232,37 +232,24 @@ class PressPrimer_Assignment_Grading_Service {
 	}
 
 	/**
-	 * Resolve the late penalty for a submission from the assignment's schedule
+	 * Get a submission's lateness status against the penalty schedule
 	 *
-	 * Measures lateness against the student's effective due date — the
-	 * assignment default superseded by addon-supplied dates (Educator's
-	 * per-group dates today, per-student overrides in Educator 2.2) via
-	 * the pressprimer_assignment_due_date_for_user filter. One calculation
-	 * path, no addon-specific branches.
-	 *
-	 * Tier matching: comparisons happen in minutes. The first tier whose
-	 * threshold covers the lateness applies (a null threshold covers any
-	 * lateness — the single-tier flat case). Lateness beyond the last tier
-	 * takes the last tier's penalty; the schedule's cutoff is enforced at
-	 * submission time, not here — a submission that exists is graded.
-	 *
-	 * The schedule's basis controls what the percentages deduct from:
-	 * 'max_points' (default) takes the percent of the assignment's maximum
-	 * points — the common LMS convention, where "-10%" costs the same
-	 * points regardless of the earned score; 'raw_score' takes the percent
-	 * of the student's earned score (proportional). Either way the final
-	 * score never drops below zero.
+	 * The score-free half of the penalty calculation: lateness in minutes
+	 * against the student's effective due date and the tier that covers
+	 * it. Used by resolve_late_penalty() and surfaced through the
+	 * submission REST response so the grading interface can preview which
+	 * tier applies before a score is entered.
 	 *
 	 * @since 2.2.0
 	 *
 	 * @param PressPrimer_Assignment_Submission $submission The submission.
 	 * @param PressPrimer_Assignment_Assignment $assignment Its assignment.
-	 * @param float                             $raw_score  Raw score before penalty.
-	 * @return array|null Breakdown array (late_minutes, tier_index,
-	 *                    penalty_percent, basis, raw_score, deduction,
-	 *                    final_score) or null when no penalty applies.
+	 * @return array|null Array with late_minutes, tier_index,
+	 *                    penalty_percent, basis, cutoff_hours, tier_count,
+	 *                    and the decoded schedule; null when the submission
+	 *                    is not late or no schedule/due date applies.
 	 */
-	public function resolve_late_penalty( $submission, $assignment, $raw_score ) {
+	public function get_late_status( $submission, $assignment ) {
 		if ( empty( $submission->submitted_at ) ) {
 			return null;
 		}
@@ -307,11 +294,59 @@ class PressPrimer_Assignment_Grading_Service {
 			}
 		}
 
-		$penalty_percent = (float) $tiers[ $tier_index ]['penalty_percent'];
+		return [
+			'late_minutes'    => $late_minutes,
+			'tier_index'      => $tier_index,
+			'penalty_percent' => (float) $tiers[ $tier_index ]['penalty_percent'],
+			'basis'           => $schedule['basis'],
+			'cutoff_hours'    => $schedule['cutoff_hours'],
+			'tier_count'      => count( $tiers ),
+			'schedule'        => $schedule,
+		];
+	}
+
+	/**
+	 * Resolve the late penalty for a submission from the assignment's schedule
+	 *
+	 * Builds on get_late_status(): lateness is measured against the
+	 * student's effective due date (one calculation path through the
+	 * pressprimer_assignment_due_date_for_user filter, no addon-specific
+	 * branches), the covering tier's percentage is applied, and the new
+	 * filter fires with the resolved amount. The schedule's cutoff is
+	 * enforced at submission time, not here — a submission that exists
+	 * is graded.
+	 *
+	 * The schedule's basis controls what the percentages deduct from:
+	 * 'max_points' (default) takes the percent of the assignment's maximum
+	 * points — the common LMS convention, where "-10%" costs the same
+	 * points regardless of the earned score; 'raw_score' takes the percent
+	 * of the student's earned score (proportional). Either way the final
+	 * score never drops below zero.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param PressPrimer_Assignment_Submission $submission The submission.
+	 * @param PressPrimer_Assignment_Assignment $assignment Its assignment.
+	 * @param float                             $raw_score  Raw score before penalty.
+	 * @return array|null Breakdown array (late_minutes, tier_index,
+	 *                    penalty_percent, basis, raw_score, deduction,
+	 *                    final_score) or null when no penalty applies.
+	 */
+	public function resolve_late_penalty( $submission, $assignment, $raw_score ) {
+		$status = $this->get_late_status( $submission, $assignment );
+
+		if ( null === $status ) {
+			return null;
+		}
+
+		$schedule        = $status['schedule'];
+		$late_minutes    = $status['late_minutes'];
+		$tier_index      = $status['tier_index'];
+		$penalty_percent = $status['penalty_percent'];
 		$raw_score       = (float) $raw_score;
 
 		// Deduction base per the schedule's basis setting.
-		$basis        = $schedule['basis'];
+		$basis        = $status['basis'];
 		$basis_amount = 'raw_score' === $basis ? $raw_score : (float) $assignment->max_points;
 		$penalty      = round( $basis_amount * $penalty_percent / 100, 2 );
 

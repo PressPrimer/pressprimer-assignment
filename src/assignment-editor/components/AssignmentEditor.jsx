@@ -8,6 +8,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import dayjs from 'dayjs';
 import {
 	Form,
 	Button,
@@ -38,6 +39,29 @@ const { Title, Paragraph } = Typography;
  * @param {Object} props                Component props.
  * @param {Object} props.assignmentData Initial assignment data from wp_localize_script.
  */
+// Default prefilled penalty tier — the simple case looks like a flat rate.
+const DEFAULT_TIER = { amount: 1, unit: 'days', penalty: 10 };
+
+/**
+ * Convert stored hours into a repeater row's amount + unit.
+ *
+ * Whole multiples of 24 present as days; anything else as hours. A null
+ * threshold (the "any lateness" flat case) presents as an empty amount.
+ *
+ * @param {number|string|null} hours Stored hour count.
+ * @return {Object} { amount, unit }.
+ */
+const hoursToAmountUnit = ( hours ) => {
+	const numeric = parseFloat( hours );
+	if ( isNaN( numeric ) || numeric <= 0 ) {
+		return { amount: null, unit: 'days' };
+	}
+	if ( numeric >= 24 && numeric % 24 === 0 ) {
+		return { amount: numeric / 24, unit: 'days' };
+	}
+	return { amount: numeric, unit: 'hours' };
+};
+
 const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ form ] = Form.useForm();
 	const [ saving, setSaving ] = useState( false );
@@ -100,6 +124,36 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				ai_auto_grade: aiAutoGrade,
 			};
 
+			// Late policy (2.2): map the stored schedule into repeater rows.
+			const schedule = assignmentData.late_penalty_schedule || null;
+			const cutoffRow =
+				schedule && schedule.cutoff_hours
+					? hoursToAmountUnit( schedule.cutoff_hours )
+					: { amount: 7, unit: 'days' };
+
+			fieldValues.due_at = assignmentData.due_at
+				? dayjs( assignmentData.due_at )
+				: null;
+			fieldValues.late_policy = assignmentData.late_policy || 'accept';
+			fieldValues.late_penalty_tiers =
+				schedule &&
+				Array.isArray( schedule.tiers ) &&
+				schedule.tiers.length
+					? schedule.tiers.map( ( tier ) => ( {
+							...hoursToAmountUnit( tier.late_by_hours ),
+							penalty: parseFloat( tier.penalty_percent ),
+					  } ) )
+					: [ { ...DEFAULT_TIER } ];
+			fieldValues.late_penalty_basis =
+				schedule && schedule.basis === 'raw_score'
+					? 'raw_score'
+					: 'max_points';
+			fieldValues.late_cutoff_enabled = !! (
+				schedule && schedule.cutoff_hours
+			);
+			fieldValues.late_cutoff_amount = cutoffRow.amount;
+			fieldValues.late_cutoff_unit = cutoffRow.unit;
+
 			form.setFieldsValue( fieldValues );
 
 			// Initialize rubric data from existing rubric structure.
@@ -120,10 +174,28 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 
 			const assignmentId = currentId || assignmentData.id;
 
-			// Prepare payload — exclude rubric_enabled (managed by Educator endpoints).
-			const { rubric_enabled: rubricEnabledValue, ...rest } = values;
+			// Prepare payload — exclude rubric_enabled (managed by Educator
+			// endpoints) and the late-policy helper fields (collapsed into
+			// one structured schedule object below).
+			const {
+				rubric_enabled: rubricEnabledValue,
+				late_penalty_tiers: latePenaltyTiers,
+				late_penalty_basis: latePenaltyBasis,
+				late_cutoff_enabled: lateCutoffEnabled,
+				late_cutoff_amount: lateCutoffAmount,
+				late_cutoff_unit: lateCutoffUnit,
+				...rest
+			} = values;
+
+			const toHours = ( amount, unit ) =>
+				unit === 'days' ? amount * 24 : amount;
+
 			const payload = {
 				...rest,
+				due_at: values.due_at
+					? values.due_at.format( 'YYYY-MM-DD HH:mm:ss' )
+					: null,
+				late_policy: values.late_policy || 'accept',
 				allow_resubmission: values.allow_resubmission ? 1 : 0,
 				max_resubmissions: values.allow_resubmission
 					? values.max_resubmissions
@@ -131,6 +203,33 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				ai_auto_grade: values.ai_auto_grade ? 1 : 0,
 				categories: selectedCategories,
 			};
+
+			// The schedule is sent only under the penalty policy; other
+			// policies leave any stored schedule untouched so switching
+			// back to "Apply a penalty" restores the previous tiers.
+			if ( values.late_policy === 'penalty' ) {
+				payload.late_penalty_schedule =
+					Array.isArray( latePenaltyTiers ) && latePenaltyTiers.length
+						? {
+								tiers: latePenaltyTiers.map( ( tier ) => ( {
+									late_by_hours:
+										tier.amount === null ||
+										tier.amount === undefined
+											? null
+											: toHours( tier.amount, tier.unit ),
+									penalty_percent: tier.penalty,
+								} ) ),
+								cutoff_hours:
+									lateCutoffEnabled && lateCutoffAmount
+										? toHours(
+												lateCutoffAmount,
+												lateCutoffUnit
+										  )
+										: null,
+								basis: latePenaltyBasis || 'max_points',
+						  }
+						: null;
+			}
 
 			// Submit via REST API.
 			const endpoint = assignmentId
@@ -407,6 +506,13 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						],
 						rubric_enabled: false,
 						ai_auto_grade: false,
+						due_at: null,
+						late_policy: 'accept',
+						late_penalty_tiers: [ { ...DEFAULT_TIER } ],
+						late_penalty_basis: 'max_points',
+						late_cutoff_enabled: false,
+						late_cutoff_amount: 7,
+						late_cutoff_unit: 'days',
 					} }
 				>
 					{ /* Header */ }
