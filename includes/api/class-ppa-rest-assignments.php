@@ -447,6 +447,10 @@ class PressPrimer_Assignment_REST_Assignments {
 	public function create_item( $request ) {
 		$data = $this->sanitize_assignment_data( $request );
 
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
 		// Set author to current user.
 		$data['author_id'] = get_current_user_id();
 
@@ -521,6 +525,10 @@ class PressPrimer_Assignment_REST_Assignments {
 		}
 
 		$data = $this->sanitize_assignment_data( $request );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
 
 		// Track which fields changed for the audit log.
 		$old_status     = $assignment->status;
@@ -811,9 +819,11 @@ class PressPrimer_Assignment_REST_Assignments {
 	 * Extracts and sanitizes all assignment fields from the request.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.0 Can return WP_Error for invalid due dates, late
+	 *              policies, or late penalty schedules.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
-	 * @return array Sanitized assignment data.
+	 * @return array|WP_Error Sanitized assignment data, or WP_Error.
 	 */
 	private function sanitize_assignment_data( $request ) {
 		$data = [];
@@ -908,6 +918,63 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		// Due date (2.2): accepted as a site-timezone datetime string,
+		// stored in UTC like the other datetime columns. An empty value
+		// clears the due date.
+		if ( $request->has_param( 'due_at' ) ) {
+			$due_at_raw = $request->get_param( 'due_at' );
+
+			if ( null === $due_at_raw || '' === trim( (string) $due_at_raw ) ) {
+				$data['due_at'] = null;
+			} else {
+				$due_at_raw = sanitize_text_field( (string) $due_at_raw );
+				// Accept the HTML datetime-local separator too.
+				$due_at_raw = str_replace( 'T', ' ', $due_at_raw );
+
+				if ( false === strtotime( $due_at_raw ) ) {
+					return new WP_Error(
+						'pressprimer_assignment_invalid_due_at',
+						__( 'Invalid due date format.', 'pressprimer-assignment' ),
+						[ 'status' => 400 ]
+					);
+				}
+
+				$data['due_at'] = get_gmt_from_date( $due_at_raw );
+			}
+		}
+
+		// Late policy (2.2) — enum, invalid values rejected.
+		if ( null !== $request->get_param( 'late_policy' ) ) {
+			$late_policy = sanitize_text_field( $request->get_param( 'late_policy' ) );
+			if ( ! in_array( $late_policy, [ 'accept', 'penalty', 'reject' ], true ) ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_late_policy',
+					__( 'Invalid late policy. Must be accept, penalty, or reject.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$data['late_policy'] = $late_policy;
+		}
+
+		// Late penalty schedule (2.2): validated tier by tier with
+		// row-specific errors, then rebuilt from the validated numeric
+		// fields — the raw client payload is never stored.
+		if ( $request->has_param( 'late_penalty_schedule' ) ) {
+			$schedule_raw = $request->get_param( 'late_penalty_schedule' );
+
+			if ( null === $schedule_raw || [] === $schedule_raw || '' === $schedule_raw ) {
+				$data['late_penalty_schedule_json'] = null;
+			} else {
+				$schedule = $this->validate_late_penalty_schedule( $schedule_raw );
+
+				if ( is_wp_error( $schedule ) ) {
+					return $schedule;
+				}
+
+				$data['late_penalty_schedule_json'] = wp_json_encode( $schedule );
+			}
+		}
+
 		// JSON fields.
 		if ( null !== $request->get_param( 'allowed_file_types' ) ) {
 			$file_types = $request->get_param( 'allowed_file_types' );
@@ -927,6 +994,186 @@ class PressPrimer_Assignment_REST_Assignments {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Validate a late penalty schedule payload
+	 *
+	 * Enforces the schedule model from feature 009 with row-specific
+	 * error messages:
+	 * - 1–5 tiers
+	 * - thresholds strictly increasing; a null threshold ("any lateness",
+	 *   the flat case) is allowed only when it is the sole tier
+	 * - penalties 0–100, non-decreasing across tiers
+	 * - optional cutoff, later than the last tier's threshold
+	 * - basis: 'max_points' (default) or 'raw_score'
+	 *
+	 * Returns a clean structure built exclusively from the validated
+	 * numeric fields, ready for wp_json_encode() — the raw client
+	 * payload is never stored.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param mixed $raw Client-supplied schedule (array expected).
+	 * @return array|WP_Error Clean schedule array or a 400 WP_Error.
+	 */
+	private function validate_late_penalty_schedule( $raw ) {
+		if ( ! is_array( $raw ) || empty( $raw['tiers'] ) || ! is_array( $raw['tiers'] ) ) {
+			return new WP_Error(
+				'pressprimer_assignment_invalid_schedule',
+				__( 'A late penalty schedule needs at least one tier.', 'pressprimer-assignment' ),
+				[ 'status' => 400 ]
+			);
+		}
+
+		$raw_tiers = array_values( $raw['tiers'] );
+		$count     = count( $raw_tiers );
+
+		if ( $count > 5 ) {
+			return new WP_Error(
+				'pressprimer_assignment_invalid_schedule',
+				__( 'A late penalty schedule can have at most 5 tiers.', 'pressprimer-assignment' ),
+				[ 'status' => 400 ]
+			);
+		}
+
+		$tiers = [];
+
+		foreach ( $raw_tiers as $index => $tier ) {
+			$row = $index + 1;
+
+			if ( ! is_array( $tier ) ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule_tier',
+					sprintf(
+						/* translators: %d: tier row number */
+						__( 'Tier %d is not valid.', 'pressprimer-assignment' ),
+						$row
+					),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// Threshold: numeric hours > 0, or null only for a single-tier
+			// schedule (the flat "any lateness" case).
+			$threshold_raw = isset( $tier['late_by_hours'] ) ? $tier['late_by_hours'] : null;
+
+			if ( null === $threshold_raw || '' === $threshold_raw ) {
+				if ( $count > 1 ) {
+					return new WP_Error(
+						'pressprimer_assignment_invalid_schedule_tier',
+						sprintf(
+							/* translators: %d: tier row number */
+							__( 'Tier %d must have a time threshold.', 'pressprimer-assignment' ),
+							$row
+						),
+						[ 'status' => 400 ]
+					);
+				}
+				$threshold = null;
+			} else {
+				if ( ! is_numeric( $threshold_raw ) || (float) $threshold_raw <= 0 ) {
+					return new WP_Error(
+						'pressprimer_assignment_invalid_schedule_tier',
+						sprintf(
+							/* translators: %d: tier row number */
+							__( 'Tier %d must have a time threshold greater than zero.', 'pressprimer-assignment' ),
+							$row
+						),
+						[ 'status' => 400 ]
+					);
+				}
+				$threshold = round( (float) $threshold_raw, 2 );
+			}
+
+			// Strictly increasing thresholds.
+			if ( $index > 0 && null !== $threshold && $threshold <= $tiers[ $index - 1 ]['late_by_hours'] ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule_tier',
+					sprintf(
+						/* translators: 1: tier row number, 2: previous tier row number */
+						__( 'Tier %1$d must have a larger time threshold than Tier %2$d.', 'pressprimer-assignment' ),
+						$row,
+						$row - 1
+					),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// Penalty: 0–100.
+			$penalty_raw = isset( $tier['penalty_percent'] ) ? $tier['penalty_percent'] : null;
+
+			if ( ! is_numeric( $penalty_raw ) || (float) $penalty_raw < 0 || (float) $penalty_raw > 100 ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule_tier',
+					sprintf(
+						/* translators: %d: tier row number */
+						__( 'Tier %d must have a penalty between 0 and 100 percent.', 'pressprimer-assignment' ),
+						$row
+					),
+					[ 'status' => 400 ]
+				);
+			}
+
+			$penalty = round( (float) $penalty_raw, 2 );
+
+			// Non-decreasing penalties.
+			if ( $index > 0 && $penalty < $tiers[ $index - 1 ]['penalty_percent'] ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule_tier',
+					sprintf(
+						/* translators: 1: tier row number, 2: previous tier row number */
+						__( 'Tier %1$d cannot have a smaller penalty than Tier %2$d.', 'pressprimer-assignment' ),
+						$row,
+						$row - 1
+					),
+					[ 'status' => 400 ]
+				);
+			}
+
+			$tiers[] = [
+				'late_by_hours'   => $threshold,
+				'penalty_percent' => $penalty,
+			];
+		}
+
+		// Optional cutoff: must land after the last tier's threshold.
+		$cutoff     = null;
+		$cutoff_raw = isset( $raw['cutoff_hours'] ) ? $raw['cutoff_hours'] : null;
+
+		if ( null !== $cutoff_raw && '' !== $cutoff_raw ) {
+			if ( ! is_numeric( $cutoff_raw ) || (float) $cutoff_raw <= 0 ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule_cutoff',
+					__( 'The cutoff must be a number of hours greater than zero.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			$cutoff         = round( (float) $cutoff_raw, 2 );
+			$last_threshold = $tiers[ $count - 1 ]['late_by_hours'];
+
+			if ( null !== $last_threshold && $cutoff <= $last_threshold ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule_cutoff',
+					sprintf(
+						/* translators: %d: the last tier's row number */
+						__( 'The cutoff must be later than Tier %d\'s time threshold.', 'pressprimer-assignment' ),
+						$count
+					),
+					[ 'status' => 400 ]
+				);
+			}
+		}
+
+		// Basis: what the percentages deduct from.
+		$basis = isset( $raw['basis'] ) && 'raw_score' === $raw['basis'] ? 'raw_score' : 'max_points';
+
+		return [
+			'tiers'        => $tiers,
+			'cutoff_hours' => $cutoff,
+			'basis'        => $basis,
+		];
 	}
 
 	/**
@@ -1086,30 +1333,37 @@ class PressPrimer_Assignment_REST_Assignments {
 		}
 
 		$data = [
-			'id'                 => (int) $assignment->id,
-			'uuid'               => $assignment->uuid,
-			'title'              => $assignment->title,
-			'description'        => $assignment->description,
-			'instructions'       => $assignment->instructions,
-			'grading_guidelines' => $assignment->grading_guidelines,
-			'max_points'         => (float) $assignment->max_points,
-			'passing_score'      => (float) $assignment->passing_score,
-			'allow_resubmission' => (int) $assignment->allow_resubmission,
-			'max_resubmissions'  => (int) $assignment->max_resubmissions,
-			'allowed_file_types' => $assignment->allowed_file_types,
-			'max_file_size'      => (int) $assignment->max_file_size,
-			'max_files'          => (int) $assignment->max_files,
-			'submission_type'    => $assignment->submission_type,
-			'status'             => $assignment->status,
-			'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
-			'author_id'          => (int) $assignment->author_id,
-			'notification_email' => $assignment->notification_email ?? '',
-			'submission_count'   => (int) $assignment->submission_count,
-			'graded_count'       => (int) $assignment->graded_count,
-			'categories'         => $category_ids,
-			'category_details'   => $category_data,
-			'created_at'         => $assignment->created_at,
-			'updated_at'         => $assignment->updated_at,
+			'id'                    => (int) $assignment->id,
+			'uuid'                  => $assignment->uuid,
+			'title'                 => $assignment->title,
+			'description'           => $assignment->description,
+			'instructions'          => $assignment->instructions,
+			'grading_guidelines'    => $assignment->grading_guidelines,
+			'max_points'            => (float) $assignment->max_points,
+			'passing_score'         => (float) $assignment->passing_score,
+			'allow_resubmission'    => (int) $assignment->allow_resubmission,
+			'max_resubmissions'     => (int) $assignment->max_resubmissions,
+			'allowed_file_types'    => $assignment->allowed_file_types,
+			'max_file_size'         => (int) $assignment->max_file_size,
+			'max_files'             => (int) $assignment->max_files,
+			'submission_type'       => $assignment->submission_type,
+			// Due date in both site-local time (for editors/display) and
+			// UTC (the stored value); null when no due date is set.
+			'due_at'                => $assignment->due_at ? get_date_from_gmt( $assignment->due_at ) : null,
+			'due_at_gmt'            => $assignment->due_at ? $assignment->due_at : null,
+			'late_policy'           => $assignment->late_policy,
+			// Decoded, normalized schedule (tiers, cutoff_hours, basis) or null.
+			'late_penalty_schedule' => $assignment->get_late_penalty_schedule(),
+			'status'                => $assignment->status,
+			'ai_auto_grade'         => (int) $assignment->ai_auto_grade,
+			'author_id'             => (int) $assignment->author_id,
+			'notification_email'    => $assignment->notification_email ?? '',
+			'submission_count'      => (int) $assignment->submission_count,
+			'graded_count'          => (int) $assignment->graded_count,
+			'categories'            => $category_ids,
+			'category_details'      => $category_data,
+			'created_at'            => $assignment->created_at,
+			'updated_at'            => $assignment->updated_at,
 		];
 
 		/**
