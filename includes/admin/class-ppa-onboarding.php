@@ -60,6 +60,25 @@ class PressPrimer_Assignment_Onboarding {
 	const META_STARTED = 'pressprimer_assignment_onboarding_started';
 
 	/**
+	 * User meta key: setup banner dismissed flag (2.2)
+	 *
+	 * Dismissing the "Finish setting up" banner is permanent and per
+	 * user, and independent of wizard completion/skip state.
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const META_BANNER_DISMISSED = 'pressprimer_assignment_setup_banner_dismissed';
+
+	/**
+	 * Admin page slug of the setup wizard (registered by the Admin class).
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const SETUP_PAGE_SLUG = 'pressprimer-assignment-setup';
+
+	/**
 	 * Total number of onboarding steps
 	 *
 	 * Steps: welcome, menu, dashboard, assignments, grading, settings, complete.
@@ -102,6 +121,51 @@ class PressPrimer_Assignment_Onboarding {
 		add_action( 'wp_ajax_pressprimer_assignment_onboarding_progress', [ $this, 'handle_progress_ajax' ] );
 		add_action( 'wp_ajax_pressprimer_assignment_get_onboarding_state', [ $this, 'handle_get_state_ajax' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_assets' ] );
+
+		// 2.2: slim banner on PPA screens (replaces the auto-opening
+		// modal), its dismiss handler, and the relaunch reset handler.
+		add_action( 'admin_notices', [ $this, 'maybe_render_setup_banner' ] );
+		add_action( 'admin_init', [ $this, 'maybe_handle_banner_dismiss' ] );
+		add_action( 'admin_init', [ $this, 'maybe_handle_relaunch' ] );
+	}
+
+	/**
+	 * Check whether the current user can use the setup wizard
+	 *
+	 * Anyone who manages assignments gets the guided build — admins and
+	 * (on Educator sites) teachers alike, each with their own per-user
+	 * state. Admin-only content inside the wizard (the step 6 premium
+	 * line) is gated separately.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return bool True when the user can run the wizard.
+	 */
+	private function user_can_use_wizard() {
+		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+	}
+
+	/**
+	 * Get the setup wizard page URL
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param bool $relaunch Whether to include the nonce'd relaunch
+	 *                       parameter that resets wizard state on load.
+	 * @return string Setup page URL.
+	 */
+	public static function get_setup_url( $relaunch = false ) {
+		$url = admin_url( 'admin.php?page=' . self::SETUP_PAGE_SLUG );
+
+		if ( $relaunch ) {
+			$url = wp_nonce_url(
+				add_query_arg( 'ppa-relaunch', '1', $url ),
+				'pressprimer_assignment_setup_relaunch'
+			);
+		}
+
+		return $url;
 	}
 
 	/**
@@ -121,7 +185,7 @@ class PressPrimer_Assignment_Onboarding {
 			return false;
 		}
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			return false;
 		}
 
@@ -151,6 +215,15 @@ class PressPrimer_Assignment_Onboarding {
 
 		update_user_meta( $user_id, self::META_COMPLETED, true );
 		update_user_meta( $user_id, self::META_STEP, self::TOTAL_STEPS );
+
+		/**
+		 * Fires when a user completes the setup wizard.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int $user_id The user who completed the wizard.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_completed', $user_id );
 	}
 
 	/**
@@ -172,6 +245,16 @@ class PressPrimer_Assignment_Onboarding {
 
 		// Always mark as completed so the tour doesn't reappear on navigation.
 		update_user_meta( $user_id, self::META_COMPLETED, true );
+
+		/**
+		 * Fires when a user skips the setup wizard.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int  $user_id   The user who skipped.
+		 * @param bool $permanent Whether the skip is permanent.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_skipped', $user_id, (bool) $permanent );
 	}
 
 	/**
@@ -191,6 +274,15 @@ class PressPrimer_Assignment_Onboarding {
 		delete_user_meta( $user_id, self::META_SKIPPED );
 		delete_user_meta( $user_id, self::META_STEP );
 		delete_user_meta( $user_id, self::META_STARTED );
+
+		/**
+		 * Fires when a user's setup wizard state is reset (relaunch).
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int $user_id The user whose wizard state was reset.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_reset', $user_id );
 	}
 
 	/**
@@ -209,6 +301,15 @@ class PressPrimer_Assignment_Onboarding {
 
 		// Clear any previous skip.
 		delete_user_meta( $user_id, self::META_SKIPPED );
+
+		/**
+		 * Fires when a user starts the setup wizard.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int $user_id The user who started the wizard.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_started', $user_id );
 	}
 
 	/**
@@ -273,6 +374,9 @@ class PressPrimer_Assignment_Onboarding {
 			'state'     => $this->get_onboarding_state(),
 			'nonce'     => wp_create_nonce( 'pressprimer_assignment_onboarding' ),
 			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+			'restNonce' => wp_create_nonce( 'wp_rest' ),
+			'setupUrl'  => self::get_setup_url(),
+			'isAdmin'   => current_user_can( 'manage_options' ),
 			'pluginUrl' => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 			'urls'      => [
 				'dashboard'   => admin_url( 'admin.php?page=pressprimer-assignment' ),
@@ -291,13 +395,15 @@ class PressPrimer_Assignment_Onboarding {
 	}
 
 	/**
-	 * Conditionally enqueue the onboarding React bundle
+	 * Conditionally enqueue the wizard React bundle
 	 *
-	 * Always loads on Assignment admin pages so the relaunch function
-	 * (window.ppaLaunchOnboarding) is available from the Dashboard.
-	 * The JS init function checks should_show before auto-rendering.
+	 * 2.2: the bundle loads ONLY on the dedicated setup page — the wizard
+	 * is a full-screen page, not a modal, so no other admin page needs
+	 * its assets. (Before 2.2 the bundle loaded on every PPA page to
+	 * power an auto-opening modal; that behavior is removed.)
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.0 Scoped to the setup wizard page only.
 	 *
 	 * @param string $hook Current admin page hook suffix.
 	 */
@@ -305,15 +411,11 @@ class PressPrimer_Assignment_Onboarding {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page check.
 		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 
-		// Only load on Assignment admin pages.
-		$is_ppa_page = false !== strpos( $hook, 'pressprimer-assignment' )
-			|| ( ! empty( $current_page ) && 0 === strpos( $current_page, 'pressprimer-assignment' ) );
-
-		if ( ! $is_ppa_page ) {
+		if ( self::SETUP_PAGE_SLUG !== $current_page ) {
 			return;
 		}
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			return;
 		}
 
@@ -361,7 +463,7 @@ class PressPrimer_Assignment_Onboarding {
 	public function handle_progress_ajax() {
 		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			wp_send_json_error( [ 'message' => 'Permission denied.' ] );
 		}
 
@@ -410,10 +512,114 @@ class PressPrimer_Assignment_Onboarding {
 	public function handle_get_state_ajax() {
 		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			wp_send_json_error( [ 'message' => 'Permission denied.' ] );
 		}
 
 		wp_send_json_success( $this->get_onboarding_state() );
+	}
+
+	/**
+	 * Render the slim "finish setup" banner on PPA screens
+	 *
+	 * The lazy fallback for anyone the activation redirect didn't reach:
+	 * shown on Assignment admin pages (never on the wizard itself) while
+	 * should_show is true and the user hasn't dismissed it. Dismissal is
+	 * permanent, per user, and separate from wizard completion/skip.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_render_setup_banner() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page check.
+		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+		// PPA screens only, and never on the wizard page itself.
+		if ( '' === $current_page
+			|| 0 !== strpos( $current_page, 'pressprimer-assignment' )
+			|| self::SETUP_PAGE_SLUG === $current_page
+		) {
+			return;
+		}
+
+		if ( ! $this->should_show_onboarding() ) {
+			return;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::META_BANNER_DISMISSED, true ) ) {
+			return;
+		}
+
+		$dismiss_url = wp_nonce_url(
+			add_query_arg( 'ppa-dismiss-setup-banner', '1' ),
+			'pressprimer_assignment_dismiss_setup_banner'
+		);
+		?>
+		<div class="notice notice-info ppa-setup-banner">
+			<p>
+				<strong><?php esc_html_e( 'Finish setting up PressPrimer Assignment', 'pressprimer-assignment' ); ?></strong>
+				&nbsp;
+				<a href="<?php echo esc_url( self::get_setup_url() ); ?>" class="button button-primary button-small">
+					<?php esc_html_e( 'Launch setup', 'pressprimer-assignment' ); ?>
+				</a>
+				&nbsp;
+				<a href="<?php echo esc_url( $dismiss_url ); ?>" class="ppa-setup-banner-dismiss">
+					<?php esc_html_e( 'Dismiss', 'pressprimer-assignment' ); ?>
+				</a>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Handle the banner dismissal link
+	 *
+	 * Records the permanent per-user dismissal and redirects back to the
+	 * page the user was on, without the dismissal parameters.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_handle_banner_dismiss() {
+		if ( ! isset( $_GET['ppa-dismiss-setup-banner'] ) ) {
+			return;
+		}
+
+		check_admin_referer( 'pressprimer_assignment_dismiss_setup_banner' );
+
+		if ( ! $this->user_can_use_wizard() ) {
+			return;
+		}
+
+		update_user_meta( get_current_user_id(), self::META_BANNER_DISMISSED, true );
+
+		wp_safe_redirect( remove_query_arg( [ 'ppa-dismiss-setup-banner', '_wpnonce' ] ) );
+		exit;
+	}
+
+	/**
+	 * Handle a wizard relaunch request
+	 *
+	 * The Settings and dashboard "Setup wizard" links point at the setup
+	 * page with a nonce'd relaunch parameter; arriving with it resets the
+	 * user's wizard state (the existing reset action) so the wizard
+	 * starts fresh.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_handle_relaunch() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing check; nonce verified below.
+		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing check; nonce verified below.
+		if ( self::SETUP_PAGE_SLUG !== $current_page || ! isset( $_GET['ppa-relaunch'] ) ) {
+			return;
+		}
+
+		check_admin_referer( 'pressprimer_assignment_setup_relaunch' );
+
+		if ( ! $this->user_can_use_wizard() ) {
+			return;
+		}
+
+		$this->reset_onboarding();
 	}
 }

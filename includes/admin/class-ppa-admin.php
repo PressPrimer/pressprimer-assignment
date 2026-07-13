@@ -48,6 +48,9 @@ class PressPrimer_Assignment_Admin {
 		add_action( 'admin_menu', [ $this, 'add_grading_badge' ], 999 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
+		// One-time post-activation redirect to the setup wizard (2.2).
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_setup' ] );
+
 		// Initialize sub-admin classes.
 		$this->init_sub_admins();
 	}
@@ -196,6 +199,23 @@ class PressPrimer_Assignment_Admin {
 			[ $this, 'render_settings' ]
 		);
 
+		// Setup wizard page (2.2): registered under the PPA parent so the
+		// slug-prefix asset routing applies, then removed from the visible
+		// menu — it is reached only by redirect, banner, or relaunch links.
+		$setup_hook = add_submenu_page(
+			'pressprimer-assignment',
+			__( 'Setup', 'pressprimer-assignment' ),
+			__( 'Setup', 'pressprimer-assignment' ),
+			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
+			'pressprimer-assignment-setup',
+			[ $this, 'render_setup' ]
+		);
+		remove_submenu_page( 'pressprimer-assignment', 'pressprimer-assignment-setup' );
+
+		if ( $setup_hook ) {
+			add_action( 'load-' . $setup_hook, [ $this, 'prepare_setup_screen' ] );
+		}
+
 		/**
 		 * Fires after the core admin menu items are registered.
 		 *
@@ -204,6 +224,137 @@ class PressPrimer_Assignment_Admin {
 		 * @since 1.0.0
 		 */
 		do_action( 'pressprimer_assignment_admin_menu' );
+	}
+
+	/**
+	 * Prepare the setup wizard screen
+	 *
+	 * Runs on the wizard page's load hook, before admin-header output:
+	 * strips admin notices so the wizard is a clean full-screen canvas,
+	 * and tags the body so the wizard styles can take over the viewport.
+	 *
+	 * @since 2.2.0
+	 */
+	public function prepare_setup_screen() {
+		remove_all_actions( 'admin_notices' );
+		remove_all_actions( 'all_admin_notices' );
+
+		add_filter(
+			'admin_body_class',
+			function ( $classes ) {
+				return $classes . ' ppa-setup-wizard-page';
+			}
+		);
+	}
+
+	/**
+	 * Render the setup wizard page
+	 *
+	 * Outputs the mount point for the wizard React app. The bundle is
+	 * enqueued only for this page by PressPrimer_Assignment_Onboarding.
+	 *
+	 * @since 2.2.0
+	 */
+	public function render_setup() {
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
+			wp_die(
+				esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ),
+				esc_html__( 'Permission Denied', 'pressprimer-assignment' ),
+				[ 'response' => 403 ]
+			);
+		}
+
+		echo '<div id="ppa-setup-wizard-root" class="ppa-setup-wizard-root"></div>';
+	}
+
+	/**
+	 * Redirect the activating user to the setup wizard — once, ever
+	 *
+	 * Consumes the short-lived flag the activator set. All guards live in
+	 * get_setup_redirect_url(); this wrapper only performs the redirect.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_redirect_to_setup() {
+		$url = $this->get_setup_redirect_url();
+
+		if ( $url ) {
+			wp_safe_redirect( $url );
+			exit;
+		}
+	}
+
+	/**
+	 * Resolve whether this request should redirect to the setup wizard
+	 *
+	 * Redirects only when ALL guards pass:
+	 * - normal web request (not AJAX, cron, or WP-CLI)
+	 * - not the network admin
+	 * - the flag exists and records the current user
+	 * - not a bulk activation (activate-multi)
+	 * - the user can manage assignments
+	 * - no assignments exist yet (reinstall guard)
+	 *
+	 * The flag is deleted before any redirect (and on terminal guard
+	 * failures for the matched user), so the redirect can never fire
+	 * twice — anything interrupted is caught by the setup banner instead.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string|null Redirect URL, or null when no redirect happens.
+	 */
+	private function get_setup_redirect_url() {
+		if ( wp_doing_ajax() || wp_doing_cron() ) {
+			return null;
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return null;
+		}
+
+		if ( is_network_admin() ) {
+			return null;
+		}
+
+		$flag_user = (int) get_transient( 'pressprimer_assignment_setup_redirect' );
+
+		if ( ! $flag_user || get_current_user_id() !== $flag_user ) {
+			// No flag, or it belongs to another user — leave it for them
+			// (it expires on its own).
+			return null;
+		}
+
+		// Bulk activation: never redirect, and never retry — the banner
+		// takes over from here.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only detection of the bulk-activation context.
+		if ( isset( $_GET['activate-multi'] ) ) {
+			delete_transient( 'pressprimer_assignment_setup_redirect' );
+			return null;
+		}
+
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
+			delete_transient( 'pressprimer_assignment_setup_redirect' );
+			return null;
+		}
+
+		// Single-shot: the flag is consumed before redirecting.
+		delete_transient( 'pressprimer_assignment_setup_redirect' );
+
+		// Reinstall guard: an install with existing assignments never
+		// redirects (the version option guard lives in the activator).
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; one-time activation check.
+		$assignment_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ppa_assignments" );
+
+		if ( $assignment_count > 0 ) {
+			return null;
+		}
+
+		return admin_url( 'admin.php?page=pressprimer-assignment-setup' );
 	}
 
 	/**
@@ -403,6 +554,9 @@ class PressPrimer_Assignment_Admin {
 					'submissions'       => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
 					'grading'           => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
 					'reports'           => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
+					'setup_wizard'      => class_exists( 'PressPrimer_Assignment_Onboarding' )
+						? PressPrimer_Assignment_Onboarding::get_setup_url( true )
+						: '',
 				],
 			]
 		);
