@@ -18,12 +18,14 @@ import {
 	FileWordOutlined,
 	FileImageOutlined,
 	FileTextOutlined,
+	FilePptOutlined,
 	EditOutlined,
 	ReloadOutlined,
 } from '@ant-design/icons';
 import apiFetch from '@wordpress/api-fetch';
 import PdfViewer from './PdfViewer';
 import DocxViewer from './DocxViewer';
+import PptxViewer from './PptxViewer';
 import RtfViewer from './RtfViewer';
 import OdtViewer from './OdtViewer';
 import ImageViewer from './ImageViewer';
@@ -59,6 +61,7 @@ const QUALITY_CONFIG = {
 const FILE_ICONS = {
 	pdf: <FilePdfOutlined />,
 	docx: <FileWordOutlined />,
+	pptx: <FilePptOutlined />,
 	txt: <FileTextOutlined />,
 	rtf: <FileWordOutlined />,
 	odt: <FileWordOutlined />,
@@ -164,6 +167,10 @@ const DocumentPanel = ( {
 
 		if ( ext === 'docx' ) {
 			return <DocxViewer url={ file.download_url } />;
+		}
+
+		if ( ext === 'pptx' ) {
+			return <PptxViewer url={ file.download_url } />;
 		}
 
 		if ( [ 'jpg', 'jpeg', 'png', 'gif' ].includes( ext ) ) {

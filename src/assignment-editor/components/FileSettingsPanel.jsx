@@ -25,7 +25,7 @@ import {
 	CloudUploadOutlined,
 } from '@ant-design/icons';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 /**
  * Default allowed file types with labels.
@@ -85,6 +85,10 @@ const FILE_SIZE_OPTIONS = [
  */
 // eslint-disable-next-line no-unused-vars
 const FileSettingsPanel = ( { form } ) => {
+	// Fidelity note shown while PowerPoint is among the allowed types.
+	const allowedTypes = Form.useWatch( 'allowed_file_types', form ) || [];
+	const pptxEnabled = allowedTypes.includes( 'pptx' );
+
 	return (
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
 			{ /* File Type Settings */ }
@@ -137,6 +141,21 @@ const FileSettingsPanel = ( { form } ) => {
 						</Row>
 					</Checkbox.Group>
 				</Form.Item>
+				{ pptxEnabled && (
+					<Text
+						type="secondary"
+						style={ {
+							display: 'block',
+							fontSize: 12,
+							marginBottom: 8,
+						} }
+					>
+						{ __(
+							'PowerPoint files preview in the browser with approximate fidelity — animations, transitions, and embedded media are not reproduced. Graders and students can always download the original file.',
+							'pressprimer-assignment'
+						) }
+					</Text>
+				) }
 				<Space style={ { marginBottom: 8 } } size="small">
 					<Button
 						size="small"

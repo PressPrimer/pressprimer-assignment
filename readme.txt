@@ -182,6 +182,14 @@ The plugin integrates with the WordPress Privacy API:
 
 Administrators can permanently delete all plugin data (database tables, uploaded files, options, and user meta) via Settings > Advanced > "Remove all data on uninstall" before uninstalling the plugin.
 
+== Third-Party Libraries ==
+
+The plugin bundles the following open-source JavaScript libraries (compiled into the plugin's script bundles; nothing is loaded from a CDN and no external requests are made):
+
+* **PDF.js** (`pdfjs-dist` 3.11.174) — Apache-2.0 by Mozilla — renders PDF submissions in the browser. https://github.com/mozilla/pdf.js
+* **Mammoth** (`mammoth` 1.8.0) — BSD-2-Clause — renders Word (.docx) submissions in the browser. https://github.com/mwilliamson/mammoth.js
+* **pptxtojson** (`pptxtojson` 2.0.6) — MIT — parses PowerPoint (.pptx) submissions for the plugin's own slide viewer. Rendering is approximate; the original file is always downloadable. https://github.com/pipipi-pikachu/pptxtojson
+
 == Frequently Asked Questions ==
 
 = Is this really free, or is it a limited trial? =
