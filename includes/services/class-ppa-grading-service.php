@@ -246,8 +246,12 @@ class PressPrimer_Assignment_Grading_Service {
 	 * takes the last tier's penalty; the schedule's cutoff is enforced at
 	 * submission time, not here — a submission that exists is graded.
 	 *
-	 * The penalty is a percentage of the earned raw score ("deduct 10%"
-	 * takes 10% of what the student scored, not of max points).
+	 * The schedule's basis controls what the percentages deduct from:
+	 * 'max_points' (default) takes the percent of the assignment's maximum
+	 * points — the common LMS convention, where "-10%" costs the same
+	 * points regardless of the earned score; 'raw_score' takes the percent
+	 * of the student's earned score (proportional). Either way the final
+	 * score never drops below zero.
 	 *
 	 * @since 2.2.0
 	 *
@@ -255,8 +259,8 @@ class PressPrimer_Assignment_Grading_Service {
 	 * @param PressPrimer_Assignment_Assignment $assignment Its assignment.
 	 * @param float                             $raw_score  Raw score before penalty.
 	 * @return array|null Breakdown array (late_minutes, tier_index,
-	 *                    penalty_percent, raw_score, deduction, final_score)
-	 *                    or null when no penalty applies.
+	 *                    penalty_percent, basis, raw_score, deduction,
+	 *                    final_score) or null when no penalty applies.
 	 */
 	public function resolve_late_penalty( $submission, $assignment, $raw_score ) {
 		if ( empty( $submission->submitted_at ) ) {
@@ -305,7 +309,11 @@ class PressPrimer_Assignment_Grading_Service {
 
 		$penalty_percent = (float) $tiers[ $tier_index ]['penalty_percent'];
 		$raw_score       = (float) $raw_score;
-		$penalty         = round( $raw_score * $penalty_percent / 100, 2 );
+
+		// Deduction base per the schedule's basis setting.
+		$basis        = $schedule['basis'];
+		$basis_amount = 'raw_score' === $basis ? $raw_score : (float) $assignment->max_points;
+		$penalty      = round( $basis_amount * $penalty_percent / 100, 2 );
 
 		/**
 		 * Filters the late penalty resolved from a graduated schedule.
@@ -335,6 +343,7 @@ class PressPrimer_Assignment_Grading_Service {
 			'late_minutes'    => $late_minutes,
 			'tier_index'      => $tier_index,
 			'penalty_percent' => $penalty_percent,
+			'basis'           => $basis,
 			'raw_score'       => $raw_score,
 			'deduction'       => $penalty,
 			'final_score'     => round( $raw_score - $penalty, 2 ),

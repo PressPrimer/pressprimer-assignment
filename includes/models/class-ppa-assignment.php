@@ -157,10 +157,14 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	/**
 	 * Graduated late penalty schedule (JSON), used when late_policy is 'penalty'
 	 *
-	 * Shape: {"tiers":[{"late_by_hours":24,"penalty_percent":10},...],"cutoff_hours":168}
+	 * Shape: {"tiers":[{"late_by_hours":24,"penalty_percent":10},...],
+	 *         "cutoff_hours":168,"basis":"max_points"}
 	 * - 1–5 tiers, strictly increasing thresholds, penalties 0–100 non-decreasing
 	 * - A single tier may use late_by_hours null (any lateness — the flat case)
 	 * - cutoff_hours (optional): submissions refused entirely beyond it
+	 * - basis: what the percentages deduct from — 'max_points' (default,
+	 *   percent of the assignment's maximum points) or 'raw_score'
+	 *   (percent of the student's earned score)
 	 *
 	 * Always rebuilt server-side from validated numeric fields before
 	 * storage — raw client JSON is never stored as-is.
@@ -587,8 +591,9 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 * @since 2.2.0
 	 *
 	 * @return array|null Array with 'tiers' (list of ['late_by_hours' =>
-	 *                    float|null, 'penalty_percent' => float]) and
-	 *                    'cutoff_hours' (float|null), or null.
+	 *                    float|null, 'penalty_percent' => float]),
+	 *                    'cutoff_hours' (float|null), and 'basis'
+	 *                    ('max_points'|'raw_score'), or null.
 	 */
 	public function get_late_penalty_schedule() {
 		if ( null === $this->late_penalty_schedule_json || '' === $this->late_penalty_schedule_json ) {
@@ -624,6 +629,9 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 			'cutoff_hours' => isset( $decoded['cutoff_hours'] ) && null !== $decoded['cutoff_hours']
 				? (float) $decoded['cutoff_hours']
 				: null,
+			'basis'        => isset( $decoded['basis'] ) && 'raw_score' === $decoded['basis']
+				? 'raw_score'
+				: 'max_points',
 		];
 	}
 
