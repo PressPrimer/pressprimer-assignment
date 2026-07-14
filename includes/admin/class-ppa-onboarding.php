@@ -485,12 +485,6 @@ class PressPrimer_Assignment_Onboarding {
 				'learndash' => defined( 'LEARNDASH_VERSION' ),
 				'tutorlms'  => defined( 'TUTOR_VERSION' ),
 			],
-			// Finish-stop premium line, server-gated by the Phase 1
-			// registry (addon inactive AND manage_options): teachers
-			// receive an empty map — no marketing in their payload.
-			'touchpoints'   => class_exists( 'PressPrimer_Assignment_Touchpoints' )
-				? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'onboarding' )
-				: [],
 			'docsUrl'       => class_exists( 'PressPrimer_Assignment_Upgrade_Page' )
 				? PressPrimer_Assignment_Upgrade_Page::utm_url(
 					'https://pressprimer.com/knowledge-base/pressprimer-assignment/',

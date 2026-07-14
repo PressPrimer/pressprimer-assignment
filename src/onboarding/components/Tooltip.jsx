@@ -9,9 +9,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
-import { Button } from 'antd';
+import { __ } from '@wordpress/i18n';
+import { Button, Tooltip as AntTooltip } from 'antd';
 import { LeftOutlined, RightOutlined, CloseOutlined } from '@ant-design/icons';
+import ProgressDots from './ProgressDots';
 
 /**
  * Calculate optimal position for tooltip
@@ -111,20 +112,22 @@ const calculatePosition = (
 /**
  * Tooltip Component
  *
- * @param {Object}         props                Component props.
- * @param {Object}         props.targetRect     Target element bounding rect from Spotlight.
- * @param {string}         props.title          Tooltip title.
- * @param {string|Element} props.content        Tooltip content.
- * @param {string}         props.position       Preferred position.
- * @param {number}         props.currentStep    Current step number.
- * @param {number}         props.totalSteps     Total number of steps.
- * @param {Function}       props.onPrev         Previous step handler.
- * @param {Function}       props.onNext         Next step handler.
- * @param {Function}       props.onSkip         Skip handler.
- * @param {Function}       props.onClose        Close handler.
- * @param {boolean}        props.showNavigation Whether to show navigation buttons.
- * @param {string}         props.nextLabel      Label for next button.
- * @param {string}         props.prevLabel      Label for previous button.
+ * @param {Object}         props                    Component props.
+ * @param {Object}         props.targetRect         Target element bounding rect from Spotlight.
+ * @param {string}         props.title              Tooltip title.
+ * @param {string|Element} props.content            Tooltip content.
+ * @param {string}         props.position           Preferred position.
+ * @param {number}         props.currentStep        Current step number.
+ * @param {number}         props.totalSteps         Total number of steps.
+ * @param {Function}       props.onPrev             Previous step handler.
+ * @param {Function}       props.onNext             Next step handler.
+ * @param {Function}       props.onSkip             Skip handler.
+ * @param {Function}       props.onClose            Close handler.
+ * @param {boolean}        props.showNavigation     Whether to show navigation buttons.
+ * @param {string}         props.nextLabel          Label for next button.
+ * @param {string}         props.prevLabel          Label for previous button.
+ * @param {boolean}        props.nextDisabled       Whether Next is disabled.
+ * @param {string|null}    props.nextDisabledReason Tooltip shown on the disabled Next.
  */
 const Tooltip = ( {
 	targetRect,
@@ -133,6 +136,8 @@ const Tooltip = ( {
 	position = 'bottom',
 	currentStep,
 	totalSteps,
+	nextDisabled = false,
+	nextDisabledReason = null,
 	onPrev,
 	onNext,
 	onSkip,
@@ -247,38 +252,10 @@ const Tooltip = ( {
 					</div>
 
 					<div className="ppa-tooltip__nav-center">
-						{ currentStep && totalSteps && (
-							<span
-								className="ppa-tooltip__dots"
-								aria-label={ sprintf(
-									/* translators: 1: current step number, 2: total step count */
-									__(
-										'Step %1$d of %2$d',
-										'pressprimer-assignment'
-									),
-									currentStep,
-									totalSteps
-								) }
-							>
-								{ Array.from(
-									{ length: totalSteps },
-									( _, i ) => (
-										<span
-											key={ i }
-											className={
-												'ppa-tooltip__dot' +
-												( i + 1 === currentStep
-													? ' ppa-tooltip__dot--active'
-													: '' ) +
-												( i + 1 < currentStep
-													? ' ppa-tooltip__dot--done'
-													: '' )
-											}
-										/>
-									)
-								) }
-							</span>
-						) }
+						<ProgressDots
+							currentStep={ currentStep }
+							totalSteps={ totalSteps }
+						/>
 					</div>
 
 					<div className="ppa-tooltip__nav-right">
@@ -288,19 +265,37 @@ const Tooltip = ( {
 							</Button>
 						) }
 						{ onNext && (
-							<Button
-								type="primary"
-								onClick={ onNext }
-								size="small"
+							<AntTooltip
+								title={
+									nextDisabled ? nextDisabledReason : null
+								}
+								overlayStyle={ { zIndex: 100002 } }
 							>
-								{ currentStep === totalSteps
-									? __( 'Finish', 'pressprimer-assignment' )
-									: nextLabel ||
-									  __( 'Next', 'pressprimer-assignment' ) }
-								{ currentStep < totalSteps && (
-									<RightOutlined />
-								) }
-							</Button>
+								{ /* Disabled buttons swallow mouse events;
+								     the span keeps the tooltip working. */ }
+								<span className="ppa-tooltip__next-wrap">
+									<Button
+										type="primary"
+										onClick={ onNext }
+										size="small"
+										disabled={ nextDisabled }
+									>
+										{ currentStep === totalSteps
+											? __(
+													'Finish',
+													'pressprimer-assignment'
+											  )
+											: nextLabel ||
+											  __(
+													'Next',
+													'pressprimer-assignment'
+											  ) }
+										{ currentStep < totalSteps && (
+											<RightOutlined />
+										) }
+									</Button>
+								</span>
+							</AntTooltip>
 						) }
 					</div>
 				</div>

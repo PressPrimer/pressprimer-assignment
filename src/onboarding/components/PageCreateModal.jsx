@@ -15,12 +15,12 @@ import { __ } from '@wordpress/i18n';
 import { Button, Input, Alert } from 'antd';
 import {
 	FileAddOutlined,
-	CheckCircleOutlined,
 	LeftOutlined,
 	CopyOutlined,
 	ExportOutlined,
 	CloseOutlined,
 } from '@ant-design/icons';
+import ProgressDots from './ProgressDots';
 
 /**
  * PageCreateModal Component
@@ -29,6 +29,8 @@ import {
  * @param {string}      props.title        Step title.
  * @param {string}      props.content      Step body text.
  * @param {number|null} props.assignmentId The assignment saved during the tour.
+ * @param {number}      props.currentStep  Current 1-based tour step.
+ * @param {number}      props.totalSteps   Total tour step count.
  * @param {Function}    props.onNext       Advance to the next step.
  * @param {Function}    props.onPrev       Back to the previous step.
  * @param {Function}    props.onClose      Close the tour for this session.
@@ -37,6 +39,8 @@ const PageCreateModal = ( {
 	title,
 	content,
 	assignmentId,
+	currentStep,
+	totalSteps,
 	onNext,
 	onPrev,
 	onClose,
@@ -49,6 +53,9 @@ const PageCreateModal = ( {
 
 	const data = window.pressprimerAssignmentOnboardingData || {};
 	const lms = data.lms || {};
+	const mascotUrl = data.pluginUrl
+		? data.pluginUrl + 'assets/images/celebration-mascot.png'
+		: '';
 
 	/**
 	 * Lock body scroll while the modal is open
@@ -174,16 +181,13 @@ const PageCreateModal = ( {
 					</button>
 				) }
 
-				<div
-					className={
-						'ppa-onboarding-modal__icon' +
-						( pageUrl
-							? ' ppa-onboarding-modal__icon--success'
-							: '' )
-					}
-				>
-					{ pageUrl ? <CheckCircleOutlined /> : <FileAddOutlined /> }
-				</div>
+				{ mascotUrl && (
+					<img
+						src={ mascotUrl }
+						alt=""
+						className="ppa-onboarding-modal__mascot"
+					/>
+				) }
 
 				<h2 className="ppa-onboarding-modal__title" id="ppa-page-title">
 					{ pageUrl
@@ -294,25 +298,35 @@ const PageCreateModal = ( {
 				{ renderLmsPointer() }
 
 				<div className="ppa-onboarding-modal__nav">
-					<Button
-						type="text"
-						icon={ <LeftOutlined /> }
-						className="ppa-onboarding-modal__skip-btn"
-						onClick={ onPrev }
-					>
-						{ __( 'Back', 'pressprimer-assignment' ) }
-					</Button>
-					<Button
-						type={ pageUrl ? 'primary' : 'text' }
-						className={
-							pageUrl ? '' : 'ppa-onboarding-modal__skip-btn'
-						}
-						onClick={ onNext }
-					>
-						{ pageUrl
-							? __( 'Next', 'pressprimer-assignment' )
-							: __( 'Skip for now', 'pressprimer-assignment' ) }
-					</Button>
+					<div className="ppa-onboarding-modal__nav-left">
+						<Button
+							type="text"
+							icon={ <LeftOutlined /> }
+							className="ppa-onboarding-modal__skip-btn"
+							onClick={ onPrev }
+						>
+							{ __( 'Back', 'pressprimer-assignment' ) }
+						</Button>
+					</div>
+					<div className="ppa-onboarding-modal__nav-center">
+						<ProgressDots
+							currentStep={ currentStep }
+							totalSteps={ totalSteps }
+						/>
+					</div>
+					<div className="ppa-onboarding-modal__nav-right">
+						<Button
+							type={ pageUrl ? 'primary' : 'default' }
+							onClick={ onNext }
+						>
+							{ pageUrl
+								? __( 'Next', 'pressprimer-assignment' )
+								: __(
+										'Skip for now',
+										'pressprimer-assignment'
+								  ) }
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>

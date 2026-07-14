@@ -2,9 +2,8 @@
  * CompletionModal Component
  *
  * The tour's finish stop: a next-steps checklist (grading queue,
- * settings, docs), the 011 email-ask mount point (renders nothing
- * until Phase 5), and one quiet premium line — server-gated by the
- * touchpoint registry, so teachers never receive it.
+ * settings, docs) and the 011 email-ask mount point (renders nothing
+ * until Phase 5).
  *
  * @package
  * @since 1.0.0
@@ -21,23 +20,29 @@ import {
 	ReadOutlined,
 } from '@ant-design/icons';
 import EmailAskSlot from './EmailAskSlot';
+import ProgressDots from './ProgressDots';
 
 /**
  * CompletionModal Component
  *
- * @param {Object}   props            Component props.
- * @param {string}   props.title      Modal title.
- * @param {string}   props.content    Modal body text.
- * @param {Function} props.onComplete Complete tour handler.
- * @param {Function} props.onPrev     Back to the previous step.
+ * @param {Object}   props             Component props.
+ * @param {string}   props.title       Modal title.
+ * @param {string}   props.content     Modal body text.
+ * @param {number}   props.currentStep Current 1-based tour step.
+ * @param {number}   props.totalSteps  Total tour step count.
+ * @param {Function} props.onComplete  Complete tour handler.
+ * @param {Function} props.onPrev      Back to the previous step.
  */
-const CompletionModal = ( { title, content, onComplete, onPrev } ) => {
+const CompletionModal = ( {
+	title,
+	content,
+	currentStep,
+	totalSteps,
+	onComplete,
+	onPrev,
+} ) => {
 	const data = window.pressprimerAssignmentOnboardingData || {};
 	const completeBtnRef = useRef( null );
-
-	// Server-resolved (registry double gate): empty for teachers and
-	// whenever the Educator addon is active.
-	const premium = data.touchpoints?.finish || null;
 
 	/**
 	 * Focus the complete button on mount and lock body scroll
@@ -195,41 +200,35 @@ const CompletionModal = ( { title, content, onComplete, onPrev } ) => {
 				{ /* 011 email opt-in mount point (Phase 5). */ }
 				<EmailAskSlot />
 
-				{ /* One quiet premium line — admins without Educator only. */ }
-				{ premium && (
-					<p className="ppa-onboarding-modal__premium">
-						{ premium.copy }{ ' ' }
-						<a
-							href={ premium.url }
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{ premium.linkText }
-						</a>
-					</p>
-				) }
-
-				<div className="ppa-onboarding-modal__actions">
-					<Button
-						ref={ completeBtnRef }
-						type="primary"
-						size="large"
-						className="ppa-onboarding-modal__complete-btn"
-						onClick={ onComplete }
-					>
-						{ __( 'Close Tour', 'pressprimer-assignment' ) }
-					</Button>
-
-					{ onPrev && (
+				<div className="ppa-onboarding-modal__nav">
+					<div className="ppa-onboarding-modal__nav-left">
+						{ onPrev && (
+							<Button
+								type="text"
+								icon={ <LeftOutlined /> }
+								className="ppa-onboarding-modal__skip-btn"
+								onClick={ onPrev }
+							>
+								{ __( 'Back', 'pressprimer-assignment' ) }
+							</Button>
+						) }
+					</div>
+					<div className="ppa-onboarding-modal__nav-center">
+						<ProgressDots
+							currentStep={ currentStep }
+							totalSteps={ totalSteps }
+						/>
+					</div>
+					<div className="ppa-onboarding-modal__nav-right">
 						<Button
-							type="text"
-							icon={ <LeftOutlined /> }
-							className="ppa-onboarding-modal__skip-btn"
-							onClick={ onPrev }
+							ref={ completeBtnRef }
+							type="primary"
+							className="ppa-onboarding-modal__complete-btn"
+							onClick={ onComplete }
 						>
-							{ __( 'Back', 'pressprimer-assignment' ) }
+							{ __( 'Close Tour', 'pressprimer-assignment' ) }
 						</Button>
-					) }
+					</div>
 				</div>
 			</div>
 		</div>

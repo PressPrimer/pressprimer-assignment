@@ -50,21 +50,31 @@
 	padding: 40px 48px;
 }
 
+/* Flat, brand-teal icon badge (no gradients). */
 .ppa-onboarding-modal__icon {
 	width: 80px;
 	height: 80px;
 	margin: 0 auto 24px;
-	background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+	background: #f0fdfa;
 	border-radius: 20px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 40px;
-	color: #fff;
+	color: #14b8a6;
 }
 
 .ppa-onboarding-modal__icon--success {
-	background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+	background: #f6ffed;
+	color: #52c41a;
+}
+
+/* Celebration mascot (page-creation stop) */
+.ppa-onboarding-modal__mascot {
+	display: block;
+	height: 130px;
+	width: auto;
+	margin: 0 auto 20px;
 }
 
 /* Logo for welcome modal */
@@ -318,24 +328,6 @@
 	text-decoration: underline;
 }
 
-/* One quiet premium line (admins without Educator only) */
-.ppa-onboarding-modal__premium {
-	font-size: 12px;
-	line-height: 1.5;
-	color: #8c8c8c;
-	margin: 0 0 20px;
-}
-
-.ppa-onboarding-modal__premium a {
-	color: #14b8a6;
-	text-decoration: none;
-}
-
-.ppa-onboarding-modal__premium a:hover {
-	color: #0d9488;
-	text-decoration: underline;
-}
-
 /* ==========================================================================
    Page-Creation Stop
    ========================================================================== */
@@ -343,7 +335,7 @@
 .ppa-onboarding-page-url {
 	display: flex;
 	gap: 8px;
-	margin: 0 0 20px;
+	margin: 16px 0 24px;
 }
 
 .ppa-onboarding-page-url .ant-input {
@@ -354,7 +346,7 @@
 	font-size: 12px;
 	line-height: 1.5;
 	color: #8c8c8c;
-	margin: 0 0 16px;
+	margin: 20px 0;
 }
 
 .ppa-onboarding-modal__error {
@@ -362,13 +354,37 @@
 	text-align: left;
 }
 
+/* Modal footer nav: Back | progress dots | primary action */
 .ppa-onboarding-modal__nav {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-top: 8px;
+	gap: 8px;
+	margin-top: 12px;
 	padding-top: 16px;
 	border-top: 1px solid #f0f0f0;
+}
+
+.ppa-onboarding-modal__nav-left,
+.ppa-onboarding-modal__nav-right {
+	flex: 1 0 0;
+	display: flex;
+	align-items: center;
+}
+
+.ppa-onboarding-modal__nav-left {
+	justify-content: flex-start;
+}
+
+.ppa-onboarding-modal__nav-center {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ppa-onboarding-modal__nav-right {
+	justify-content: flex-end;
 }
 
 /* Quick Actions in Completion Modal */
@@ -597,14 +613,14 @@
 	flex: 0 0 auto;
 }
 
-/* Progress dots */
-.ppa-tooltip__dots {
+/* Progress dots — shared by the tooltip and the modal stops */
+.ppa-progress-dots {
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
 }
 
-.ppa-tooltip__dot {
+.ppa-progress-dot {
 	width: 7px;
 	height: 7px;
 	border-radius: 4px;
@@ -612,13 +628,19 @@
 	transition: all 0.2s ease;
 }
 
-.ppa-tooltip__dot--done {
+.ppa-progress-dot--done {
 	background: #99e2d8;
 }
 
-.ppa-tooltip__dot--active {
+.ppa-progress-dot--active {
 	width: 18px;
 	background: #14b8a6;
+}
+
+/* Disabled-Next tooltip needs a hoverable wrapper (disabled buttons
+   swallow mouse events). */
+.ppa-tooltip__next-wrap {
+	display: inline-block;
 }
 
 /* Override Ant Design button styles in tooltip */
@@ -641,6 +663,16 @@
 	background: #0d9488;
 	color: #fff;
 	border-color: #0d9488;
+}
+
+/* The teal override above would otherwise swallow Ant's disabled
+   look — a disabled Next must LOOK disabled. */
+.ppa-tooltip .ant-btn-primary:disabled,
+.ppa-tooltip .ant-btn-primary:disabled:hover {
+	background: #f5f5f5;
+	color: rgba(0, 0, 0, 0.25);
+	border-color: #d9d9d9;
+	cursor: not-allowed;
 }
 
 /* ==========================================================================

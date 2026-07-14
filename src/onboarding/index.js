@@ -11,6 +11,7 @@
 
 import { render, unmountComponentAtNode } from '@wordpress/element';
 import Onboarding from './components/Onboarding';
+import { clearSavedAssignment } from './setupSession';
 import './style.css';
 
 /**
@@ -61,6 +62,10 @@ window.ppaLaunchOnboarding = () => {
 	if ( ! data ) {
 		return;
 	}
+
+	// A relaunched tour starts fresh — forget the previous run's
+	// assignment.
+	clearSavedAssignment();
 
 	// Reset via AJAX.
 	const formData = new FormData();

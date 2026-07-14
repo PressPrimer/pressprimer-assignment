@@ -20,6 +20,7 @@
  * @since 1.0.0
  */
 
+import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -178,14 +179,19 @@ export const TOUR_STEPS = [
 		onEnter: clickEditorTab( 1 ),
 	},
 
-	// Step 5: Publish with the real controls.
+	// Step 5: Publish with the real controls. The tour advances
+	// automatically when it hears the save; Next stays disabled until
+	// a published save happens (gated in Onboarding.jsx).
 	{
 		id: 'publish',
 		type: STEP_TYPE.SPOTLIGHT,
 		title: __( 'Publish it', 'pressprimer-assignment' ),
-		content: __(
-			'Everything look good? Click Save Assignment to publish — Status is already set to Published. Prefer to launch later? Switch Status to Draft in Basic Information first.',
-			'pressprimer-assignment'
+		content: createInterpolateElement(
+			__(
+				'Everything look good? Click <strong>Save Assignment</strong> to publish — Status is already set to Published. Prefer to launch later? Switch Status to Draft in Basic Information first.',
+				'pressprimer-assignment'
+			),
+			{ strong: <strong /> }
 		),
 		selector: '.ppa-editor-header-actions',
 		fallbackSelector: '.ppa-editor-header',
@@ -202,7 +208,7 @@ export const TOUR_STEPS = [
 		type: STEP_TYPE.MODAL,
 		title: __( 'Put it on a page', 'pressprimer-assignment' ),
 		content: __(
-			"Students submit from a page on your site. One click creates that page with your assignment's block already on it.",
+			"Your assignment is published — nice work! Students submit from a page on your site, and one click creates that page with your assignment's block already on it.",
 			'pressprimer-assignment'
 		),
 		selector: null,

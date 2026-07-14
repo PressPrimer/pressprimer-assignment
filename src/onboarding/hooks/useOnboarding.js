@@ -16,6 +16,7 @@ import {
 	isOnCorrectPage,
 	STEP_TYPE,
 } from '../tourSteps';
+import { clearSavedAssignment } from '../setupSession';
 
 /**
  * Get onboarding data from PHP
@@ -83,6 +84,9 @@ const useOnboarding = () => {
 		// Hide the tour UI until the editor page takes over — rendering
 		// step 2 on the current page would flash the floating fallback.
 		setIsLoading( true );
+
+		// A fresh run must never target the previous run's assignment.
+		clearSavedAssignment();
 
 		// Persist the landing step BEFORE navigating: 'start' alone
 		// stores step 1, which would re-show the welcome modal on the

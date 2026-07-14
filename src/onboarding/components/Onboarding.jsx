@@ -12,32 +12,14 @@
  */
 
 import { useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import useOnboarding from '../hooks/useOnboarding';
 import { getStep, STEP_TYPE } from '../tourSteps';
+import { readSavedAssignment, writeSavedAssignment } from '../setupSession';
 import WelcomeModal from './WelcomeModal';
 import CompletionModal from './CompletionModal';
 import PageCreateModal from './PageCreateModal';
 import SpotlightTooltip from './SpotlightTooltip';
-
-/**
- * Session storage key for the assignment saved during the tour
- */
-const SAVED_ID_KEY = 'ppaSetupAssignmentId';
-
-/**
- * Read the tour's saved assignment ID (survives editor reloads)
- *
- * @return {number|null} Assignment ID or null.
- */
-const readSavedAssignmentId = () => {
-	try {
-		const stored = window.sessionStorage.getItem( SAVED_ID_KEY );
-		const parsed = parseInt( stored, 10 );
-		return parsed > 0 ? parsed : null;
-	} catch ( e ) {
-		return null;
-	}
-};
 
 /**
  * Find a valid CSS selector from a comma-separated list + fallback
@@ -89,10 +71,10 @@ const Onboarding = () => {
 	// string    = found.
 	const [ resolvedSelector, setResolvedSelector ] = useState( undefined );
 
-	// The assignment saved during the tour — needed by the page step.
-	const [ savedAssignmentId, setSavedAssignmentId ] = useState(
-		readSavedAssignmentId
-	);
+	// The assignment saved during the tour — needed by the page step
+	// and by the publish stop's Next gate.
+	const [ savedAssignment, setSavedAssignment ] =
+		useState( readSavedAssignment );
 
 	const step = getStep( currentStep );
 
@@ -107,12 +89,8 @@ const Onboarding = () => {
 			const { id, status } = event.detail || {};
 
 			if ( id ) {
-				setSavedAssignmentId( id );
-				try {
-					window.sessionStorage.setItem( SAVED_ID_KEY, String( id ) );
-				} catch ( e ) {
-					// Session storage unavailable — in-memory state still works.
-				}
+				setSavedAssignment( { id, status: status || null } );
+				writeSavedAssignment( id, status );
 			}
 
 			if (
@@ -213,7 +191,9 @@ const Onboarding = () => {
 			<PageCreateModal
 				title={ step.title }
 				content={ step.content }
-				assignmentId={ savedAssignmentId }
+				assignmentId={ savedAssignment.id }
+				currentStep={ currentStep }
+				totalSteps={ totalSteps }
 				onNext={ nextStep }
 				onPrev={ prevStep }
 				onClose={ closeTour }
@@ -227,6 +207,8 @@ const Onboarding = () => {
 			<CompletionModal
 				title={ step.title }
 				content={ step.content }
+				currentStep={ currentStep }
+				totalSteps={ totalSteps }
 				onComplete={ completeTour }
 				onPrev={ prevStep }
 			/>
@@ -288,12 +270,34 @@ const Onboarding = () => {
 			);
 		}
 
+		// The publish stop's Next stays disabled until a published save
+		// happens — otherwise users advance to a page stop they can't
+		// use and get lost. Saving as draft keeps it disabled too, with
+		// a message that says exactly what's missing.
+		let nextDisabled = false;
+		let nextDisabledReason = null;
+
+		if ( step.id === 'publish' && savedAssignment.status !== 'published' ) {
+			nextDisabled = true;
+			nextDisabledReason = savedAssignment.id
+				? __(
+						'Set Status to Published and save to continue.',
+						'pressprimer-assignment'
+				  )
+				: __(
+						'You must save the assignment to continue.',
+						'pressprimer-assignment'
+				  );
+		}
+
 		return (
 			<SpotlightTooltip
 				selector={ resolvedSelector }
 				title={ step.title }
 				content={ step.content }
 				position={ step.position }
+				nextDisabled={ nextDisabled }
+				nextDisabledReason={ nextDisabledReason }
 				currentStep={ currentStep }
 				totalSteps={ totalSteps }
 				onPrev={ currentStep > 1 ? prevStep : null }
