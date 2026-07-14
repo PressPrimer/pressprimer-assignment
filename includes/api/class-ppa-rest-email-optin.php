@@ -71,19 +71,16 @@ class PressPrimer_Assignment_REST_Email_Optin {
 	/**
 	 * Check permission for the opt-in endpoint
 	 *
-	 * Logged-in users with Assignment management access — the same
-	 * audience the ask surfaces render for.
+	 * Administrators only — the same audience the ask surfaces render
+	 * for (teachers are never offered the opt-in, per the July 2026
+	 * review of the 011 spec).
 	 *
 	 * @since 2.2.0
 	 *
 	 * @return bool True if the user may answer.
 	 */
 	public function check_permission() {
-		return is_user_logged_in()
-			&& (
-				current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
-				|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
-			);
+		return is_user_logged_in() && current_user_can( 'manage_options' );
 	}
 
 	/**

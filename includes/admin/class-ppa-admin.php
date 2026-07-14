@@ -47,6 +47,7 @@ class PressPrimer_Assignment_Admin {
 		add_action( 'admin_menu', [ $this, 'register_menus' ] );
 		add_action( 'admin_menu', [ $this, 'add_grading_badge' ], 999 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_global_styles' ] );
 
 		// One-time post-activation redirect to the guided tour (2.2).
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_setup' ] );
@@ -300,6 +301,42 @@ class PressPrimer_Assignment_Admin {
 	}
 
 	/**
+	 * Enqueue admin-wide styles
+	 *
+	 * The grading count badge renders in the admin menu on EVERY admin
+	 * page, so its styles cannot live in the PPA-page-only stylesheet.
+	 * The badge also owns its full styling: WordPress 7.0's admin
+	 * redesign drops the core count-bubble background on hover, so the
+	 * badge no longer borrows core's .awaiting-mod classes for any
+	 * state.
+	 *
+	 * @since 2.2.0
+	 */
+	public function enqueue_global_styles() {
+		wp_register_style( 'ppa-admin-global', false, [], PRESSPRIMER_ASSIGNMENT_VERSION );
+		wp_enqueue_style( 'ppa-admin-global' );
+
+		// Static literal CSS only — no variables interpolated.
+		$css = '#adminmenu .ppa-menu-counter {'
+			. 'display: inline-block;'
+			. 'vertical-align: top;'
+			. 'box-sizing: border-box;'
+			. 'margin: 1px 0 -1px 4px;'
+			. 'padding: 0 6px;'
+			. 'min-width: 18px;'
+			. 'height: 18px;'
+			. 'border-radius: 9px;'
+			. 'background-color: #2271b1;'
+			. 'color: #fff;'
+			. 'font-size: 11px;'
+			. 'line-height: 18px;'
+			. 'text-align: center;'
+			. '}';
+
+		wp_add_inline_style( 'ppa-admin-global', $css );
+	}
+
+	/**
 	 * Enqueue admin assets
 	 *
 	 * Loads CSS and JavaScript on PressPrimer Assignment admin pages.
@@ -416,6 +453,20 @@ class PressPrimer_Assignment_Admin {
 			);
 		}
 
+		// wp-scripts emits a SECOND CSS file per entry — {name}.css — for
+		// styles imported by components outside the entry's own style.css
+		// (e.g. shared EmailOptinAsk.css). Without it those components
+		// render unstyled.
+		$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/' . $bundle_name . '.css';
+		if ( file_exists( $component_css ) ) {
+			wp_enqueue_style(
+				'ppa-' . $bundle_name . '-components',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/' . $bundle_name . '.css',
+				[],
+				$asset['version']
+			);
+		}
+
 		// Localize bundle-specific data.
 		if ( 'dashboard' === $bundle_name ) {
 			$this->localize_dashboard_data();
@@ -504,11 +555,10 @@ class PressPrimer_Assignment_Admin {
 				// surfaces never render for teachers), suppressed once
 				// answered anywhere, dismissible separately.
 				'emailOptin'    => [
-					'eligible'     => current_user_can( 'manage_options' )
+					'eligible'   => current_user_can( 'manage_options' )
 						&& class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
 						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'dashboard-card' ),
-					'accountEmail' => wp_get_current_user()->user_email,
-					'privacyUrl'   => 'https://pressprimer.com/privacy/',
+					'privacyUrl' => 'https://pressprimer.com/privacy/',
 				],
 			]
 		);
@@ -712,8 +762,8 @@ class PressPrimer_Assignment_Admin {
 		foreach ( $submenu['pressprimer-assignment'] as $key => $item ) {
 			if ( 'pressprimer-assignment-grading' === $item[2] ) {
 				$submenu['pressprimer-assignment'][ $key ][0] .= sprintf( // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- WordPress core pattern for admin menu badges.
-					' <span class="awaiting-mod count-%1$d"><span class="pending-count">%1$d</span></span>',
-					$count
+					' <span class="ppa-menu-counter">%s</span>',
+					number_format_i18n( $count )
 				);
 				break;
 			}

@@ -496,10 +496,9 @@ class PressPrimer_Assignment_Onboarding {
 			// resolved server-side: skipped silently once the user has
 			// answered anywhere or when the intake is disabled.
 			'emailOptin'    => [
-				'eligible'     => class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
+				'eligible'   => class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
 					&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'wizard' ),
-				'accountEmail' => wp_get_current_user()->user_email,
-				'privacyUrl'   => 'https://pressprimer.com/privacy/',
+				'privacyUrl' => 'https://pressprimer.com/privacy/',
 			],
 			'isAdmin'       => current_user_can( 'manage_options' ),
 			'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
@@ -570,6 +569,20 @@ class PressPrimer_Assignment_Onboarding {
 			wp_enqueue_style(
 				'ppa-onboarding',
 				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/style-onboarding.css',
+				[],
+				$asset['version']
+			);
+		}
+
+		// wp-scripts emits a SECOND CSS file per entry — onboarding.css —
+		// for styles imported by components outside the entry's own
+		// style.css (e.g. shared EmailOptinAsk.css). Without it those
+		// components render unstyled.
+		$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/onboarding.css';
+		if ( file_exists( $component_css ) ) {
+			wp_enqueue_style(
+				'ppa-onboarding-components',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/onboarding.css',
 				[],
 				$asset['version']
 			);

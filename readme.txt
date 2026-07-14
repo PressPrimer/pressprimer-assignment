@@ -188,11 +188,11 @@ This plugin offers an optional free email course for teachers and administrators
 
 * **When:** Only on an explicit opt-in submission. No request is ever made automatically — no telemetry, no activation pings, no environment data.
 * **What data:** The typed email address and a tag naming which screen the form was on. Nothing else.
-* **Confirmation:** The subscription uses double opt-in — it only activates when the confirmation email is clicked, and every email includes an unsubscribe link.
+* **Unsubscribing:** Every email includes an unsubscribe link, honored immediately.
 * **Terms of Service:** https://pressprimer.com/terms/
 * **Privacy Policy:** https://pressprimer.com/privacy/
 
-Declining the offer (or dismissing it) is remembered permanently and is stored only on your own site.
+Dismissing the offer is remembered permanently and is stored only on your own site.
 
 == Third-Party Libraries ==
 

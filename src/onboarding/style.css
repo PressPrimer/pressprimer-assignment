@@ -238,13 +238,18 @@
 	color: #646970;
 }
 
-/* Email ask section on the finish stop (011) */
+/* Email ask section on the finish stop (011) — a soft brand-teal
+   panel so the ask stands out from the next-steps box above. */
 .ppa-onboarding-email-ask {
 	margin: 0 0 24px;
-	padding: 20px;
+	padding: 24px;
 	background: #f0fdfa;
 	border: 1px solid #ccfbf1;
 	border-radius: 12px;
+}
+
+.ppa-onboarding-email-ask .ppa-email-ask__field-row {
+	justify-content: center;
 }
 
 /* Modal close (X) button — page-creation stop */

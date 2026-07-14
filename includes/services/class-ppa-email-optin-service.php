@@ -60,13 +60,14 @@ class PressPrimer_Assignment_Email_Optin_Service {
 	/**
 	 * Default intake endpoint on pressprimer.com
 	 *
-	 * The receiving side (a small route relaying into FluentCRM with
-	 * double opt-in) lives in the pressprimer-com site plugin.
+	 * A FluentCRM incoming webhook (list: Newsletter, tag:
+	 * assignment-free, status: subscribed — all configured on the
+	 * webhook itself).
 	 *
 	 * @since 2.2.0
 	 * @var string
 	 */
-	const DEFAULT_INTAKE_URL = 'https://pressprimer.com/wp-json/pressprimer/v1/assignment-email-intake';
+	const DEFAULT_INTAKE_URL = 'https://pressprimer.com/?fluentcrm=1&route=contact&hash=1fe25022-837e-4707-9fb6-db67769f71e5';
 
 	/**
 	 * Valid source surfaces
@@ -314,6 +315,11 @@ class PressPrimer_Assignment_Email_Optin_Service {
 	/**
 	 * Resolve whether the ask may show on a surface for a user
 	 *
+	 * Administrators only, on EVERY surface (revised in review, July
+	 * 2026): teachers see the guided tour but are never offered the
+	 * opt-in — the gate lives here so no surface, current or future,
+	 * can leak the ask to them.
+	 *
 	 * @since 2.2.0
 	 *
 	 * @param int    $user_id User ID.
@@ -324,6 +330,10 @@ class PressPrimer_Assignment_Email_Optin_Service {
 		$user_id = absint( $user_id );
 
 		if ( ! $user_id || ! self::is_valid_source( $surface ) ) {
+			return false;
+		}
+
+		if ( ! user_can( $user_id, 'manage_options' ) ) {
 			return false;
 		}
 
@@ -352,10 +362,11 @@ class PressPrimer_Assignment_Email_Optin_Service {
 	 * Relay an opt-in to the pressprimer.com intake
 	 *
 	 * Non-blocking fire-and-forget: failure is silent by design — the
-	 * local consent record is the source of truth, and FluentCRM's
-	 * double opt-in confirmation email closes the loop when the relay
-	 * does arrive. The payload is the email address and the source
-	 * surface tag ONLY.
+	 * local consent record is the source of truth. The receiving side
+	 * is a FluentCRM incoming webhook (list/tag/status configured on
+	 * the webhook itself; subscription starts immediately, every email
+	 * carries an unsubscribe link). The payload is the email address
+	 * and the source surface tag ONLY.
 	 *
 	 * @since 2.2.0
 	 *

@@ -530,7 +530,11 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						description: '',
 						instructions: '',
 						grading_guidelines: '',
-						status: 'draft',
+						// New assignments default to Published: needing to
+						// remember the status switch was a stumbling block.
+						// Nothing exists until the user saves, and Draft
+						// stays one click away.
+						status: 'published',
 						theme: 'default',
 						submission_type: 'file',
 						max_points: 100,

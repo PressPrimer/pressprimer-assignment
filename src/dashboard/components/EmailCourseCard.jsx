@@ -62,13 +62,7 @@ const EmailCourseCard = ( { optin = {} } ) => {
 
 			<EmailOptinAsk
 				source="dashboard-card"
-				accountEmail={ optin.accountEmail || '' }
 				privacyUrl={ optin.privacyUrl || '' }
-				onAnswered={ ( status ) => {
-					if ( 'declined' === status ) {
-						setHidden( true );
-					}
-				} }
 			/>
 		</div>
 	);
