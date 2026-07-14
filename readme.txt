@@ -173,7 +173,7 @@ If you have LearnDash, Tutor LMS, LifterLMS, or LearnPress installed, integratio
 
 == Privacy ==
 
-PressPrimer Assignment stores student submission data (files, text, grades, and feedback) in your WordPress database under your full control. No data is transmitted to external servers. All submitted files are stored in a protected directory under `wp-content/uploads/ppa-submissions/` and served via PHP with permission checks.
+PressPrimer Assignment stores student submission data (files, text, grades, and feedback) in your WordPress database under your full control. No student or submission data is ever transmitted to external servers. The single exception to "nothing leaves your site" is the optional email-course opt-in described under External Services — it sends only an email address that an administrator or teacher explicitly typed in and submitted. All submitted files are stored in a protected directory under `wp-content/uploads/ppa-submissions/` and served via PHP with permission checks.
 
 The plugin integrates with the WordPress Privacy API:
 
@@ -181,6 +181,18 @@ The plugin integrates with the WordPress Privacy API:
 * **Tools > Erase Personal Data** — permanently deletes all submissions, grades, and uploaded files for the requested user.
 
 Administrators can permanently delete all plugin data (database tables, uploaded files, options, and user meta) via Settings > Advanced > "Remove all data on uninstall" before uninstalling the plugin.
+
+== External Services ==
+
+This plugin offers an optional free email course for teachers and administrators. When — and only when — a user types their email address into the opt-in form and clicks the subscribe button, the plugin connects to pressprimer.com to register the subscription.
+
+* **When:** Only on an explicit opt-in submission. No request is ever made automatically — no telemetry, no activation pings, no environment data.
+* **What data:** The typed email address and a tag naming which screen the form was on. Nothing else.
+* **Confirmation:** The subscription uses double opt-in — it only activates when the confirmation email is clicked, and every email includes an unsubscribe link.
+* **Terms of Service:** https://pressprimer.com/terms/
+* **Privacy Policy:** https://pressprimer.com/privacy/
+
+Declining the offer (or dismissing it) is remembered permanently and is stored only on your own site.
 
 == Third-Party Libraries ==
 

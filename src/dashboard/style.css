@@ -191,6 +191,35 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* Email course card (011 ask) */
+.ppa-dashboard-email-card {
+	position: relative;
+}
+
+.ppa-dashboard-email-card__dismiss {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: transparent;
+	color: #8c8c8c;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	font-size: 12px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-dashboard-email-card__dismiss:hover {
+	background: #f0f0f0;
+	color: #1d2327;
+}
+
 .ppa-dashboard-card--large {
 	/* For larger cards like Recent Activity */
 }

@@ -238,6 +238,15 @@
 	color: #646970;
 }
 
+/* Email ask section on the finish stop (011) */
+.ppa-onboarding-email-ask {
+	margin: 0 0 24px;
+	padding: 20px;
+	background: #f0fdfa;
+	border: 1px solid #ccfbf1;
+	border-radius: 12px;
+}
+
 /* Modal close (X) button — page-creation stop */
 .ppa-onboarding-modal__close {
 	position: absolute;

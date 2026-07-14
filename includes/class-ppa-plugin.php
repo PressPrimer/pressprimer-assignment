@@ -386,6 +386,12 @@ class PressPrimer_Assignment_Plugin {
 			$categories_api = new PressPrimer_Assignment_REST_Categories();
 			$categories_api->init();
 		}
+
+		// Email opt-in REST API (2.2).
+		if ( class_exists( 'PressPrimer_Assignment_REST_Email_Optin' ) ) {
+			$email_optin_api = new PressPrimer_Assignment_REST_Email_Optin();
+			$email_optin_api->init();
+		}
 	}
 
 	/**

@@ -492,6 +492,15 @@ class PressPrimer_Assignment_Onboarding {
 					'onboarding'
 				)
 				: 'https://pressprimer.com/knowledge-base/pressprimer-assignment/',
+			// The 011 email ask on the finish stop. Eligibility is
+			// resolved server-side: skipped silently once the user has
+			// answered anywhere or when the intake is disabled.
+			'emailOptin'    => [
+				'eligible'     => class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
+					&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'wizard' ),
+				'accountEmail' => wp_get_current_user()->user_email,
+				'privacyUrl'   => 'https://pressprimer.com/privacy/',
+			],
 			'isAdmin'       => current_user_can( 'manage_options' ),
 			'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 			'urls'          => [

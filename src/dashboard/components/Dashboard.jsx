@@ -15,6 +15,7 @@ import ActivityChart from './ActivityChart';
 import PopularAssignments from './PopularAssignments';
 import QuickActions from './QuickActions';
 import RecentActivity from './RecentActivity';
+import EmailCourseCard from './EmailCourseCard';
 
 /**
  * Dashboard Component
@@ -175,6 +176,9 @@ const Dashboard = ( { initialData = {} } ) => {
 							<PopularAssignments
 								assignments={ stats?.popular_assignments || [] }
 								loading={ loading }
+							/>
+							<EmailCourseCard
+								optin={ dashboardData.emailOptin || {} }
 							/>
 						</div>
 					</div>

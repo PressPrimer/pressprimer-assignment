@@ -1,18 +1,43 @@
 /**
  * EmailAskSlot Component
  *
- * Mount point for the 011 email opt-in on the tour's finish stop.
- * Renders nothing until Phase 5 implements the ask — the slot exists
- * now so the finish layout and the Phase 5 work stay decoupled.
- *
- * Phase 5 contract: replace the null render with the email-only
- * opt-in (no segmentation — the tour collects no other data), gated
- * by its own eligibility rules.
+ * The 011 email ask on the tour's finish stop, positioned after the
+ * published assignment has delivered value. Silently skipped when
+ * the user has answered anywhere, or when the intake endpoint is
+ * disabled — eligibility is resolved server-side and arrives in the
+ * localized data.
  *
  * @package
  * @since 2.2.0
  */
 
-const EmailAskSlot = () => null;
+import { useState } from '@wordpress/element';
+import EmailOptinAsk from '../../shared/components/EmailOptinAsk';
+
+const EmailAskSlot = () => {
+	const data = window.pressprimerAssignmentOnboardingData || {};
+	const optin = data.emailOptin || {};
+
+	const [ declined, setDeclined ] = useState( false );
+
+	if ( ! optin.eligible || declined ) {
+		return null;
+	}
+
+	return (
+		<div className="ppa-onboarding-email-ask">
+			<EmailOptinAsk
+				source="wizard"
+				accountEmail={ optin.accountEmail || '' }
+				privacyUrl={ optin.privacyUrl || '' }
+				onAnswered={ ( status ) => {
+					if ( 'declined' === status ) {
+						setDeclined( true );
+					}
+				} }
+			/>
+		</div>
+	);
+};
 
 export default EmailAskSlot;

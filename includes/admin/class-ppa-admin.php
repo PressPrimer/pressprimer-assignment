@@ -500,6 +500,16 @@ class PressPrimer_Assignment_Admin {
 						? PressPrimer_Assignment_Onboarding::get_relaunch_url()
 						: '',
 				],
+				// The 011 email-course card: admins only (lifecycle
+				// surfaces never render for teachers), suppressed once
+				// answered anywhere, dismissible separately.
+				'emailOptin'    => [
+					'eligible'     => current_user_can( 'manage_options' )
+						&& class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
+						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'dashboard-card' ),
+					'accountEmail' => wp_get_current_user()->user_email,
+					'privacyUrl'   => 'https://pressprimer.com/privacy/',
+				],
 			]
 		);
 	}
