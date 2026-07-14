@@ -43,7 +43,8 @@ class PressPrimer_Assignment_Touchpoints {
 	 * - key:       Unique identifier (also used in UTM content).
 	 * - feature:   The premium feature being advertised (internal label).
 	 * - surface:   Which admin surface carries it: 'grading', 'editor',
-	 *              or 'settings'. Matches the localized payload it ships in.
+	 *              'settings', or 'onboarding'. Matches the localized
+	 *              payload it ships in.
 	 * - location:  Slot within the surface. The React apps render each
 	 *              touchpoint at the slot with this name.
 	 * - tier:      Required addon tier: 'educator', 'school', 'enterprise'.
@@ -137,6 +138,19 @@ class PressPrimer_Assignment_Touchpoints {
 				'link_text' => __( 'Upgrade to Enterprise', 'pressprimer-assignment' ),
 				'url'       => 'https://pressprimer.com/pressprimer-assignment-enterprise/',
 			],
+			// 8. Onboarding finish — ONE quiet line on the tour's completion
+			// stop (010). Same double gate as every other touchpoint, so
+			// teachers finishing their own tour never see it.
+			[
+				'key'       => 'onboarding-finish',
+				'feature'   => 'Premium addons',
+				'surface'   => 'onboarding',
+				'location'  => 'finish',
+				'tier'      => 'educator',
+				'copy'      => __( 'When you need rubrics, student groups, or per-group due dates, premium addons are ready.', 'pressprimer-assignment' ),
+				'link_text' => __( 'See what\'s in Educator', 'pressprimer-assignment' ),
+				'url'       => 'https://pressprimer.com/pressprimer-assignment-educator/',
+			],
 		];
 	}
 
@@ -155,7 +169,7 @@ class PressPrimer_Assignment_Touchpoints {
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param string $surface Surface slug: 'grading', 'editor', or 'settings'.
+	 * @param string $surface Surface slug: 'grading', 'editor', 'settings', or 'onboarding'.
 	 * @return array<string, array<string, string>> Map of location => touchpoint.
 	 */
 	public static function get_eligible_for_surface( $surface ) {

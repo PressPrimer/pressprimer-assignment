@@ -93,6 +93,7 @@ const FileSettingsPanel = ( { form } ) => {
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
 			{ /* File Type Settings */ }
 			<Card
+				className="ppa-editor-card-file-types"
 				title={
 					<Space>
 						<Title level={ 4 } style={ { margin: 0 } }>

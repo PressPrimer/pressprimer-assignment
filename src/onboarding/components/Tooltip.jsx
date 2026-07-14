@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button } from 'antd';
 import { LeftOutlined, RightOutlined, CloseOutlined } from '@ant-design/icons';
 
@@ -137,8 +138,8 @@ const Tooltip = ( {
 	onSkip,
 	onClose,
 	showNavigation = true,
-	nextLabel = 'Next',
-	prevLabel = 'Back',
+	nextLabel = null,
+	prevLabel = null,
 } ) => {
 	const tooltipRef = useRef( null );
 	const [ tooltipStyle, setTooltipStyle ] = useState( { opacity: 0 } );
@@ -189,6 +190,11 @@ const Tooltip = ( {
 		return null;
 	}
 
+	const data = window.pressprimerAssignmentOnboardingData || {};
+	const pluginName =
+		data.i18n?.pluginName ||
+		__( 'PressPrimer Assignment', 'pressprimer-assignment' );
+
 	return (
 		<div
 			ref={ tooltipRef }
@@ -206,11 +212,14 @@ const Tooltip = ( {
 					type="button"
 					className="ppa-tooltip__close"
 					onClick={ onClose }
-					aria-label="Close"
+					aria-label={ __( 'Close', 'pressprimer-assignment' ) }
 				>
 					<CloseOutlined />
 				</button>
 			) }
+
+			{ /* Brand header */ }
+			<div className="ppa-tooltip__brand">{ pluginName }</div>
 
 			{ /* Content */ }
 			<div className="ppa-tooltip__content">
@@ -231,15 +240,43 @@ const Tooltip = ( {
 								onClick={ onPrev }
 								size="small"
 							>
-								{ prevLabel }
+								{ prevLabel ||
+									__( 'Back', 'pressprimer-assignment' ) }
 							</Button>
 						) }
 					</div>
 
 					<div className="ppa-tooltip__nav-center">
 						{ currentStep && totalSteps && (
-							<span className="ppa-tooltip__step-indicator">
-								{ currentStep } / { totalSteps }
+							<span
+								className="ppa-tooltip__dots"
+								aria-label={ sprintf(
+									/* translators: 1: current step number, 2: total step count */
+									__(
+										'Step %1$d of %2$d',
+										'pressprimer-assignment'
+									),
+									currentStep,
+									totalSteps
+								) }
+							>
+								{ Array.from(
+									{ length: totalSteps },
+									( _, i ) => (
+										<span
+											key={ i }
+											className={
+												'ppa-tooltip__dot' +
+												( i + 1 === currentStep
+													? ' ppa-tooltip__dot--active'
+													: '' ) +
+												( i + 1 < currentStep
+													? ' ppa-tooltip__dot--done'
+													: '' )
+											}
+										/>
+									)
+								) }
 							</span>
 						) }
 					</div>
@@ -247,7 +284,7 @@ const Tooltip = ( {
 					<div className="ppa-tooltip__nav-right">
 						{ onSkip && currentStep < totalSteps && (
 							<Button type="text" onClick={ onSkip } size="small">
-								Skip
+								{ __( 'Skip', 'pressprimer-assignment' ) }
 							</Button>
 						) }
 						{ onNext && (
@@ -257,8 +294,9 @@ const Tooltip = ( {
 								size="small"
 							>
 								{ currentStep === totalSteps
-									? 'Finish'
-									: nextLabel }
+									? __( 'Finish', 'pressprimer-assignment' )
+									: nextLabel ||
+									  __( 'Next', 'pressprimer-assignment' ) }
 								{ currentStep < totalSteps && (
 									<RightOutlined />
 								) }

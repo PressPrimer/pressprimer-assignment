@@ -163,6 +163,50 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			if ( assignmentData.rubric ) {
 				setRubricData( assignmentData.rubric );
 			}
+		} else if ( assignmentData.template ) {
+			// Guided-tour template prefill (new assignments only): the
+			// sanitized pack hydrates the real form, so rich text renders
+			// in the actual editor. Only fields the pack provides are set
+			// — the tour's "blank" pack carries just status=published, so
+			// the publish stop is a single Save click. No draft exists
+			// until the user saves.
+			const template = assignmentData.template;
+			const templateValues = {};
+
+			if ( template.title ) {
+				templateValues.title = template.title;
+			}
+			if ( template.description ) {
+				templateValues.description = template.description;
+			}
+			if ( template.instructions ) {
+				templateValues.instructions = template.instructions;
+			}
+			if ( template.grading_guidelines ) {
+				templateValues.grading_guidelines = template.grading_guidelines;
+			}
+			if ( template.max_points ) {
+				templateValues.max_points =
+					parseFloat( template.max_points ) || 100;
+			}
+			if ( template.passing_score ) {
+				templateValues.passing_score =
+					parseFloat( template.passing_score ) || 60;
+			}
+			if ( template.submission_type ) {
+				templateValues.submission_type = template.submission_type;
+			}
+			if (
+				Array.isArray( template.allowed_file_types ) &&
+				template.allowed_file_types.length
+			) {
+				templateValues.allowed_file_types = template.allowed_file_types;
+			}
+			if ( template.status ) {
+				templateValues.status = template.status;
+			}
+
+			form.setFieldsValue( templateValues );
 		}
 	}, [ assignmentData, form ] );
 
@@ -540,7 +584,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 												'pressprimer-assignment'
 										  ) }
 								</Title>
-								<Space>
+								<Space className="ppa-editor-header-actions">
 									<Button
 										icon={ <CloseOutlined /> }
 										onClick={ handleCancel }

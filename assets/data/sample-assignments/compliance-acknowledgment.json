@@ -1,0 +1,10 @@
+{
+	"title": "Compliance Acknowledgment",
+	"description": "Confirm you have read the required policy material and describe how it applies to your role.",
+	"instructions": "<p>After reviewing the assigned policy material:</p><ol><li>Write a brief statement (150–300 words) confirming you have read and understood the material.</li><li>Describe <strong>two specific situations in your own role</strong> where this policy applies, and what you would do in each.</li><li>Note any part of the policy that is unclear to you — questions are encouraged and do not affect your result.</li></ol><p>Your submission is recorded with a timestamp as evidence of completion.</p>",
+	"grading_guidelines": "<p>This is a pass/fail acknowledgment. A passing submission:</p><ul><li>Confirms the material was reviewed</li><li>Gives two genuine, role-specific examples (not copied from the policy text)</li></ul>",
+	"allowed_file_types": [ "pdf", "docx", "txt" ],
+	"max_points": 100,
+	"passing_score": 80,
+	"submission_type": "text"
+}

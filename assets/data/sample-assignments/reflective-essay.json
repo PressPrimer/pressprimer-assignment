@@ -1,0 +1,10 @@
+{
+	"title": "Reflective Essay",
+	"description": "A short personal essay reflecting on what you learned and how your thinking changed.",
+	"instructions": "<p>Write a 500–800 word reflective essay about your learning in this unit.</p><p>Your essay should cover three things:</p><ul><li><strong>What you learned</strong> — pick the two or three ideas that mattered most to you.</li><li><strong>How your thinking changed</strong> — describe something you believed or assumed before that you now see differently.</li><li><strong>What you'll do next</strong> — one concrete way you will apply this learning.</li></ul><p>Write in the first person. There are no wrong answers here — the goal is honest, specific reflection, not summary.</p>",
+	"grading_guidelines": "<p>Grading looks for:</p><ul><li>Specific, concrete examples rather than generalities (40%)</li><li>Evidence of genuine reflection — a before/after in your thinking (40%)</li><li>Clear, organized writing (20%)</li></ul>",
+	"allowed_file_types": [ "pdf", "docx", "txt", "rtf", "odt" ],
+	"max_points": 100,
+	"passing_score": 60,
+	"submission_type": "either"
+}

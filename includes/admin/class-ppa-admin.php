@@ -48,7 +48,7 @@ class PressPrimer_Assignment_Admin {
 		add_action( 'admin_menu', [ $this, 'add_grading_badge' ], 999 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
-		// One-time post-activation redirect to the setup wizard (2.2).
+		// One-time post-activation redirect to the guided tour (2.2).
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_setup' ] );
 
 		// Initialize sub-admin classes.
@@ -199,23 +199,6 @@ class PressPrimer_Assignment_Admin {
 			[ $this, 'render_settings' ]
 		);
 
-		// Setup wizard page (2.2): registered under the PPA parent so the
-		// slug-prefix asset routing applies, then removed from the visible
-		// menu — it is reached only by redirect, banner, or relaunch links.
-		$setup_hook = add_submenu_page(
-			'pressprimer-assignment',
-			__( 'Setup', 'pressprimer-assignment' ),
-			__( 'Setup', 'pressprimer-assignment' ),
-			PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN,
-			'pressprimer-assignment-setup',
-			[ $this, 'render_setup' ]
-		);
-		remove_submenu_page( 'pressprimer-assignment', 'pressprimer-assignment-setup' );
-
-		if ( $setup_hook ) {
-			add_action( 'load-' . $setup_hook, [ $this, 'prepare_setup_screen' ] );
-		}
-
 		/**
 		 * Fires after the core admin menu items are registered.
 		 *
@@ -224,49 +207,6 @@ class PressPrimer_Assignment_Admin {
 		 * @since 1.0.0
 		 */
 		do_action( 'pressprimer_assignment_admin_menu' );
-	}
-
-	/**
-	 * Prepare the setup wizard screen
-	 *
-	 * Runs on the wizard page's load hook, before admin-header output:
-	 * strips admin notices so the wizard is a clean full-screen canvas,
-	 * and tags the body so the wizard styles can take over the viewport.
-	 *
-	 * @since 2.2.0
-	 */
-	public function prepare_setup_screen() {
-		remove_all_actions( 'admin_notices' );
-		remove_all_actions( 'all_admin_notices' );
-
-		add_filter(
-			'admin_body_class',
-			function ( $classes ) {
-				return $classes . ' ppa-setup-wizard-page';
-			}
-		);
-	}
-
-	/**
-	 * Render the setup wizard page
-	 *
-	 * Outputs the mount point for the wizard React app. The bundle is
-	 * enqueued only for this page by PressPrimer_Assignment_Onboarding.
-	 *
-	 * @since 2.2.0
-	 */
-	public function render_setup() {
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
-			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
-		) {
-			wp_die(
-				esc_html__( 'You do not have permission to access this page.', 'pressprimer-assignment' ),
-				esc_html__( 'Permission Denied', 'pressprimer-assignment' ),
-				[ 'response' => 403 ]
-			);
-		}
-
-		echo '<div id="ppa-setup-wizard-root" class="ppa-setup-wizard-root"></div>';
 	}
 
 	/**
@@ -354,7 +294,9 @@ class PressPrimer_Assignment_Admin {
 			return null;
 		}
 
-		return admin_url( 'admin.php?page=pressprimer-assignment-setup' );
+		// The guided tour auto-opens on the PPA dashboard for users whose
+		// should_show state is fresh — that's where the redirect lands.
+		return admin_url( 'admin.php?page=pressprimer-assignment' );
 	}
 
 	/**
@@ -555,7 +497,7 @@ class PressPrimer_Assignment_Admin {
 					'grading'           => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
 					'reports'           => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
 					'setup_wizard'      => class_exists( 'PressPrimer_Assignment_Onboarding' )
-						? PressPrimer_Assignment_Onboarding::get_setup_url( true )
+						? PressPrimer_Assignment_Onboarding::get_relaunch_url()
 						: '',
 				],
 			]

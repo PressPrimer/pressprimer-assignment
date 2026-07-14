@@ -35,6 +35,23 @@ const initOnboarding = () => {
 };
 
 /**
+ * Bridge the assignment editor's after-save hook into a DOM event.
+ *
+ * The editor and the tour are separate React bundles; the editor
+ * already exposes window.PPAEditorAfterSave for addons, so the tour
+ * listens the same way. The publish step auto-advances when it hears
+ * a published save.
+ */
+window.PPAEditorAfterSave = window.PPAEditorAfterSave || [];
+window.PPAEditorAfterSave.push( ( { id, values } ) => {
+	window.dispatchEvent(
+		new CustomEvent( 'ppa:assignment-saved', {
+			detail: { id, status: values?.status },
+		} )
+	);
+} );
+
+/**
  * Expose a global function to relaunch the onboarding tour.
  * Called from the dashboard "Relaunch Tour" button.
  */

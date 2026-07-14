@@ -78,6 +78,7 @@ const SettingsPanel = ( {
 		<Space direction="vertical" size="large" style={ { width: '100%' } }>
 			{ /* Basic Information */ }
 			<Card
+				className="ppa-editor-card-basic"
 				title={
 					<Space>
 						<Title level={ 4 } style={ { margin: 0 } }>
@@ -328,6 +329,7 @@ const SettingsPanel = ( {
 
 			{ /* Grading Settings */ }
 			<Card
+				className="ppa-editor-card-grading"
 				title={
 					<Space>
 						<Title level={ 4 } style={ { margin: 0 } }>

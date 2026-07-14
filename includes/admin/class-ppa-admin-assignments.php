@@ -430,6 +430,14 @@ class PressPrimer_Assignment_Admin_Assignments {
 					? absint( $plugin_settings['default_max_files'] )
 					: 5,
 			];
+
+			// Guided tour (2.2): a template pick arrives as a nonce'd URL
+			// param and prefills the real editor form. No draft row exists
+			// until the user saves.
+			$template = $this->get_requested_template();
+			if ( $template ) {
+				$assignment_data['template'] = $template;
+			}
 		}
 
 		if ( $assignment_id > 0 ) {
@@ -538,6 +546,53 @@ class PressPrimer_Assignment_Admin_Assignments {
 					: [],
 			]
 		);
+	}
+
+	/**
+	 * Get the sample template requested via the guided-tour URL param
+	 *
+	 * Reads the nonce'd ppa-template parameter the tour appends to the
+	 * new-assignment URL. Any failure (missing/expired nonce, unknown
+	 * key) silently returns null so the editor simply opens blank.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array|null Sanitized template pack, or null.
+	 */
+	private function get_requested_template() {
+		if ( ! isset( $_GET['ppa-template'] ) ) {
+			return null;
+		}
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'pressprimer_assignment_setup_template' ) ) {
+			return null;
+		}
+
+		if ( ! class_exists( 'PressPrimer_Assignment_Onboarding' ) ) {
+			return null;
+		}
+
+		$key = sanitize_key( wp_unslash( $_GET['ppa-template'] ) );
+
+		// The tour's "start blank" pick carries no prefill content, but
+		// the tour context still defaults Status to Published so the
+		// publish stop is a single Save click.
+		if ( 'blank' === $key ) {
+			return [
+				'key'    => 'blank',
+				'status' => 'published',
+			];
+		}
+
+		$template = PressPrimer_Assignment_Onboarding::get_sample_assignment( $key );
+
+		if ( $template ) {
+			$template['status'] = 'published';
+		}
+
+		return $template;
 	}
 
 	/**

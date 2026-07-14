@@ -69,22 +69,39 @@ const useOnboarding = () => {
 	const totalSteps = getTotalSteps();
 
 	/**
-	 * Start the tour (transition from welcome modal to step 2)
+	 * Start the guided build (transition from welcome modal to step 2)
+	 *
+	 * Navigates to the real assignment editor. The pick travels as a
+	 * nonce'd URL parameter ('blank' when no template was chosen) that
+	 * the editor screen resolves server-side into a form prefill — for
+	 * blank starts that still defaults Status to Published so the
+	 * publish stop is a single Save click.
+	 *
+	 * @param {string|null} templateKey Chosen template key, or null for blank.
 	 */
-	const startTour = useCallback( () => {
-		setCurrentStep( 2 );
+	const startTour = useCallback( ( templateKey = null ) => {
+		// Hide the tour UI until the editor page takes over — rendering
+		// step 2 on the current page would flash the floating fallback.
+		setIsLoading( true );
 
-		const step = getStep( 2 );
-		const needsNavigation =
-			step && step.type === STEP_TYPE.SPOTLIGHT && ! isOnCorrectPage( 2 );
+		// Persist the landing step BEFORE navigating: 'start' alone
+		// stores step 1, which would re-show the welcome modal on the
+		// editor page.
+		sendProgress( 'start', { step: 2 } ).then( () => {
+			const onboardingData = getData();
 
-		// Wait for AJAX before navigating to avoid race condition.
-		sendProgress( 'start' ).then( () => {
-			if ( needsNavigation ) {
-				const stepUrl = getStepUrl( 2 );
-				if ( stepUrl ) {
-					window.location.href = stepUrl;
-				}
+			let url = getStepUrl( 2 );
+
+			if ( url && onboardingData.templateNonce ) {
+				url +=
+					'&ppa-template=' +
+					encodeURIComponent( templateKey || 'blank' ) +
+					'&_wpnonce=' +
+					encodeURIComponent( onboardingData.templateNonce );
+			}
+
+			if ( url ) {
+				window.location.href = url;
 			}
 		} );
 	}, [] );

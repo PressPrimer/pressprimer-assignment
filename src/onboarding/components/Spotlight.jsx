@@ -31,6 +31,9 @@ const Spotlight = ( { selector, padding = 8, children } ) => {
 
 	/**
 	 * Calculate the target element position
+	 *
+	 * Keeps the previous rect object when nothing moved so interval
+	 * polling doesn't cause render churn.
 	 */
 	const updatePosition = useCallback( () => {
 		if ( ! selector ) {
@@ -44,13 +47,25 @@ const Spotlight = ( { selector, padding = 8, children } ) => {
 		}
 
 		const rect = element.getBoundingClientRect();
-		setTargetRect( {
-			top: rect.top,
-			left: rect.left,
-			width: rect.width,
-			height: rect.height,
-			bottom: rect.bottom,
-			right: rect.right,
+		setTargetRect( ( prev ) => {
+			if (
+				prev &&
+				prev.top === rect.top &&
+				prev.left === rect.left &&
+				prev.width === rect.width &&
+				prev.height === rect.height
+			) {
+				return prev;
+			}
+
+			return {
+				top: rect.top,
+				left: rect.left,
+				width: rect.width,
+				height: rect.height,
+				bottom: rect.bottom,
+				right: rect.right,
+			};
 		} );
 	}, [ selector ] );
 
@@ -58,10 +73,19 @@ const Spotlight = ( { selector, padding = 8, children } ) => {
 	 * Set up position tracking
 	 */
 	useEffect( () => {
-		// Scroll to top, then measure after a short delay.
-		window.scrollTo( { top: 0, behavior: 'smooth' } );
+		// Bring the target itself into view — targets may sit far below
+		// the fold (page top is wrong for most guided-build steps).
+		const element = selector ? document.querySelector( selector ) : null;
+		if ( element ) {
+			element.scrollIntoView( { block: 'start', behavior: 'smooth' } );
+		}
 
 		const timer = setTimeout( updatePosition, 300 );
+
+		// Poll while the step is open: late-loading content (TinyMCE)
+		// shifts targets without resizing them, which the scroll/resize
+		// listeners and ResizeObserver below cannot see.
+		const interval = setInterval( updatePosition, 300 );
 
 		// Watch for resize and scroll.
 		window.addEventListener( 'resize', updatePosition );
@@ -69,16 +93,14 @@ const Spotlight = ( { selector, padding = 8, children } ) => {
 
 		// ResizeObserver for dynamic element changes.
 		let observer;
-		if ( selector ) {
-			const element = document.querySelector( selector );
-			if ( element && typeof window.ResizeObserver !== 'undefined' ) {
-				observer = new window.ResizeObserver( updatePosition );
-				observer.observe( element );
-			}
+		if ( element && typeof window.ResizeObserver !== 'undefined' ) {
+			observer = new window.ResizeObserver( updatePosition );
+			observer.observe( element );
 		}
 
 		return () => {
 			clearTimeout( timer );
+			clearInterval( interval );
 			window.removeEventListener( 'resize', updatePosition );
 			window.removeEventListener( 'scroll', updatePosition );
 			if ( observer ) {
@@ -135,6 +157,11 @@ const Spotlight = ( { selector, padding = 8, children } ) => {
 						/>
 					</mask>
 				</defs>
+				{ /* The dim layer is visual-only: the guided build needs the
+				     user typing into the real form, and SVG masks cut a
+				     visual hole but NOT a hit-testing hole — with pointer
+				     events on, the whole page (cutout included) is
+				     unclickable. */ }
 				<rect
 					x="0"
 					y="0"
@@ -142,7 +169,7 @@ const Spotlight = ( { selector, padding = 8, children } ) => {
 					height="100%"
 					fill="rgba(0, 0, 0, 0.5)"
 					mask="url(#ppa-spotlight-mask)"
-					style={ { pointerEvents: 'all' } }
+					style={ { pointerEvents: 'none' } }
 				/>
 			</svg>
 

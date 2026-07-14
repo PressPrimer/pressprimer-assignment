@@ -60,33 +60,42 @@ class PressPrimer_Assignment_Onboarding {
 	const META_STARTED = 'pressprimer_assignment_onboarding_started';
 
 	/**
-	 * User meta key: setup banner dismissed flag (2.2)
-	 *
-	 * Dismissing the "Finish setting up" banner is permanent and per
-	 * user, and independent of wizard completion/skip state.
-	 *
-	 * @since 2.2.0
-	 * @var string
-	 */
-	const META_BANNER_DISMISSED = 'pressprimer_assignment_setup_banner_dismissed';
-
-	/**
-	 * Admin page slug of the setup wizard (registered by the Admin class).
-	 *
-	 * @since 2.2.0
-	 * @var string
-	 */
-	const SETUP_PAGE_SLUG = 'pressprimer-assignment-setup';
-
-	/**
 	 * Total number of onboarding steps
 	 *
-	 * Steps: welcome, menu, dashboard, assignments, grading, settings, complete.
+	 * Guided-build tour (2.2): welcome, basics, grading, file
+	 * settings, publish, page, complete.
 	 *
 	 * @since 1.0.0
 	 * @var int
 	 */
 	const TOTAL_STEPS = 7;
+
+	/**
+	 * Option name: map of assignment ID => page ID created by the tour
+	 *
+	 * Makes the "Put it on a page" action idempotent without a meta
+	 * query — re-running it for the same assignment reuses the page.
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const SETUP_PAGES_OPTION = 'pressprimer_assignment_setup_pages';
+
+	/**
+	 * Bundled sample assignment template keys
+	 *
+	 * Each key maps to a JSON pack in assets/data/sample-assignments/.
+	 * The welcome step offers these as optional prefills for the real
+	 * assignment editor.
+	 *
+	 * @since 2.2.0
+	 * @var string[]
+	 */
+	const SAMPLE_KEYS = [
+		'reflective-essay',
+		'case-study-analysis',
+		'compliance-acknowledgment',
+	];
 
 	/**
 	 * Singleton instance
@@ -120,12 +129,11 @@ class PressPrimer_Assignment_Onboarding {
 	private function __construct() {
 		add_action( 'wp_ajax_pressprimer_assignment_onboarding_progress', [ $this, 'handle_progress_ajax' ] );
 		add_action( 'wp_ajax_pressprimer_assignment_get_onboarding_state', [ $this, 'handle_get_state_ajax' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_setup_create_page', [ $this, 'handle_create_page_ajax' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_assets' ] );
 
-		// 2.2: slim banner on PPA screens (replaces the auto-opening
-		// modal), its dismiss handler, and the relaunch reset handler.
-		add_action( 'admin_notices', [ $this, 'maybe_render_setup_banner' ] );
-		add_action( 'admin_init', [ $this, 'maybe_handle_banner_dismiss' ] );
+		// 2.2: nonce'd relaunch links (Settings, dashboard) reset the
+		// tour state server-side before the tour auto-opens.
 		add_action( 'admin_init', [ $this, 'maybe_handle_relaunch' ] );
 	}
 
@@ -147,25 +155,107 @@ class PressPrimer_Assignment_Onboarding {
 	}
 
 	/**
-	 * Get the setup wizard page URL
+	 * Get the tour relaunch URL
+	 *
+	 * Points at the PPA dashboard with a nonce'd parameter; arriving with
+	 * it resets the user's tour state, and the tour auto-opens there.
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param bool $relaunch Whether to include the nonce'd relaunch
-	 *                       parameter that resets wizard state on load.
-	 * @return string Setup page URL.
+	 * @return string Relaunch URL.
 	 */
-	public static function get_setup_url( $relaunch = false ) {
-		$url = admin_url( 'admin.php?page=' . self::SETUP_PAGE_SLUG );
+	public static function get_relaunch_url() {
+		return wp_nonce_url(
+			add_query_arg(
+				'ppa-relaunch',
+				'1',
+				admin_url( 'admin.php?page=pressprimer-assignment' )
+			),
+			'pressprimer_assignment_setup_relaunch'
+		);
+	}
 
-		if ( $relaunch ) {
-			$url = wp_nonce_url(
-				add_query_arg( 'ppa-relaunch', '1', $url ),
-				'pressprimer_assignment_setup_relaunch'
-			);
+	/**
+	 * Get all bundled sample assignment templates
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array[] Sanitized template arrays, keyed order per SAMPLE_KEYS.
+	 */
+	public static function get_sample_assignments() {
+		$samples = [];
+
+		foreach ( self::SAMPLE_KEYS as $key ) {
+			$sample = self::get_sample_assignment( $key );
+			if ( $sample ) {
+				$samples[] = $sample;
+			}
 		}
 
-		return $url;
+		return $samples;
+	}
+
+	/**
+	 * Load and sanitize one bundled sample assignment template
+	 *
+	 * The packs ship with the plugin, but they are still treated as
+	 * data: every field is sanitized on load (json_decode is not
+	 * sanitization) and file types are validated against the editor's
+	 * own whitelist.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $key Template key (must be in SAMPLE_KEYS).
+	 * @return array|null Sanitized template, or null when unknown/unreadable.
+	 */
+	public static function get_sample_assignment( $key ) {
+		$key = sanitize_key( $key );
+
+		if ( ! in_array( $key, self::SAMPLE_KEYS, true ) ) {
+			return null;
+		}
+
+		$path = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'assets/data/sample-assignments/' . $key . '.json';
+
+		if ( ! file_exists( $path ) ) {
+			return null;
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a bundled plugin file, not a remote URL.
+		$raw = json_decode( (string) file_get_contents( $path ), true );
+
+		if ( ! is_array( $raw ) ) {
+			return null;
+		}
+
+		$valid_types = [ 'pdf', 'docx', 'pptx', 'txt', 'rtf', 'odt', 'jpg', 'jpeg', 'png', 'gif' ];
+		$file_types  = [];
+
+		if ( isset( $raw['allowed_file_types'] ) && is_array( $raw['allowed_file_types'] ) ) {
+			foreach ( $raw['allowed_file_types'] as $type ) {
+				$type = sanitize_key( $type );
+				if ( in_array( $type, $valid_types, true ) ) {
+					$file_types[] = $type;
+				}
+			}
+		}
+
+		$submission_type = isset( $raw['submission_type'] ) ? sanitize_key( $raw['submission_type'] ) : 'file';
+		if ( ! in_array( $submission_type, [ 'file', 'text', 'either' ], true ) ) {
+			$submission_type = 'file';
+		}
+
+		return [
+			'key'                => $key,
+			'title'              => isset( $raw['title'] ) ? sanitize_text_field( $raw['title'] ) : '',
+			'description'        => isset( $raw['description'] ) ? sanitize_text_field( $raw['description'] ) : '',
+			'instructions'       => isset( $raw['instructions'] ) ? wp_kses_post( $raw['instructions'] ) : '',
+			'grading_guidelines' => isset( $raw['grading_guidelines'] ) ? wp_kses_post( $raw['grading_guidelines'] ) : '',
+			'allowed_file_types' => $file_types,
+			'max_points'         => isset( $raw['max_points'] ) ? max( 1, absint( $raw['max_points'] ) ) : 100,
+			'passing_score'      => isset( $raw['passing_score'] ) ? absint( $raw['passing_score'] ) : 60,
+			'submission_type'    => $submission_type,
+		];
 	}
 
 	/**
@@ -370,24 +460,57 @@ class PressPrimer_Assignment_Onboarding {
 			__( 'PressPrimer Assignment', 'pressprimer-assignment' )
 		);
 
+		// Template picks are display data only; the full pack is loaded
+		// server-side by the editor from the nonce'd ppa-template param.
+		$templates = [];
+		foreach ( self::get_sample_assignments() as $sample ) {
+			$templates[] = [
+				'key'         => $sample['key'],
+				'title'       => $sample['title'],
+				'description' => $sample['description'],
+			];
+		}
+
 		return [
-			'state'     => $this->get_onboarding_state(),
-			'nonce'     => wp_create_nonce( 'pressprimer_assignment_onboarding' ),
-			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-			'restNonce' => wp_create_nonce( 'wp_rest' ),
-			'setupUrl'  => self::get_setup_url(),
-			'isAdmin'   => current_user_can( 'manage_options' ),
-			'pluginUrl' => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
-			'urls'      => [
-				'dashboard'   => admin_url( 'admin.php?page=pressprimer-assignment' ),
-				'assignments' => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
-				'submissions' => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
-				'grading'     => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
-				'categories'  => admin_url( 'admin.php?page=pressprimer-assignment-categories' ),
-				'reports'     => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
-				'settings'    => admin_url( 'admin.php?page=pressprimer-assignment-settings' ),
+			'state'         => $this->get_onboarding_state(),
+			'nonce'         => wp_create_nonce( 'pressprimer_assignment_onboarding' ),
+			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+			'restNonce'     => wp_create_nonce( 'wp_rest' ),
+			'relaunchUrl'   => self::get_relaunch_url(),
+			'templates'     => $templates,
+			'templateNonce' => wp_create_nonce( 'pressprimer_assignment_setup_template' ),
+			// Runtime detection only — nothing about the site's LMS is
+			// ever stored (the tour collects no data).
+			'lms'           => [
+				'learndash' => defined( 'LEARNDASH_VERSION' ),
+				'tutorlms'  => defined( 'TUTOR_VERSION' ),
 			],
-			'i18n'      => [
+			// Finish-stop premium line, server-gated by the Phase 1
+			// registry (addon inactive AND manage_options): teachers
+			// receive an empty map — no marketing in their payload.
+			'touchpoints'   => class_exists( 'PressPrimer_Assignment_Touchpoints' )
+				? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'onboarding' )
+				: [],
+			'docsUrl'       => class_exists( 'PressPrimer_Assignment_Upgrade_Page' )
+				? PressPrimer_Assignment_Upgrade_Page::utm_url(
+					'https://pressprimer.com/knowledge-base/pressprimer-assignment/',
+					'onboarding-docs',
+					'onboarding'
+				)
+				: 'https://pressprimer.com/knowledge-base/pressprimer-assignment/',
+			'isAdmin'       => current_user_can( 'manage_options' ),
+			'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
+			'urls'          => [
+				'dashboard'     => admin_url( 'admin.php?page=pressprimer-assignment' ),
+				'assignments'   => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				'newAssignment' => admin_url( 'admin.php?page=pressprimer-assignment-assignments&action=new' ),
+				'submissions'   => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
+				'grading'       => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
+				'categories'    => admin_url( 'admin.php?page=pressprimer-assignment-categories' ),
+				'reports'       => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
+				'settings'      => admin_url( 'admin.php?page=pressprimer-assignment-settings' ),
+			],
+			'i18n'          => [
 				'pluginName'  => $plugin_name,
 				'welcomeBack' => __( 'Welcome back! Let\'s continue the tour.', 'pressprimer-assignment' ),
 			],
@@ -395,15 +518,14 @@ class PressPrimer_Assignment_Onboarding {
 	}
 
 	/**
-	 * Conditionally enqueue the wizard React bundle
+	 * Conditionally enqueue the guided-tour React bundle
 	 *
-	 * 2.2: the bundle loads ONLY on the dedicated setup page — the wizard
-	 * is a full-screen page, not a modal, so no other admin page needs
-	 * its assets. (Before 2.2 the bundle loaded on every PPA page to
-	 * power an auto-opening modal; that behavior is removed.)
+	 * Loads on Assignment admin pages: the tour overlays the REAL admin
+	 * UI (2.2 pivot decision) and auto-opens while should_show is true.
+	 * The JS init function checks should_show before rendering, and the
+	 * relaunch links depend on the bundle being present on the dashboard.
 	 *
 	 * @since 1.0.0
-	 * @since 2.2.0 Scoped to the setup wizard page only.
 	 *
 	 * @param string $hook Current admin page hook suffix.
 	 */
@@ -411,7 +533,11 @@ class PressPrimer_Assignment_Onboarding {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page check.
 		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 
-		if ( self::SETUP_PAGE_SLUG !== $current_page ) {
+		// Only load on Assignment admin pages.
+		$is_ppa_page = false !== strpos( $hook, 'pressprimer-assignment' )
+			|| ( ! empty( $current_page ) && 0 === strpos( $current_page, 'pressprimer-assignment' ) );
+
+		if ( ! $is_ppa_page ) {
 			return;
 		}
 
@@ -475,6 +601,12 @@ class PressPrimer_Assignment_Onboarding {
 		switch ( $action_type ) {
 			case 'start':
 				$this->start_onboarding();
+				// The guided tour navigates to the editor immediately after
+				// starting, so the landing step must persist before the
+				// page unloads — otherwise the welcome modal reappears.
+				if ( $step > 0 ) {
+					$this->update_step( $step );
+				}
 				break;
 
 			case 'next':
@@ -520,88 +652,102 @@ class PressPrimer_Assignment_Onboarding {
 	}
 
 	/**
-	 * Render the slim "finish setup" banner on PPA screens
+	 * Handle the tour's one-click "Put it on a page" action
 	 *
-	 * The lazy fallback for anyone the activation redirect didn't reach:
-	 * shown on Assignment admin pages (never on the wizard itself) while
-	 * should_show is true and the user hasn't dismissed it. Dismissal is
-	 * permanent, per user, and separate from wizard completion/skip.
-	 *
-	 * @since 2.2.0
-	 */
-	public function maybe_render_setup_banner() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page check.
-		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
-
-		// PPA screens only, and never on the wizard page itself.
-		if ( '' === $current_page
-			|| 0 !== strpos( $current_page, 'pressprimer-assignment' )
-			|| self::SETUP_PAGE_SLUG === $current_page
-		) {
-			return;
-		}
-
-		if ( ! $this->should_show_onboarding() ) {
-			return;
-		}
-
-		if ( get_user_meta( get_current_user_id(), self::META_BANNER_DISMISSED, true ) ) {
-			return;
-		}
-
-		$dismiss_url = wp_nonce_url(
-			add_query_arg( 'ppa-dismiss-setup-banner', '1' ),
-			'pressprimer_assignment_dismiss_setup_banner'
-		);
-		?>
-		<div class="notice notice-info ppa-setup-banner">
-			<p>
-				<strong><?php esc_html_e( 'Finish setting up PressPrimer Assignment', 'pressprimer-assignment' ); ?></strong>
-				&nbsp;
-				<a href="<?php echo esc_url( self::get_setup_url() ); ?>" class="button button-primary button-small">
-					<?php esc_html_e( 'Launch setup', 'pressprimer-assignment' ); ?>
-				</a>
-				&nbsp;
-				<a href="<?php echo esc_url( $dismiss_url ); ?>" class="ppa-setup-banner-dismiss">
-					<?php esc_html_e( 'Dismiss', 'pressprimer-assignment' ); ?>
-				</a>
-			</p>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Handle the banner dismissal link
-	 *
-	 * Records the permanent per-user dismissal and redirects back to the
-	 * page the user was on, without the dismissal parameters.
+	 * Creates a published page containing the assignment block, titled
+	 * after the assignment. Idempotent: re-running for the same
+	 * assignment returns the previously created page. Requires the
+	 * assignment to be published — nothing goes live before the user's
+	 * explicit publish action in the editor.
 	 *
 	 * @since 2.2.0
 	 */
-	public function maybe_handle_banner_dismiss() {
-		if ( ! isset( $_GET['ppa-dismiss-setup-banner'] ) ) {
-			return;
-		}
-
-		check_admin_referer( 'pressprimer_assignment_dismiss_setup_banner' );
+	public function handle_create_page_ajax() {
+		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
 		if ( ! $this->user_can_use_wizard() ) {
-			return;
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'pressprimer-assignment' ) ] );
 		}
 
-		update_user_meta( get_current_user_id(), self::META_BANNER_DISMISSED, true );
+		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( wp_unslash( $_POST['assignment_id'] ) ) : 0;
 
-		wp_safe_redirect( remove_query_arg( [ 'ppa-dismiss-setup-banner', '_wpnonce' ] ) );
-		exit;
+		if ( ! $assignment_id ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid assignment.', 'pressprimer-assignment' ) ] );
+		}
+
+		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
+
+		if ( ! $assignment ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid assignment.', 'pressprimer-assignment' ) ] );
+		}
+
+		// Teachers may only create pages for their own assignments.
+		if (
+			(int) $assignment->author_id !== get_current_user_id()
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'pressprimer-assignment' ) ] );
+		}
+
+		if ( 'published' !== $assignment->status ) {
+			wp_send_json_error( [ 'message' => __( 'Publish the assignment first, then create its page.', 'pressprimer-assignment' ) ] );
+		}
+
+		// Idempotent: reuse the page this flow already created for this
+		// assignment (unless it has since been deleted).
+		$pages       = get_option( self::SETUP_PAGES_OPTION, [] );
+		$existing_id = isset( $pages[ $assignment_id ] ) ? absint( $pages[ $assignment_id ] ) : 0;
+
+		if ( $existing_id ) {
+			$existing = get_post( $existing_id );
+
+			if ( $existing && 'page' === $existing->post_type && 'trash' !== $existing->post_status ) {
+				wp_send_json_success(
+					[
+						'page_id'  => (int) $existing->ID,
+						'page_url' => get_permalink( $existing ),
+						'created'  => false,
+					]
+				);
+			}
+		}
+
+		$page_id = wp_insert_post(
+			[
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_title'   => $assignment->title,
+				'post_content' => '<!-- wp:pressprimer-assignment/assignment {"assignmentId":' . absint( $assignment_id ) . '} /-->',
+			],
+			true
+		);
+
+		if ( is_wp_error( $page_id ) ) {
+			wp_send_json_error( [ 'message' => __( 'Could not create the page.', 'pressprimer-assignment' ) ] );
+		}
+
+		if ( ! is_array( $pages ) ) {
+			$pages = [];
+		}
+		$pages[ $assignment_id ] = (int) $page_id;
+		update_option( self::SETUP_PAGES_OPTION, $pages, false );
+
+		wp_send_json_success(
+			[
+				'page_id'  => (int) $page_id,
+				'page_url' => get_permalink( $page_id ),
+				'created'  => true,
+			]
+		);
 	}
 
 	/**
-	 * Handle a wizard relaunch request
+	 * Handle a tour relaunch request
 	 *
-	 * The Settings and dashboard "Setup wizard" links point at the setup
-	 * page with a nonce'd relaunch parameter; arriving with it resets the
-	 * user's wizard state (the existing reset action) so the wizard
-	 * starts fresh.
+	 * The Settings and dashboard "Setup wizard" links point at the PPA
+	 * dashboard with a nonce'd relaunch parameter; arriving with it
+	 * resets the user's tour state (the existing reset action) so the
+	 * tour auto-opens fresh.
 	 *
 	 * @since 2.2.0
 	 */
@@ -610,7 +756,7 @@ class PressPrimer_Assignment_Onboarding {
 		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing check; nonce verified below.
-		if ( self::SETUP_PAGE_SLUG !== $current_page || ! isset( $_GET['ppa-relaunch'] ) ) {
+		if ( 0 !== strpos( $current_page, 'pressprimer-assignment' ) || ! isset( $_GET['ppa-relaunch'] ) ) {
 			return;
 		}
 

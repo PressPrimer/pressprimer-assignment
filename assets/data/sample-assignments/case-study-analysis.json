@@ -1,0 +1,10 @@
+{
+	"title": "Case Study Analysis",
+	"description": "Analyze a real-world case, identify the core problem, and recommend a course of action.",
+	"instructions": "<p>Choose (or use the assigned) case study and write a structured analysis:</p><ol><li><strong>Summary</strong> — the situation in your own words, in one paragraph.</li><li><strong>Problem identification</strong> — what is the core problem? Distinguish causes from symptoms.</li><li><strong>Analysis</strong> — apply at least two concepts or frameworks from the course. Show your reasoning.</li><li><strong>Recommendation</strong> — what should be done, by whom, and why? Address at least one likely objection.</li></ol><p>Aim for 1,000–1,500 words. Cite any sources you use.</p>",
+	"grading_guidelines": "<p>Strong submissions will:</p><ul><li>Identify the real problem, not just restate the case (25%)</li><li>Apply course concepts accurately and explicitly (35%)</li><li>Make a specific, defensible recommendation (25%)</li><li>Write clearly with sources cited (15%)</li></ul>",
+	"allowed_file_types": [ "pdf", "docx", "odt", "pptx" ],
+	"max_points": 100,
+	"passing_score": 70,
+	"submission_type": "file"
+}

@@ -200,6 +200,7 @@ const LatePolicyCard = ( { form } ) => {
 
 	return (
 		<Card
+			className="ppa-editor-card-late-policy"
 			title={
 				<Space>
 					<Title level={ 4 } style={ { margin: 0 } }>
