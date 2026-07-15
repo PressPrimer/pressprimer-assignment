@@ -500,6 +500,16 @@ class PressPrimer_Assignment_Onboarding {
 					&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'wizard' ),
 				'privacyUrl' => 'https://pressprimer.com/privacy/',
 			],
+			// The 10-submission milestone prompt (011): threshold-triggered
+			// and admin-only (the gate lives in the service, which also
+			// yields to a due review prompt); it additionally waits out a
+			// pending What's New wave — one ask per moment, never stack.
+			'milestone'     => [
+				'eligible' => class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
+					&& PressPrimer_Assignment_Email_Optin_Service::milestone_reached()
+					&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'milestone' )
+					&& ! PressPrimer_Assignment_Email_Optin_Service::whats_new_visible( get_current_user_id() ),
+			],
 			'isAdmin'       => current_user_can( 'manage_options' ),
 			'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
 			'urls'          => [

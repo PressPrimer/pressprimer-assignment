@@ -11,8 +11,41 @@
 
 import { render, unmountComponentAtNode } from '@wordpress/element';
 import Onboarding from './components/Onboarding';
+import MilestoneNotice from './components/MilestoneNotice';
 import { clearSavedAssignment } from './setupSession';
 import './style.css';
+
+/**
+ * Initialize the milestone prompt (011)
+ *
+ * Server-resolved eligibility (threshold, admin-only, review-prompt
+ * priority, What's New yield). Renders on PPA admin screens except
+ * the dashboard, which carries its own ask surfaces — one ask per
+ * moment, never stack.
+ */
+const initMilestoneNotice = () => {
+	const data = window.pressprimerAssignmentOnboardingData;
+
+	if ( ! data?.milestone?.eligible ) {
+		return;
+	}
+
+	const page = new URLSearchParams( window.location.search ).get( 'page' );
+	if ( 'pressprimer-assignment' === page ) {
+		return;
+	}
+
+	const host = document.getElementById( 'wpbody-content' );
+	if ( ! host ) {
+		return;
+	}
+
+	const container = document.createElement( 'div' );
+	container.id = 'ppa-milestone-root';
+	host.insertBefore( container, host.firstChild );
+
+	render( <MilestoneNotice />, container );
+};
 
 /**
  * Initialize the onboarding overlay
@@ -94,9 +127,16 @@ window.ppaLaunchOnboarding = () => {
 	} );
 };
 
-// Boot when DOM is ready.
-if ( document.readyState === 'loading' ) {
-	document.addEventListener( 'DOMContentLoaded', initOnboarding );
-} else {
+/**
+ * Boot everything when DOM is ready
+ */
+const boot = () => {
 	initOnboarding();
+	initMilestoneNotice();
+};
+
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', boot );
+} else {
+	boot();
 }

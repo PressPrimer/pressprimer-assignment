@@ -46,7 +46,17 @@ class PressPrimer_Assignment_Activator {
 
 		// Fresh-install detection must happen before activation writes
 		// the version option below.
-		$is_fresh_install = false === get_option( 'pressprimer_assignment_version' );
+		$stored_version   = get_option( 'pressprimer_assignment_version' );
+		$is_fresh_install = false === $stored_version;
+
+		// Reactivation-style updates (deactivate, replace, reactivate)
+		// cross versions HERE, before activation overwrites the stored
+		// version — normal updates are caught by the admin_init check
+		// in PressPrimer_Assignment_Admin. Never fires on fresh installs
+		// (no stored version).
+		if ( class_exists( 'PressPrimer_Assignment_Email_Optin_Service' ) ) {
+			PressPrimer_Assignment_Email_Optin_Service::maybe_flag_whats_new_on_update( $stored_version );
+		}
 
 		// Single site activation
 		self::activate_single_site();

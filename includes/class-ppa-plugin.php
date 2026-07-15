@@ -88,6 +88,7 @@ class PressPrimer_Assignment_Plugin {
 
 		// Register statistics cache invalidation hooks.
 		$this->register_statistics_hooks();
+		$this->register_email_optin_hooks();
 
 		// Register privacy exporters/erasers.
 		$this->init_privacy();
@@ -231,6 +232,26 @@ class PressPrimer_Assignment_Plugin {
 		add_action(
 			'pressprimer_assignment_deleted',
 			[ 'PressPrimer_Assignment_Statistics_Service', 'clear_all_caches' ]
+		);
+	}
+
+	/**
+	 * Register email opt-in lifecycle hooks
+	 *
+	 * Keeps the site-wide submissions-received counter current — the
+	 * 011 milestone prompt fires from it.
+	 *
+	 * @since 2.2.0
+	 */
+	private function register_email_optin_hooks() {
+		if ( ! class_exists( 'PressPrimer_Assignment_Email_Optin_Service' ) ) {
+			return;
+		}
+
+		// Fires for both file and text submissions.
+		add_action(
+			'pressprimer_assignment_submission_submitted',
+			[ 'PressPrimer_Assignment_Email_Optin_Service', 'increment_submission_count' ]
 		);
 	}
 

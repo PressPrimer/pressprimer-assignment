@@ -78,6 +78,51 @@ class PressPrimer_Assignment_Email_Optin_Service {
 	const SOURCES = [ 'wizard', 'whats-new', 'dashboard-card', 'milestone' ];
 
 	/**
+	 * Option name: cumulative submissions-received counter
+	 *
+	 * Incremented on the submission hook from 2.2.0 onward (no
+	 * historical backfill — cumulative "received" semantics, so
+	 * deleting submissions never un-fires the milestone).
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const SUBMISSION_COUNT_OPTION = 'pressprimer_assignment_submission_count';
+
+	/**
+	 * Submissions received before the milestone prompt may fire
+	 *
+	 * @since 2.2.0
+	 * @var int
+	 */
+	const MILESTONE_THRESHOLD = 10;
+
+	/**
+	 * Option name: pending What's New wave marker
+	 *
+	 * Holds the major line ("2.2", "3.1") of the latest update that
+	 * crossed a major boundary — never set on fresh installs. Each
+	 * admin sees that wave's panel until they dismiss it; a later
+	 * major arms a fresh wave.
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const WHATS_NEW_OPTION = 'pressprimer_assignment_whats_new';
+
+	/**
+	 * User meta key: the What's New wave this admin dismissed
+	 *
+	 * Version-scoped (unlike the ask dismissals): dismissing the 3.1
+	 * wave hides 3.1 forever — including later 3.1.x patches — but the
+	 * next major's wave shows fresh.
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const META_WHATS_NEW_SEEN = 'pressprimer_assignment_whats_new_seen';
+
+	/**
 	 * Get the intake endpoint URL
 	 *
 	 * Overridable via the PRESSPRIMER_ASSIGNMENT_EMAIL_INTAKE_URL
@@ -243,6 +288,10 @@ class PressPrimer_Assignment_Email_Optin_Service {
 	/**
 	 * Record a per-surface dismissal
 	 *
+	 * Most surfaces dismiss permanently. The What's New panel is the
+	 * exception: its dismissal is scoped to the pending wave, so the
+	 * next major's panel shows fresh.
+	 *
 	 * @since 2.2.0
 	 *
 	 * @param int    $user_id User ID.
@@ -254,6 +303,11 @@ class PressPrimer_Assignment_Email_Optin_Service {
 
 		if ( ! $user_id || ! self::is_valid_source( $surface ) ) {
 			return false;
+		}
+
+		if ( 'whats-new' === $surface ) {
+			update_user_meta( $user_id, self::META_WHATS_NEW_SEEN, self::get_whats_new_version() );
+			return true;
 		}
 
 		$dismissals = get_user_meta( $user_id, self::META_DISMISSALS, true );
@@ -356,6 +410,129 @@ class PressPrimer_Assignment_Email_Optin_Service {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Increment the submissions-received counter
+	 *
+	 * Hooked to pressprimer_assignment_submission_submitted (fires for
+	 * both file and text submissions).
+	 *
+	 * @since 2.2.0
+	 */
+	public static function increment_submission_count() {
+		$count = absint( get_option( self::SUBMISSION_COUNT_OPTION, 0 ) );
+		update_option( self::SUBMISSION_COUNT_OPTION, $count + 1, false );
+	}
+
+	/**
+	 * Get the cumulative submissions-received count
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return int Count since 2.2.0.
+	 */
+	public static function get_submission_count() {
+		return absint( get_option( self::SUBMISSION_COUNT_OPTION, 0 ) );
+	}
+
+	/**
+	 * Check whether the submissions milestone has been reached
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return bool True at or past the threshold.
+	 */
+	public static function milestone_reached() {
+		return self::get_submission_count() >= self::MILESTONE_THRESHOLD;
+	}
+
+	/**
+	 * Get the major line ("x.y") of a version string
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $version Full version, e.g. "3.1.2".
+	 * @return string Major line, e.g. "3.1".
+	 */
+	public static function major_line( $version ) {
+		return implode( '.', array_slice( explode( '.', (string) $version ), 0, 2 ) );
+	}
+
+	/**
+	 * Get the pending What's New wave, if any
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string Major line ("2.2") or '' when no wave is pending.
+	 */
+	public static function get_whats_new_version() {
+		$version = get_option( self::WHATS_NEW_OPTION, '' );
+		return is_string( $version ) ? $version : '';
+	}
+
+	/**
+	 * Arm a What's New wave when an update crosses a major line
+	 *
+	 * Called from both update-detection paths (the admin_init version
+	 * check and reactivation-style updates in the activator). Fresh
+	 * installs never qualify: they have no stored version. Patch
+	 * updates within the same major line never re-arm — a user who
+	 * dismissed the 3.1 wave sees nothing on 3.1.2. Skipped majors
+	 * collapse into the latest wave (3.0 → 3.2 arms "3.2" only).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string|false $stored_version Previously stored plugin version.
+	 * @return bool True when a wave was armed.
+	 */
+	public static function maybe_flag_whats_new_on_update( $stored_version ) {
+		if ( empty( $stored_version ) || ! is_string( $stored_version ) ) {
+			return false;
+		}
+
+		$current_line = self::major_line( PRESSPRIMER_ASSIGNMENT_VERSION );
+
+		if (
+			self::major_line( $stored_version ) !== $current_line
+			&& version_compare( PRESSPRIMER_ASSIGNMENT_VERSION, $stored_version, '>' )
+		) {
+			update_option( self::WHATS_NEW_OPTION, $current_line, false );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check whether the What's New panel is visible for a user
+	 *
+	 * Admins only; requires a pending wave (set only when an update
+	 * crosses a major line — never on fresh installs) that this admin
+	 * has not dismissed. Dismissal is wave-scoped: the next major's
+	 * panel shows fresh. The panel itself shows the release notes
+	 * regardless of opt-in state; the ask inside it resolves its own
+	 * eligibility separately.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True when the panel should render.
+	 */
+	public static function whats_new_visible( $user_id ) {
+		$user_id = absint( $user_id );
+
+		if ( ! $user_id || ! user_can( $user_id, 'manage_options' ) ) {
+			return false;
+		}
+
+		$pending = self::get_whats_new_version();
+
+		if ( '' === $pending ) {
+			return false;
+		}
+
+		return get_user_meta( $user_id, self::META_WHATS_NEW_SEEN, true ) !== $pending;
 	}
 
 	/**

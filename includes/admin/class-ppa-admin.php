@@ -48,6 +48,7 @@ class PressPrimer_Assignment_Admin {
 		add_action( 'admin_menu', [ $this, 'add_grading_badge' ], 999 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_global_styles' ] );
+		add_action( 'admin_init', [ $this, 'maybe_flag_whats_new' ] );
 
 		// One-time post-activation redirect to the guided tour (2.2).
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_setup' ] );
@@ -301,6 +302,32 @@ class PressPrimer_Assignment_Admin {
 	}
 
 	/**
+	 * Detect a plugin update and arm the What's New panel
+	 *
+	 * Plugin updates never fire activation, so the stored version
+	 * option goes stale until this check runs. When an UPDATE crosses
+	 * into 2.2.0 the What's New marker is set; fresh installs never
+	 * qualify (activation writes the current version before this ever
+	 * sees a mismatch). The reactivation-style update path is covered
+	 * by the same check in the activator.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_flag_whats_new() {
+		$stored = get_option( 'pressprimer_assignment_version' );
+
+		if ( false === $stored || PRESSPRIMER_ASSIGNMENT_VERSION === $stored ) {
+			return;
+		}
+
+		if ( class_exists( 'PressPrimer_Assignment_Email_Optin_Service' ) ) {
+			PressPrimer_Assignment_Email_Optin_Service::maybe_flag_whats_new_on_update( $stored );
+		}
+
+		update_option( 'pressprimer_assignment_version', PRESSPRIMER_ASSIGNMENT_VERSION );
+	}
+
+	/**
 	 * Enqueue admin-wide styles
 	 *
 	 * The grading count badge renders in the admin menu on EVERY admin
@@ -533,6 +560,51 @@ class PressPrimer_Assignment_Admin {
 			$plugin_name
 		);
 
+		$user_id           = get_current_user_id();
+		$optin_available   = class_exists( 'PressPrimer_Assignment_Email_Optin_Service' );
+		$whats_new_visible = $optin_available
+			&& PressPrimer_Assignment_Email_Optin_Service::whats_new_visible( $user_id );
+
+		/**
+		 * Filters the What's New panel sections.
+		 *
+		 * Major releases ship the free plugin and the addons together;
+		 * each addon appends its own section here so the whole wave
+		 * shows in one panel. Each section: [ 'title' => plugin name,
+		 * 'items' => string[] ]. Plain text only — everything renders
+		 * escaped.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param array<int, array{title: string, items: string[]}> $sections Release note sections.
+		 */
+		$whats_new_sections = apply_filters(
+			'pressprimer_assignment_whats_new_sections',
+			[
+				[
+					'title' => __( 'PressPrimer Assignment', 'pressprimer-assignment' ),
+					'items' => [
+						__( 'PowerPoint (.pptx) submissions — students can submit decks, and you can preview them as slides right in the grading view.', 'pressprimer-assignment' ),
+						__( 'Due dates with graduated late penalties — accept, block, or automatically deduct from late work on a schedule you control.', 'pressprimer-assignment' ),
+						__( 'A new guided setup tour that walks you through building and publishing a real assignment.', 'pressprimer-assignment' ),
+					],
+				],
+			]
+		);
+
+		// Sanitize the (filterable) sections element by element.
+		$sanitized_sections = [];
+		foreach ( (array) $whats_new_sections as $section ) {
+			if ( ! is_array( $section ) || empty( $section['items'] ) ) {
+				continue;
+			}
+
+			$sanitized_sections[] = [
+				'title' => isset( $section['title'] ) ? sanitize_text_field( $section['title'] ) : '',
+				'items' => array_values( array_map( 'sanitize_text_field', (array) $section['items'] ) ),
+			];
+		}
+
 		wp_localize_script(
 			'ppa-dashboard',
 			'pressprimerAssignmentDashboardData',
@@ -551,13 +623,35 @@ class PressPrimer_Assignment_Admin {
 						? PressPrimer_Assignment_Onboarding::get_relaunch_url()
 						: '',
 				],
+				// The one-time post-update What's New panel (011): release
+				// notes paired with the ask. The panel shows regardless of
+				// opt-in state; the ask inside resolves its own eligibility.
+				'whatsNew'      => [
+					'show'        => $whats_new_visible,
+					'version'     => $optin_available
+						? PressPrimer_Assignment_Email_Optin_Service::get_whats_new_version()
+						: '',
+					'sections'    => $sanitized_sections,
+					'blogUrl'     => class_exists( 'PressPrimer_Assignment_Upgrade_Page' )
+						? PressPrimer_Assignment_Upgrade_Page::utm_url(
+							'https://pressprimer.com/blog/',
+							'whats-new-read-more',
+							'whats-new'
+						)
+						: 'https://pressprimer.com/blog/',
+					'askEligible' => $optin_available
+						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( $user_id, 'whats-new' ),
+				],
 				// The 011 email-course card: admins only (lifecycle
 				// surfaces never render for teachers), suppressed once
-				// answered anywhere, dismissible separately.
+				// answered anywhere, dismissible separately — and it
+				// yields while the What's New panel is up (one ask per
+				// moment, never stack).
 				'emailOptin'    => [
-					'eligible'   => current_user_can( 'manage_options' )
-						&& class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
-						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'dashboard-card' ),
+					'eligible'   => ! $whats_new_visible
+						&& current_user_can( 'manage_options' )
+						&& $optin_available
+						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( $user_id, 'dashboard-card' ),
 					'privacyUrl' => 'https://pressprimer.com/privacy/',
 				],
 			]

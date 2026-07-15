@@ -238,6 +238,60 @@
 	color: #646970;
 }
 
+/* ==========================================================================
+   Milestone Notice (011 — 10 submissions)
+   ========================================================================== */
+
+.ppa-milestone-notice {
+	position: relative;
+	background: #fff;
+	border: 1px solid #e4e4e7;
+	border-left: 4px solid #14b8a6;
+	border-radius: 8px;
+	padding: 20px 48px 20px 24px;
+	margin: 16px 20px 8px 2px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.ppa-milestone-notice__dismiss {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: transparent;
+	color: #8c8c8c;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	font-size: 12px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-milestone-notice__dismiss:hover {
+	background: #f0f0f0;
+	color: #1d2327;
+}
+
+.ppa-milestone-notice__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 10px;
+}
+
+.ppa-milestone-notice .ppa-email-ask__body {
+	margin-left: 0;
+}
+
+.ppa-milestone-notice .ppa-email-ask__field-row .ant-input {
+	max-width: 300px;
+}
+
 /* Email ask section on the finish stop (011) — a soft brand-teal
    panel so the ask stands out from the next-steps box above. */
 .ppa-onboarding-email-ask {
