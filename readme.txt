@@ -3,7 +3,7 @@ Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.1.1
+Stable tag: 2.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,8 +26,8 @@ Built-in assignment tools in WordPress LMS plugins are often afterthoughts, limi
 
 PressPrimer Assignment delivers a focused, polished assignment workflow with the features educators actually need:
 
-* **Flexible Submission Types** – Accept file uploads, rich text submissions, or let students choose. Support for PDF, DOCX, TXT, RTF, ODT, and image files out of the box.
-* **Grade Without Leaving WordPress** – A dedicated grading queue with a side-by-side interface: the student's document renders on the left while you score and write feedback on the right. Built-in viewers for PDF, Word documents, images, and text files mean you never have to download, open, and track files on your desktop.
+* **Flexible Submission Types** – Accept file uploads, rich text submissions, or let students choose. Support for PDF, DOCX, PPTX, TXT, RTF, ODT, and image files out of the box.
+* **Grade Without Leaving WordPress** – A dedicated grading queue with a side-by-side interface: the student's document renders on the left while you score and write feedback on the right. Built-in viewers for PDF, Word documents, PowerPoint decks, images, and text files mean you never have to download, open, and track files on your desktop.
 * **Native LMS Integration** – Works with LearnDash, Tutor LMS, LifterLMS, and LearnPress. Assignments appear in lessons, passing grades trigger lesson completion, and instructor roles are mapped automatically.
 * **Secure File Handling** – Six-layer file validation and permission-based file serving. Student files are never directly accessible via URL.
 * **Customizable Email Notifications** – Automatic emails for submission confirmation, grade release, and new submission alerts. Fully customizable templates with token placeholders.
@@ -57,8 +57,8 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 
 * Centralized grading queue with filter and sort
 * Side-by-side grading interface: document viewer on the left, grading panel on the right
-* Built-in viewers render PDF, DOCX, images, and text files directly in WordPress; no downloading required
-* Automatic text extraction from PDF, DOCX, ODT, RTF, and TXT files with quality scoring
+* Built-in viewers render PDF, DOCX, PPTX slides, images, and text files directly in WordPress; no downloading required
+* Automatic text extraction from PDF, DOCX, PPTX, ODT, RTF, and TXT files with quality scoring
 * Rich text feedback editor with bold, italic, lists, and links — feedback is rendered with its formatting on the student view, not as plain text
 * Submissions list filterable by score range, feedback presence, and submission date range
 * Grading guidelines reference panel pulled from the assignment
@@ -263,6 +263,16 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
+
+= 2.2.0 =
+* Added: PowerPoint (.pptx) submissions — preview decks as slides right in the grading view, with a per-slide text fallback and server-side text extraction
+* Added: Due dates with graduated late penalties — accept, block, or automatically deduct points on a tiered schedule (percent of maximum points or of the earned score), with an optional final cutoff
+* Added: A guided setup tour that walks new users through creating and publishing a real assignment, with starter templates and one-click page creation
+* Added: What's New panel shown to administrators once after each major update, with release notes for the whole plugin suite
+* Added: Optional free email course for administrators (explicit opt-in only — only the typed email address is ever sent; see External Services)
+* Added: Upgrade page describing the premium addons, with locked report previews (administrators only)
+* Changed: New assignments now default to Published status so publishing isn't a stumbling block
+* Fixed: The grading count badge in the admin menu displays correctly on WordPress 7.0
 
 = 2.1.1 =
 * Improved: Tightened permission checks on the categories REST endpoint so teachers can only view individual categories they own or have access to. Single-teacher sites are unaffected.
