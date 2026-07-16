@@ -266,7 +266,7 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 
 = 2.2.0 =
 * Added: PowerPoint (.pptx) submissions — preview decks as slides right in the grading view, with a per-slide text fallback and server-side text extraction
-* Added: Due dates with graduated late penalties — accept, block, or automatically deduct points on a tiered schedule (percent of maximum points or of the earned score), with an optional final cutoff
+* Added: Due dates with a late policy — accept late work as-is, deduct a percentage for a set number of days and then close submissions, or reject late work outright, with an optional cutoff for penalty-free acceptance too
 * Added: A guided setup tour that walks new users through creating and publishing a real assignment, with starter templates and one-click page creation
 * Added: What's New panel shown to administrators once after each major update, with release notes for the whole plugin suite
 * Added: Optional free email course for administrators (explicit opt-in only — only the typed email address is ever sent; see External Services)

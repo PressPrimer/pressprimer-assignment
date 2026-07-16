@@ -386,7 +386,7 @@ class PressPrimer_Assignment_Upgrade_Page {
 			],
 			[
 				'category'   => $core,
-				'feature'    => __( 'Graduated late penalty schedules with optional cutoff', 'pressprimer-assignment' ),
+				'feature'    => __( 'Late policies with penalties and submission cutoffs', 'pressprimer-assignment' ),
 				'free'       => true,
 				'educator'   => true,
 				'school'     => true,

@@ -145,7 +145,7 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	 *
 	 * - accept:  late submissions accepted with no penalty (default —
 	 *            matches pre-2.2 behavior, where lateness didn't exist)
-	 * - penalty: late submissions accepted; a graduated penalty schedule
+	 * - penalty: late submissions accepted within the config's window; a penalty
 	 *            (late_penalty_schedule_json) is applied at grading time
 	 * - reject:  late submissions refused at submission time
 	 *
@@ -155,14 +155,14 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	public $late_policy = 'accept';
 
 	/**
-	 * Graduated late penalty schedule (JSON), used when late_policy is 'penalty'
+	 * Late policy config (JSON): cutoff_hours, penalty_percent, basis
 	 *
-	 * Shape: {"tiers":[{"late_by_hours":24,"penalty_percent":10},...],
-	 *         "cutoff_hours":168,"basis":"max_points"}
-	 * - 1–5 tiers, strictly increasing thresholds, penalties 0–100 non-decreasing
-	 * - A single tier may use late_by_hours null (any lateness — the flat case)
-	 * - cutoff_hours (optional): submissions refused entirely beyond it
-	 * - basis: what the percentages deduct from — 'max_points' (default,
+	 * Shape: {"cutoff_hours":96,"penalty_percent":10,"basis":"max_points"}
+	 * - penalty policy: both values set — late by up to the cutoff window,
+	 *   deduct the percentage; submissions refused beyond the cutoff
+	 * - accept policy: optional cutoff only (no percentage) — late work is
+	 *   accepted penalty-free until the cutoff, or indefinitely without one
+	 * - basis: what the percentage deducts from — 'max_points' (default,
 	 *   percent of the assignment's maximum points) or 'raw_score'
 	 *   (percent of the student's earned score)
 	 *

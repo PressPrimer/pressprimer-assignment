@@ -86,7 +86,7 @@ class PressPrimer_Assignment_Grading_Service {
 		 */
 		do_action( 'pressprimer_assignment_before_grade', $submission_id );
 
-		// Apply the graduated late penalty (2.2, feature 009). The grader
+		// Apply the late penalty (2.2, feature 009). The grader
 		// enters the raw score; when the assignment's late policy is
 		// 'penalty' and the submission is late, the schedule resolves a
 		// deduction and the stored score becomes the penalized final. The

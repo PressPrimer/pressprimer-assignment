@@ -585,7 +585,7 @@ class PressPrimer_Assignment_Admin {
 					'title' => __( 'PressPrimer Assignment', 'pressprimer-assignment' ),
 					'items' => [
 						__( 'PowerPoint (.pptx) submissions — students can submit decks, and you can preview them as slides right in the grading view.', 'pressprimer-assignment' ),
-						__( 'Due dates with graduated late penalties — accept, block, or automatically deduct from late work on a schedule you control.', 'pressprimer-assignment' ),
+						__( 'Due dates with a late policy — accept late work, deduct a percentage for a set number of days, or reject it, with an optional submission cutoff.', 'pressprimer-assignment' ),
 						__( 'A new guided setup tour that walks you through building and publishing a real assignment.', 'pressprimer-assignment' ),
 					],
 				],
