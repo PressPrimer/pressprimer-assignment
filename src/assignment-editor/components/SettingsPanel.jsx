@@ -33,7 +33,6 @@ import {
 
 import RichTextEditor from '../../shared/components/RichTextEditor';
 import UpsellPrompt from '../../shared/components/UpsellPrompt';
-import LatePolicyCard from './LatePolicyCard';
 
 const { Title } = Typography;
 
@@ -618,9 +617,6 @@ const SettingsPanel = ( {
 					</>
 				) }
 			</Card>
-
-			{ /* Due Date & Late Policy (2.2) */ }
-			<LatePolicyCard form={ form } />
 
 			{ /* Addon settings panels — registered via the
 			    window.PPAEditorSettingsAddons array so addons can

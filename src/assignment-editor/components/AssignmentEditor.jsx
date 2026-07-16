@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 
 import SettingsPanel from './SettingsPanel';
+import SchedulingPanel from './SchedulingPanel';
 import FileSettingsPanel from './FileSettingsPanel';
 import CategoriesPanel from './CategoriesPanel';
 
@@ -492,6 +493,16 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 					} }
 				/>
 			),
+		},
+		{
+			key: 'scheduling',
+			label: __( 'Scheduling', 'pressprimer-assignment' ),
+			// forceRender: the due date and late policy fields must be
+			// registered with the form even when this tab is never opened —
+			// otherwise saving would submit undefined for them and wipe the
+			// stored values.
+			forceRender: true,
+			children: <SchedulingPanel form={ form } />,
 		},
 		{
 			key: 'file-settings',

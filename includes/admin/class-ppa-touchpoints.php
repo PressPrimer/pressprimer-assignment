@@ -137,6 +137,19 @@ class PressPrimer_Assignment_Touchpoints {
 				'link_text' => __( 'Upgrade to Enterprise', 'pressprimer-assignment' ),
 				'url'       => 'https://pressprimer.com/pressprimer-assignment-enterprise/',
 			],
+			// 8. Student overrides — assignment editor, Scheduling tab, below
+			// the due date & late policy card (where Educator's overrides
+			// panel mounts once active).
+			[
+				'key'       => 'student-overrides',
+				'feature'   => 'Per-student due date overrides',
+				'surface'   => 'editor',
+				'location'  => 'scheduling-tab',
+				'tier'      => 'educator',
+				'copy'      => __( 'Give individual students their own due dates, availability, and late acceptance — for accommodations and special cases.', 'pressprimer-assignment' ),
+				'link_text' => __( 'Upgrade to Educator', 'pressprimer-assignment' ),
+				'url'       => 'https://pressprimer.com/pressprimer-assignment-educator/',
+			],
 		];
 	}
 
