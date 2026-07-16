@@ -232,30 +232,36 @@ class PressPrimer_Assignment_Grading_Service {
 	}
 
 	/**
-	 * Get a submission's lateness status against the penalty schedule
+	 * Get a submission's lateness status against the late penalty
 	 *
 	 * The score-free half of the penalty calculation: lateness in minutes
-	 * against the student's effective due date and the tier that covers
-	 * it. Used by resolve_late_penalty() and surfaced through the
-	 * submission REST response so the grading interface can preview which
-	 * tier applies before a score is entered.
+	 * against the student's effective due date and the penalty percentage
+	 * that applies. Used by resolve_late_penalty() and surfaced through
+	 * the submission REST response so the grading interface can preview
+	 * the deduction before a score is entered.
 	 *
 	 * @since 2.2.0
 	 *
 	 * @param PressPrimer_Assignment_Submission $submission The submission.
 	 * @param PressPrimer_Assignment_Assignment $assignment Its assignment.
-	 * @return array|null Array with late_minutes, tier_index,
-	 *                    penalty_percent, basis, cutoff_hours, tier_count,
-	 *                    and the decoded schedule; null when the submission
-	 *                    is not late or no schedule/due date applies.
+	 * @return array|null Array with late_minutes, penalty_percent, basis,
+	 *                    and cutoff_hours; null when the submission is not
+	 *                    late, no due date applies, or the assignment's
+	 *                    policy carries no penalty.
 	 */
 	public function get_late_status( $submission, $assignment ) {
 		if ( empty( $submission->submitted_at ) ) {
 			return null;
 		}
 
+		// Only the 'penalty' policy deducts points. An 'accept' policy may
+		// store a cutoff in the same config; it never penalizes.
+		if ( 'penalty' !== $assignment->late_policy ) {
+			return null;
+		}
+
 		$schedule = $assignment->get_late_penalty_schedule();
-		if ( null === $schedule ) {
+		if ( null === $schedule || null === $schedule['penalty_percent'] ) {
 			return null;
 		}
 
@@ -283,40 +289,25 @@ class PressPrimer_Assignment_Grading_Service {
 		// Whole minutes, rounded up: 30 seconds late is late.
 		$late_minutes = (int) ceil( $late_seconds / 60 );
 
-		// First tier whose threshold covers the lateness applies; beyond
-		// the last tier, the last tier applies.
-		$tiers      = $schedule['tiers'];
-		$tier_index = count( $tiers ) - 1;
-		foreach ( $tiers as $index => $tier ) {
-			if ( null === $tier['late_by_hours'] || $late_minutes <= $tier['late_by_hours'] * 60 ) {
-				$tier_index = $index;
-				break;
-			}
-		}
-
 		return [
 			'late_minutes'    => $late_minutes,
-			'tier_index'      => $tier_index,
-			'penalty_percent' => (float) $tiers[ $tier_index ]['penalty_percent'],
+			'penalty_percent' => (float) $schedule['penalty_percent'],
 			'basis'           => $schedule['basis'],
 			'cutoff_hours'    => $schedule['cutoff_hours'],
-			'tier_count'      => count( $tiers ),
-			'schedule'        => $schedule,
 		];
 	}
 
 	/**
-	 * Resolve the late penalty for a submission from the assignment's schedule
+	 * Resolve the late penalty for a submission from the assignment's policy
 	 *
 	 * Builds on get_late_status(): lateness is measured against the
 	 * student's effective due date (one calculation path through the
 	 * pressprimer_assignment_due_date_for_user filter, no addon-specific
-	 * branches), the covering tier's percentage is applied, and the new
-	 * filter fires with the resolved amount. The schedule's cutoff is
-	 * enforced at submission time, not here — a submission that exists
-	 * is graded.
+	 * branches), the policy's percentage is applied, and the filter fires
+	 * with the resolved amount. The cutoff is enforced at submission time,
+	 * not here — a submission that exists is graded.
 	 *
-	 * The schedule's basis controls what the percentages deduct from:
+	 * The policy's basis controls what the percentage deducts from:
 	 * 'max_points' (default) takes the percent of the assignment's maximum
 	 * points — the common LMS convention, where "-10%" costs the same
 	 * points regardless of the earned score; 'raw_score' takes the percent
@@ -328,9 +319,9 @@ class PressPrimer_Assignment_Grading_Service {
 	 * @param PressPrimer_Assignment_Submission $submission The submission.
 	 * @param PressPrimer_Assignment_Assignment $assignment Its assignment.
 	 * @param float                             $raw_score  Raw score before penalty.
-	 * @return array|null Breakdown array (late_minutes, tier_index,
-	 *                    penalty_percent, basis, raw_score, deduction,
-	 *                    final_score) or null when no penalty applies.
+	 * @return array|null Breakdown array (late_minutes, penalty_percent,
+	 *                    basis, raw_score, deduction, final_score) or null
+	 *                    when no penalty applies.
 	 */
 	public function resolve_late_penalty( $submission, $assignment, $raw_score ) {
 		$status = $this->get_late_status( $submission, $assignment );
@@ -339,26 +330,24 @@ class PressPrimer_Assignment_Grading_Service {
 			return null;
 		}
 
-		$schedule        = $status['schedule'];
 		$late_minutes    = $status['late_minutes'];
-		$tier_index      = $status['tier_index'];
 		$penalty_percent = $status['penalty_percent'];
 		$raw_score       = (float) $raw_score;
 
-		// Deduction base per the schedule's basis setting.
+		// Deduction base per the policy's basis setting.
 		$basis        = $status['basis'];
 		$basis_amount = 'raw_score' === $basis ? $raw_score : (float) $assignment->max_points;
 		$penalty      = round( $basis_amount * $penalty_percent / 100, 2 );
 
 		/**
-		 * Filters the late penalty resolved from a graduated schedule.
+		 * Filters the late penalty resolved from the assignment's policy.
 		 *
 		 * @since 2.2.0
 		 *
 		 * @param float $penalty       Penalty amount in points (deducted from the raw score).
 		 * @param int   $submission_id The submission ID.
 		 * @param float $raw_score     Raw score before penalty.
-		 * @param array $schedule      The decoded schedule array (tiers + cutoff_hours).
+		 * @param array $schedule      The decoded policy config (cutoff_hours, penalty_percent, basis).
 		 * @param int   $late_minutes  Lateness in minutes past the effective due date.
 		 */
 		$penalty = apply_filters(
@@ -366,7 +355,7 @@ class PressPrimer_Assignment_Grading_Service {
 			$penalty,
 			(int) $submission->id,
 			$raw_score,
-			$schedule,
+			$assignment->get_late_penalty_schedule(),
 			$late_minutes
 		);
 
@@ -376,7 +365,6 @@ class PressPrimer_Assignment_Grading_Service {
 
 		return [
 			'late_minutes'    => $late_minutes,
-			'tier_index'      => $tier_index,
 			'penalty_percent' => $penalty_percent,
 			'basis'           => $basis,
 			'raw_score'       => $raw_score,

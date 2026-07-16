@@ -634,9 +634,10 @@ class PressPrimer_Assignment_Assignment_Renderer {
 	 * Shows the student's effective due date (their group or override
 	 * date when an addon supplies one) and, per the late policy:
 	 * - reject: a "late submissions are not accepted" line
-	 * - penalty: the schedule as a readable list, the cutoff when set,
-	 *   and what the percentages are deducted from
-	 * - accept: nothing beyond the due date itself
+	 * - penalty: the deduction line, the cutoff, and what the percentage
+	 *   is deducted from
+	 * - accept: the cutoff when one is set, otherwise nothing beyond the
+	 *   due date itself
 	 *
 	 * Renders nothing when the student has no effective due date — the
 	 * policy is inert without one.
@@ -658,7 +659,11 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		}
 
 		$datetime_format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
-		$schedule        = 'penalty' === $assignment->late_policy ? $assignment->get_late_penalty_schedule() : null;
+		$schedule        = in_array( $assignment->late_policy, [ 'penalty', 'accept' ], true )
+			? $assignment->get_late_penalty_schedule()
+			: null;
+		$has_penalty     = 'penalty' === $assignment->late_policy && null !== $schedule && null !== $schedule['penalty_percent'];
+		$has_cutoff      = null !== $schedule && null !== $schedule['cutoff_hours'];
 		?>
 		<div class="ppa-notice ppa-notice-info ppa-late-policy">
 			<p class="ppa-late-policy-due">
@@ -668,32 +673,30 @@ class PressPrimer_Assignment_Assignment_Renderer {
 
 			<?php if ( 'reject' === $assignment->late_policy ) : ?>
 				<p class="ppa-late-policy-note"><?php esc_html_e( 'Late submissions are not accepted.', 'pressprimer-assignment' ); ?></p>
-			<?php elseif ( null !== $schedule ) : ?>
+			<?php elseif ( $has_penalty || $has_cutoff ) : ?>
 				<ul class="ppa-late-policy-list">
-					<?php foreach ( $schedule['tiers'] as $tier ) : ?>
+					<?php if ( $has_penalty ) : ?>
 						<li>
 							<?php
-							$tier_percent = $this->format_percent( $tier['penalty_percent'] );
-
-							if ( null === $tier['late_by_hours'] ) {
+							if ( $has_cutoff ) {
 								printf(
-									/* translators: %s: penalty percentage */
-									esc_html__( 'Any late submission: −%s%%', 'pressprimer-assignment' ),
-									esc_html( $tier_percent )
+									/* translators: 1: a duration like "4 days", 2: penalty percentage */
+									esc_html__( 'Up to %1$s late: −%2$s%%', 'pressprimer-assignment' ),
+									esc_html( $this->format_hours( $schedule['cutoff_hours'] ) ),
+									esc_html( $this->format_percent( $schedule['penalty_percent'] ) )
 								);
 							} else {
 								printf(
-									/* translators: 1: a duration like "1 day" or "12 hours", 2: penalty percentage */
-									esc_html__( 'Up to %1$s late: −%2$s%%', 'pressprimer-assignment' ),
-									esc_html( $this->format_hours( $tier['late_by_hours'] ) ),
-									esc_html( $tier_percent )
+									/* translators: %s: penalty percentage */
+									esc_html__( 'Any late submission: −%s%%', 'pressprimer-assignment' ),
+									esc_html( $this->format_percent( $schedule['penalty_percent'] ) )
 								);
 							}
 							?>
 						</li>
-					<?php endforeach; ?>
+					<?php endif; ?>
 
-					<?php if ( null !== $schedule['cutoff_hours'] ) : ?>
+					<?php if ( $has_cutoff ) : ?>
 						<li class="ppa-late-policy-cutoff">
 							<?php
 							printf(
@@ -706,15 +709,17 @@ class PressPrimer_Assignment_Assignment_Renderer {
 					<?php endif; ?>
 				</ul>
 
-				<p class="ppa-late-policy-note">
-					<?php
-					if ( 'raw_score' === $schedule['basis'] ) {
-						esc_html_e( 'Late penalties are deducted from your earned score.', 'pressprimer-assignment' );
-					} else {
-						esc_html_e( 'Late penalties are deducted from the assignment\'s maximum points.', 'pressprimer-assignment' );
-					}
-					?>
-				</p>
+				<?php if ( $has_penalty ) : ?>
+					<p class="ppa-late-policy-note">
+						<?php
+						if ( 'raw_score' === $schedule['basis'] ) {
+							esc_html_e( 'Late penalties are deducted from your earned score.', 'pressprimer-assignment' );
+						} else {
+							esc_html_e( 'Late penalties are deducted from the assignment\'s maximum points.', 'pressprimer-assignment' );
+						}
+						?>
+					</p>
+				<?php endif; ?>
 			<?php endif; ?>
 		</div>
 		<?php

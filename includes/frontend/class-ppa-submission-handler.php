@@ -768,10 +768,10 @@ class PressPrimer_Assignment_Submission_Handler {
 	 *
 	 * - late_policy 'reject': any late submission is refused, with the
 	 *   due date shown.
-	 * - late_policy 'penalty' with a schedule cutoff: submissions are
+	 * - late_policy 'penalty' or 'accept' with a cutoff: submissions are
 	 *   refused once lateness exceeds the cutoff, with the cutoff moment
 	 *   shown. Without a cutoff, late submissions are always accepted
-	 *   (and penalized at grading time).
+	 *   (and, under 'penalty', penalized at grading time).
 	 *
 	 * @since 2.2.0
 	 *
@@ -780,7 +780,7 @@ class PressPrimer_Assignment_Submission_Handler {
 	 * @return true|WP_Error True if allowed, WP_Error when refused.
 	 */
 	private function check_late_refusal( $user_id, $assignment ) {
-		if ( ! in_array( $assignment->late_policy, [ 'reject', 'penalty' ], true ) ) {
+		if ( ! in_array( $assignment->late_policy, [ 'reject', 'penalty', 'accept' ], true ) ) {
 			return true;
 		}
 
@@ -812,7 +812,8 @@ class PressPrimer_Assignment_Submission_Handler {
 			);
 		}
 
-		// Penalty policy: only a schedule cutoff refuses submissions.
+		// Accept and penalty policies: only a configured cutoff refuses
+		// submissions.
 		$schedule = $assignment->get_late_penalty_schedule();
 		if ( null === $schedule || null === $schedule['cutoff_hours'] ) {
 			return true;

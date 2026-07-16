@@ -620,11 +620,6 @@ class PressPrimer_Assignment_REST_Submissions {
 		if ( $assignment && 'penalty' === $assignment->late_policy && class_exists( 'PressPrimer_Assignment_Grading_Service' ) ) {
 			$grading_service = new PressPrimer_Assignment_Grading_Service();
 			$late_status     = $grading_service->get_late_status( $submission, $assignment );
-
-			if ( null !== $late_status ) {
-				// The assignment block below already carries the schedule.
-				unset( $late_status['schedule'] );
-			}
 		}
 
 		// Surface auto-cleanup notice fields. The Educator addon's data

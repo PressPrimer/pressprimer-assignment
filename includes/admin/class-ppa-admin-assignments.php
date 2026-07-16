@@ -531,17 +531,23 @@ class PressPrimer_Assignment_Admin_Assignments {
 			'ppa-assignment-editor',
 			'pressprimerAssignmentAdmin',
 			[
-				'adminUrl'    => admin_url(),
-				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'listUrl'     => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
-				'addons'      => [
+				'adminUrl'       => admin_url(),
+				'nonce'          => wp_create_nonce( 'wp_rest' ),
+				'listUrl'        => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				// Site clock context for the Scheduling tab: users pick due
+				// dates in the SITE time zone, not their local one. The
+				// format is the PHP twin of the admin React standard
+				// (ADMIN_DATETIME_FORMAT, "Jul 15, 2026 12:00 AM").
+				'timezoneString' => wp_timezone_string(),
+				'siteNow'        => wp_date( 'M j, Y g:i A' ),
+				'addons'         => [
 					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
 					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
 					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
 				],
 				// Premium touchpoints eligible for this user (empty for
 				// non-admins) — resolved server-side by the registry.
-				'touchpoints' => class_exists( 'PressPrimer_Assignment_Touchpoints' )
+				'touchpoints'    => class_exists( 'PressPrimer_Assignment_Touchpoints' )
 					? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'editor' )
 					: [],
 			]

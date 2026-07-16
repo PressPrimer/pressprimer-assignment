@@ -582,17 +582,19 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 	}
 
 	/**
-	 * Get the decoded late penalty schedule
+	 * Get the decoded late policy configuration
 	 *
-	 * Decodes late_penalty_schedule_json and normalizes its shape. Returns
-	 * null when no usable schedule is stored (empty, malformed, or no
-	 * tiers) — callers treat null as "no penalty applies".
+	 * Decodes late_penalty_schedule_json and normalizes its shape: a single
+	 * penalty percentage and/or a submission cutoff. Under the 'penalty'
+	 * policy both are set ("late by up to X, deduct Y%, closed after X");
+	 * under 'accept' only the optional cutoff applies. Returns null when
+	 * nothing usable is stored — callers treat null as "no penalty, no
+	 * cutoff".
 	 *
 	 * @since 2.2.0
 	 *
-	 * @return array|null Array with 'tiers' (list of ['late_by_hours' =>
-	 *                    float|null, 'penalty_percent' => float]),
-	 *                    'cutoff_hours' (float|null), and 'basis'
+	 * @return array|null Array with 'cutoff_hours' (float|null),
+	 *                    'penalty_percent' (float|null), and 'basis'
 	 *                    ('max_points'|'raw_score'), or null.
 	 */
 	public function get_late_penalty_schedule() {
@@ -602,34 +604,26 @@ class PressPrimer_Assignment_Assignment extends PressPrimer_Assignment_Model {
 
 		$decoded = json_decode( $this->late_penalty_schedule_json, true );
 
-		if ( ! is_array( $decoded ) || empty( $decoded['tiers'] ) || ! is_array( $decoded['tiers'] ) ) {
+		if ( ! is_array( $decoded ) ) {
 			return null;
 		}
 
-		$tiers = [];
-		foreach ( $decoded['tiers'] as $tier ) {
-			if ( ! is_array( $tier ) || ! isset( $tier['penalty_percent'] ) ) {
-				continue;
-			}
+		$cutoff  = isset( $decoded['cutoff_hours'] ) && is_numeric( $decoded['cutoff_hours'] ) && (float) $decoded['cutoff_hours'] > 0
+			? (float) $decoded['cutoff_hours']
+			: null;
+		$percent = isset( $decoded['penalty_percent'] ) && is_numeric( $decoded['penalty_percent'] )
+			? (float) $decoded['penalty_percent']
+			: null;
 
-			$tiers[] = [
-				'late_by_hours'   => isset( $tier['late_by_hours'] ) && null !== $tier['late_by_hours']
-					? (float) $tier['late_by_hours']
-					: null,
-				'penalty_percent' => (float) $tier['penalty_percent'],
-			];
-		}
-
-		if ( empty( $tiers ) ) {
+		// An empty config carries no policy at all.
+		if ( null === $cutoff && null === $percent ) {
 			return null;
 		}
 
 		return [
-			'tiers'        => $tiers,
-			'cutoff_hours' => isset( $decoded['cutoff_hours'] ) && null !== $decoded['cutoff_hours']
-				? (float) $decoded['cutoff_hours']
-				: null,
-			'basis'        => isset( $decoded['basis'] ) && 'raw_score' === $decoded['basis']
+			'cutoff_hours'    => $cutoff,
+			'penalty_percent' => $percent,
+			'basis'           => isset( $decoded['basis'] ) && 'raw_score' === $decoded['basis']
 				? 'raw_score'
 				: 'max_points',
 		];

@@ -956,9 +956,9 @@ class PressPrimer_Assignment_REST_Assignments {
 			$data['late_policy'] = $late_policy;
 		}
 
-		// Late penalty schedule (2.2): validated tier by tier with
-		// row-specific errors, then rebuilt from the validated numeric
-		// fields — the raw client payload is never stored.
+		// Late policy config (2.2): validated and rebuilt from the
+		// validated numeric fields — the raw client payload is never
+		// stored.
 		if ( $request->has_param( 'late_penalty_schedule' ) ) {
 			$schedule_raw = $request->get_param( 'late_penalty_schedule' );
 
@@ -997,16 +997,14 @@ class PressPrimer_Assignment_REST_Assignments {
 	}
 
 	/**
-	 * Validate a late penalty schedule payload
+	 * Validate a late policy config payload
 	 *
-	 * Enforces the schedule model from feature 009 with row-specific
-	 * error messages:
-	 * - 1–5 tiers
-	 * - thresholds strictly increasing; a null threshold ("any lateness",
-	 *   the flat case) is allowed only when it is the sole tier
-	 * - penalties 0–100, non-decreasing across tiers
-	 * - optional cutoff, later than the last tier's threshold
-	 * - basis: 'max_points' (default) or 'raw_score'
+	 * Enforces the simplified 2.2 model: a single optional penalty
+	 * percentage (0–100) and a single optional cutoff (hours > 0), at
+	 * least one of which must be present, plus the deduction basis.
+	 * Under the 'penalty' policy the editor sends both ("late by up to X,
+	 * deduct Y%, closed after X"); under 'accept' it sends only the
+	 * cutoff.
 	 *
 	 * Returns a clean structure built exclusively from the validated
 	 * numeric fields, ready for wp_json_encode() — the raw client
@@ -1014,165 +1012,63 @@ class PressPrimer_Assignment_REST_Assignments {
 	 *
 	 * @since 2.2.0
 	 *
-	 * @param mixed $raw Client-supplied schedule (array expected).
-	 * @return array|WP_Error Clean schedule array or a 400 WP_Error.
+	 * @param mixed $raw Client-supplied config (array expected).
+	 * @return array|WP_Error Clean config array or a 400 WP_Error.
 	 */
 	private function validate_late_penalty_schedule( $raw ) {
-		if ( ! is_array( $raw ) || empty( $raw['tiers'] ) || ! is_array( $raw['tiers'] ) ) {
+		if ( ! is_array( $raw ) ) {
 			return new WP_Error(
 				'pressprimer_assignment_invalid_schedule',
-				__( 'A late penalty schedule needs at least one tier.', 'pressprimer-assignment' ),
+				__( 'The late policy settings are not valid.', 'pressprimer-assignment' ),
 				[ 'status' => 400 ]
 			);
 		}
 
-		$raw_tiers = array_values( $raw['tiers'] );
-		$count     = count( $raw_tiers );
+		// Penalty: optional, 0–100.
+		$penalty     = null;
+		$penalty_raw = isset( $raw['penalty_percent'] ) ? $raw['penalty_percent'] : null;
 
-		if ( $count > 5 ) {
-			return new WP_Error(
-				'pressprimer_assignment_invalid_schedule',
-				__( 'A late penalty schedule can have at most 5 tiers.', 'pressprimer-assignment' ),
-				[ 'status' => 400 ]
-			);
-		}
-
-		$tiers = [];
-
-		foreach ( $raw_tiers as $index => $tier ) {
-			$row = $index + 1;
-
-			if ( ! is_array( $tier ) ) {
-				return new WP_Error(
-					'pressprimer_assignment_invalid_schedule_tier',
-					sprintf(
-						/* translators: %d: tier row number */
-						__( 'Tier %d is not valid.', 'pressprimer-assignment' ),
-						$row
-					),
-					[ 'status' => 400 ]
-				);
-			}
-
-			// Threshold: numeric hours > 0, or null only for a single-tier
-			// schedule (the flat "any lateness" case).
-			$threshold_raw = isset( $tier['late_by_hours'] ) ? $tier['late_by_hours'] : null;
-
-			if ( null === $threshold_raw || '' === $threshold_raw ) {
-				if ( $count > 1 ) {
-					return new WP_Error(
-						'pressprimer_assignment_invalid_schedule_tier',
-						sprintf(
-							/* translators: %d: tier row number */
-							__( 'Tier %d must have a time threshold.', 'pressprimer-assignment' ),
-							$row
-						),
-						[ 'status' => 400 ]
-					);
-				}
-				$threshold = null;
-			} else {
-				if ( ! is_numeric( $threshold_raw ) || (float) $threshold_raw <= 0 ) {
-					return new WP_Error(
-						'pressprimer_assignment_invalid_schedule_tier',
-						sprintf(
-							/* translators: %d: tier row number */
-							__( 'Tier %d must have a time threshold greater than zero.', 'pressprimer-assignment' ),
-							$row
-						),
-						[ 'status' => 400 ]
-					);
-				}
-				$threshold = round( (float) $threshold_raw, 2 );
-			}
-
-			// Strictly increasing thresholds.
-			if ( $index > 0 && null !== $threshold && $threshold <= $tiers[ $index - 1 ]['late_by_hours'] ) {
-				return new WP_Error(
-					'pressprimer_assignment_invalid_schedule_tier',
-					sprintf(
-						/* translators: 1: tier row number, 2: previous tier row number */
-						__( 'Tier %1$d must have a larger time threshold than Tier %2$d.', 'pressprimer-assignment' ),
-						$row,
-						$row - 1
-					),
-					[ 'status' => 400 ]
-				);
-			}
-
-			// Penalty: 0–100.
-			$penalty_raw = isset( $tier['penalty_percent'] ) ? $tier['penalty_percent'] : null;
-
+		if ( null !== $penalty_raw && '' !== $penalty_raw ) {
 			if ( ! is_numeric( $penalty_raw ) || (float) $penalty_raw < 0 || (float) $penalty_raw > 100 ) {
 				return new WP_Error(
-					'pressprimer_assignment_invalid_schedule_tier',
-					sprintf(
-						/* translators: %d: tier row number */
-						__( 'Tier %d must have a penalty between 0 and 100 percent.', 'pressprimer-assignment' ),
-						$row
-					),
+					'pressprimer_assignment_invalid_schedule',
+					__( 'The late penalty must be between 0 and 100 percent.', 'pressprimer-assignment' ),
 					[ 'status' => 400 ]
 				);
 			}
-
 			$penalty = round( (float) $penalty_raw, 2 );
-
-			// Non-decreasing penalties.
-			if ( $index > 0 && $penalty < $tiers[ $index - 1 ]['penalty_percent'] ) {
-				return new WP_Error(
-					'pressprimer_assignment_invalid_schedule_tier',
-					sprintf(
-						/* translators: 1: tier row number, 2: previous tier row number */
-						__( 'Tier %1$d cannot have a smaller penalty than Tier %2$d.', 'pressprimer-assignment' ),
-						$row,
-						$row - 1
-					),
-					[ 'status' => 400 ]
-				);
-			}
-
-			$tiers[] = [
-				'late_by_hours'   => $threshold,
-				'penalty_percent' => $penalty,
-			];
 		}
 
-		// Optional cutoff: must land after the last tier's threshold.
+		// Cutoff: optional, hours > 0.
 		$cutoff     = null;
 		$cutoff_raw = isset( $raw['cutoff_hours'] ) ? $raw['cutoff_hours'] : null;
 
 		if ( null !== $cutoff_raw && '' !== $cutoff_raw ) {
 			if ( ! is_numeric( $cutoff_raw ) || (float) $cutoff_raw <= 0 ) {
 				return new WP_Error(
-					'pressprimer_assignment_invalid_schedule_cutoff',
+					'pressprimer_assignment_invalid_schedule',
 					__( 'The cutoff must be a number of hours greater than zero.', 'pressprimer-assignment' ),
 					[ 'status' => 400 ]
 				);
 			}
-
-			$cutoff         = round( (float) $cutoff_raw, 2 );
-			$last_threshold = $tiers[ $count - 1 ]['late_by_hours'];
-
-			if ( null !== $last_threshold && $cutoff <= $last_threshold ) {
-				return new WP_Error(
-					'pressprimer_assignment_invalid_schedule_cutoff',
-					sprintf(
-						/* translators: %d: the last tier's row number */
-						__( 'The cutoff must be later than Tier %d\'s time threshold.', 'pressprimer-assignment' ),
-						$count
-					),
-					[ 'status' => 400 ]
-				);
-			}
+			$cutoff = round( (float) $cutoff_raw, 2 );
 		}
 
-		// Basis: what the percentages deduct from.
+		if ( null === $penalty && null === $cutoff ) {
+			return new WP_Error(
+				'pressprimer_assignment_invalid_schedule',
+				__( 'The late policy needs a penalty, a cutoff, or both.', 'pressprimer-assignment' ),
+				[ 'status' => 400 ]
+			);
+		}
+
+		// Basis: what the percentage deducts from.
 		$basis = isset( $raw['basis'] ) && 'raw_score' === $raw['basis'] ? 'raw_score' : 'max_points';
 
 		return [
-			'tiers'        => $tiers,
-			'cutoff_hours' => $cutoff,
-			'basis'        => $basis,
+			'cutoff_hours'    => $cutoff,
+			'penalty_percent' => $penalty,
+			'basis'           => $basis,
 		];
 	}
 

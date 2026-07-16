@@ -1161,7 +1161,7 @@ const GradingForm = ( { submissionId } ) => {
 
 							{ /* Late penalty itemization (2.2): the stored
 							    breakdown after grading, or a live preview of
-							    the tier that will apply before it. */ }
+							    the deduction that will apply before it. */ }
 							{ ( () => {
 								const stored = submission.late_penalty;
 								const info = stored || lateStatus;
@@ -1171,12 +1171,11 @@ const GradingForm = ( { submissionId } ) => {
 								}
 
 								const tierLabel = sprintf(
-									/* translators: 1: tier number, 2: penalty percentage */
+									/* translators: %1$s: penalty percentage */
 									__(
-										'Tier %1$d: −%2$s%%',
+										'Late penalty: −%1$s%%',
 										'pressprimer-assignment'
 									),
-									Number( info.tier_index ) + 1,
 									info.penalty_percent
 								);
 
