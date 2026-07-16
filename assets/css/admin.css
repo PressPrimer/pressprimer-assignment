@@ -902,3 +902,66 @@
 		transition: none;
 	}
 }
+
+/*
+ * Fix Ant Design Select search input in WP admin.
+ *
+ * WordPress admin forms.css styles every <input> with a border, a 30px
+ * min-height, and a blue :focus box-shadow. Those leak into Ant Design's
+ * Select search input and render as an oversized, offset blue box when a
+ * Select is focused. This stylesheet loads on every PressPrimer Assignment
+ * admin page (free and add-ons all use pressprimer-assignment-* page slugs),
+ * so resetting the inner input here corrects every admin dropdown in one
+ * place — Ant draws the focus ring on the selector itself. Mirrors the
+ * identical fix in PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-select input,
+.ant-select input:focus {
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+	outline: none !important;
+	background: transparent !important;
+}
+
+/*
+ * Fix Ant Design search input (Input.Search) in WP admin.
+ *
+ * WordPress admin forms.css styles input[type="search"] with its own
+ * min-height, border, and a blue :focus box-shadow. Those leak into Ant
+ * Design's Input.Search field: the min-height overflows Ant's wrapper,
+ * pushing the placeholder to the bottom of the box and drawing a stray focus
+ * box below the frame. The .ant-select reset above does not apply here (this
+ * input is not inside .ant-select), so reset the search input too — Ant draws
+ * the border and focus ring on the wrapper. Mirrors the identical fix in
+ * PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-input-search input,
+.ant-input-search input:focus {
+	min-height: 0 !important;
+	margin: 0 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+	outline: none !important;
+}
+
+/*
+ * Fix Ant Design modal close button in WP admin.
+ *
+ * WordPress admin CSS applies styles to bare <button> elements that interfere
+ * with the Ant Design v5 modal close button, making it unclickable even
+ * though the X icon renders. Reset the button so the click target covers the
+ * icon. Mirrors the identical fix in PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-modal-close {
+	cursor: pointer !important;
+	pointer-events: auto !important;
+}

@@ -12,6 +12,7 @@ import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Radio, DatePicker, Space } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
+import { ADMIN_DATE_FORMAT } from '../../shared/date-formats';
 
 const { RangePicker } = DatePicker;
 
@@ -93,7 +94,7 @@ const DateRangePicker = ( { value, onChange } ) => {
 				{ showCustom && (
 					<RangePicker
 						onChange={ handleCustomChange }
-						format="YYYY-MM-DD"
+						format={ ADMIN_DATE_FORMAT }
 						allowClear={ false }
 					/>
 				) }

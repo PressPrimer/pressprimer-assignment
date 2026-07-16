@@ -580,6 +580,22 @@ apiFetch({ path: window.pressprimer_assignment_data.restUrl }); // Same problem
 
 **Do NOT pass `rest_url()` output to React components as an API base URL.** If localized data includes a `restUrl` field, it is for reference/display only, never as an `apiFetch` path.
 
+### Date & Time Formats (CRITICAL)
+
+**Never hardcode a date display format.** Every plugin in the suite carries `src/shared/date-formats.js` with the admin display standard — import from it:
+
+| Constant | Value | Use for |
+|----------|-------|---------|
+| `ADMIN_DATETIME_FORMAT` | `MMM D, YYYY h:mm A` → "Jul 15, 2026 12:00 AM" | Every admin date+time display and DatePicker `format` |
+| `ADMIN_SHOWTIME` | 12-hour, `h:mm A`, 15-minute steps | Every DatePicker `showTime` prop, so all picker popups match |
+| `ADMIN_DATE_FORMAT` | `MMM D, YYYY` | Date-only pickers and compact report displays |
+
+Rules:
+- **An Ant `<DatePicker>` / `<RangePicker>` without a `format` prop displays ISO (`2026-07-17`)** — always set the prop.
+- **PHP twin for admin-surface strings** (grader tooltips, the editor's site-time line): `'M j, Y g:i A'`.
+- **Student-facing PHP surfaces use the site's WordPress settings** (`get_option( 'date_format' )` / `'time_format'` with `wp_date()` / `date_i18n()`) — never the admin standard. Site owners and translators control those.
+- **API wire formats** stay `YYYY-MM-DD HH:mm:ss` (datetimes) and `YYYY-MM-DD` (date params) — payloads only, never display.
+
 ### Form Field Widths
 
 | Field Type | Width |
