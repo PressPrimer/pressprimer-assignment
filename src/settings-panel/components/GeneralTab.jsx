@@ -9,9 +9,7 @@
 
 import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Form, InputNumber, Select, Typography, Button } from 'antd';
-
-import UpsellPrompt from '../../shared/components/UpsellPrompt';
+import { Form, InputNumber, Select, Typography } from 'antd';
 
 const { Title, Paragraph } = Typography;
 
@@ -164,40 +162,6 @@ const GeneralTab = ( { settings, updateSetting, settingsData } ) => {
 					</Form.Item>
 				</div>
 			</div>
-
-			{ /* Setup wizard relaunch (2.2): resets wizard state and
-			    reopens the guided build. */ }
-			{ settingsData.setupWizardUrl && (
-				<div
-					className="ppa-settings-section"
-					style={ { marginTop: 24 } }
-				>
-					<Title level={ 4 } className="ppa-settings-section-title">
-						{ __( 'Setup', 'pressprimer-assignment' ) }
-					</Title>
-					<Paragraph type="secondary">
-						{ __(
-							'Walk through the guided setup again — it creates and publishes a real assignment step by step.',
-							'pressprimer-assignment'
-						) }
-					</Paragraph>
-					<Button href={ settingsData.setupWizardUrl }>
-						{ __(
-							'Relaunch setup wizard',
-							'pressprimer-assignment'
-						) }
-					</Button>
-				</div>
-			) }
-
-			{ /* White-label touchpoint — replaced by the Enterprise addon's
-			    White-Label settings tab once active. Server-gated. */ }
-			{ settingsData.touchpoints?.[ 'general-tab' ] && (
-				<UpsellPrompt
-					touchpoint={ settingsData.touchpoints[ 'general-tab' ] }
-					style={ { marginTop: 24 } }
-				/>
-			) }
 		</div>
 	);
 };

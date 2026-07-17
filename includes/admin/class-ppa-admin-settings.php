@@ -279,10 +279,6 @@ class PressPrimer_Assignment_Admin_Settings {
 			'touchpoints'    => class_exists( 'PressPrimer_Assignment_Touchpoints' )
 				? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'settings' )
 				: [],
-			// Relaunch entry point for the setup tour (2.2).
-			'setupWizardUrl' => class_exists( 'PressPrimer_Assignment_Onboarding' )
-				? PressPrimer_Assignment_Onboarding::get_relaunch_url()
-				: '',
 			'defaults'       => [
 				'siteName'   => get_bloginfo( 'name' ),
 				'adminEmail' => get_bloginfo( 'admin_email' ),
