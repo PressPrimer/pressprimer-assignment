@@ -14,10 +14,11 @@
  * touchpoints the current user is eligible to see (via their localized
  * data), so no client code ever decides visibility.
  *
- * Consolidates the touchpoint set from feature 004 (rubrics, groups, xAPI,
- * white-label) with the 2.2 additions from feature 012 (annotation,
- * detection, anonymous grading). The 004 touchpoint list is superseded by
- * this registry.
+ * Consolidates the touchpoint set from feature 004 (rubrics, groups, xAPI)
+ * with the 2.2 additions from feature 012 (annotation, detection, anonymous
+ * grading). The 004 touchpoint list is superseded by this registry. 004's
+ * white-label touchpoint was removed in review — a "remove our branding"
+ * upsell inside the product was judged inappropriate.
  *
  * @package PressPrimer_Assignment
  * @subpackage Admin
@@ -90,18 +91,7 @@ class PressPrimer_Assignment_Touchpoints {
 				'link_text' => __( 'Upgrade to School', 'pressprimer-assignment' ),
 				'url'       => 'https://pressprimer.com/pressprimer-assignment-school/',
 			],
-			// 4. White-label — Settings > General, below the branding section.
-			[
-				'key'       => 'white-label',
-				'feature'   => 'White-label branding',
-				'surface'   => 'settings',
-				'location'  => 'general-tab',
-				'tier'      => 'enterprise',
-				'copy'      => __( 'Remove PressPrimer branding and replace it with your organization\'s name and logo.', 'pressprimer-assignment' ),
-				'link_text' => __( 'Upgrade to Enterprise', 'pressprimer-assignment' ),
-				'url'       => 'https://pressprimer.com/pressprimer-assignment-enterprise/',
-			],
-			// 5. Annotation — grading interface, document viewer toolbar area.
+			// 4. Annotation — grading interface, document viewer toolbar area.
 			[
 				'key'       => 'annotation',
 				'feature'   => 'Inline annotation',
@@ -112,7 +102,7 @@ class PressPrimer_Assignment_Touchpoints {
 				'link_text' => __( 'Upgrade to School', 'pressprimer-assignment' ),
 				'url'       => 'https://pressprimer.com/pressprimer-assignment-school/',
 			],
-			// 6. Plagiarism / AI detection — grading interface. The 012 spec
+			// 5. Plagiarism / AI detection — grading interface. The 012 spec
 			// says "near the submission file list"; the prompt renders at the
 			// slot where Enterprise's real plagiarism panel mounts (grading
 			// column) so activation replaces it in place.
@@ -126,7 +116,7 @@ class PressPrimer_Assignment_Touchpoints {
 				'link_text' => __( 'Upgrade to Enterprise', 'pressprimer-assignment' ),
 				'url'       => 'https://pressprimer.com/pressprimer-assignment-enterprise/',
 			],
-			// 7. Anonymous grading — assignment editor, grading options section.
+			// 6. Anonymous grading — assignment editor, grading options section.
 			[
 				'key'       => 'anonymous-grading',
 				'feature'   => 'Anonymous grading',
@@ -137,7 +127,7 @@ class PressPrimer_Assignment_Touchpoints {
 				'link_text' => __( 'Upgrade to Enterprise', 'pressprimer-assignment' ),
 				'url'       => 'https://pressprimer.com/pressprimer-assignment-enterprise/',
 			],
-			// 8. Student overrides — assignment editor, Scheduling tab, below
+			// 7. Student overrides — assignment editor, Scheduling tab, below
 			// the due date & late policy card (where Educator's overrides
 			// panel mounts once active).
 			[
