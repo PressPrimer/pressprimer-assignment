@@ -271,6 +271,7 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 * Added: What's New panel shown to administrators once after each major update, with release notes for the whole plugin suite
 * Added: Optional free email course for administrators (explicit opt-in only — only the typed email address is ever sent; see External Services)
 * Added: Upgrade page describing the premium addons, with locked report previews (administrators only)
+* Added: New developer filter to customize which file is served on submission downloads — used by the Enterprise addon to deliver watermarked copies
 * Changed: New assignments now default to Published status so publishing isn't a stumbling block
 * Fixed: The grading count badge in the admin menu displays correctly on WordPress 7.0
 

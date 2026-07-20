@@ -534,6 +534,30 @@ class PressPrimer_Assignment_File_Service {
 		}
 
 		/**
+		 * Filters the filesystem path served for a submission file download.
+		 *
+		 * Returning a different path swaps the streamed file contents while
+		 * everything else about the response — permission checks, the
+		 * served filename, download events — stays unchanged. The
+		 * Enterprise addon uses this to serve watermarked copies of grader
+		 * downloads. When the filtered path is missing or unreadable the
+		 * original is served, so a misbehaving filter can never break a
+		 * download. In-browser viewing streams through a separate path and
+		 * always renders originals.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param string                                 $full_path Absolute path of the stored file.
+		 * @param PressPrimer_Assignment_Submission_File $file      The file record.
+		 * @param string                                 $context   Serve context. Currently always 'download'.
+		 */
+		$serve_path = apply_filters( 'pressprimer_assignment_file_download_path', $full_path, $file, 'download' );
+
+		if ( ! is_string( $serve_path ) || '' === $serve_path || ! is_readable( $serve_path ) ) {
+			$serve_path = $full_path;
+		}
+
+		/**
 		 * Fires when a submission file is downloaded.
 		 *
 		 * @since 2.0.0
@@ -557,10 +581,10 @@ class PressPrimer_Assignment_File_Service {
 		);
 
 		// Set headers and output file.
-		$this->send_file_headers( $file );
+		$this->send_file_headers( $file, $serve_path );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Serving file for download.
-		readfile( $full_path );
+		readfile( $serve_path );
 		exit;
 	}
 
@@ -830,13 +854,17 @@ class PressPrimer_Assignment_File_Service {
 	/**
 	 * Send file download headers
 	 *
-	 * Sets appropriate HTTP headers for file download.
+	 * Sets appropriate HTTP headers for file download. Content-Length
+	 * reflects the file actually being served — which may differ from
+	 * the stored size when the download-path filter swapped in an
+	 * alternate copy (e.g., Enterprise watermarking).
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param PressPrimer_Assignment_Submission_File $file File instance.
+	 * @param PressPrimer_Assignment_Submission_File $file       File instance.
+	 * @param string                                 $serve_path Absolute path of the file being served.
 	 */
-	private function send_file_headers( $file ) {
+	private function send_file_headers( $file, $serve_path ) {
 		// Prevent caching of downloaded files.
 		nocache_headers();
 
@@ -858,9 +886,11 @@ class PressPrimer_Assignment_File_Service {
 		 */
 		$filename = apply_filters( 'pressprimer_assignment_file_download_filename', $file->original_filename, $file );
 
+		$content_length = file_exists( $serve_path ) ? filesize( $serve_path ) : $file->file_size;
+
 		header( 'Content-Type: ' . $file->mime_type );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-		header( 'Content-Length: ' . $file->file_size );
+		header( 'Content-Length: ' . $content_length );
 		header( 'Content-Transfer-Encoding: binary' );
 		header( 'X-Content-Type-Options: nosniff' );
 	}
