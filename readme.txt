@@ -274,6 +274,7 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 * Added: New developer filter to customize which file is served on submission downloads — used by the Enterprise addon to deliver watermarked copies
 * Changed: New assignments now default to Published status so publishing isn't a stumbling block
 * Fixed: The grading count badge in the admin menu displays correctly on WordPress 7.0
+* Fixed: Admin search fields no longer misalign their placeholder text or show a stray focus box (a conflict between WordPress admin styles and the plugin's component library, also affecting addon screens like Groups)
 
 = 2.1.1 =
 * Improved: Tightened permission checks on the categories REST endpoint so teachers can only view individual categories they own or have access to. Single-teacher sites are unaffected.

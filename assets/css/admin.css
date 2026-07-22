@@ -904,6 +904,31 @@
 }
 
 /*
+ * Fix Ant Design radio/checkbox native inputs in WP admin.
+ *
+ * WordPress admin forms.css styles input[type="radio"] and
+ * input[type="checkbox"] with explicit width, height, and positioning that
+ * override Ant Design v5's CSS-in-JS styles. This makes the native <input>
+ * visible alongside the custom styled <span class="ant-radio-inner"> /
+ * <span class="ant-checkbox-inner">, causing duplicate radio buttons and
+ * checkboxes to appear. Mirrors the identical fix in PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-radio-input,
+.ant-checkbox-input {
+	position: absolute !important;
+	inset: 0 !important;
+	z-index: 1 !important;
+	width: 100% !important;
+	height: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	cursor: pointer !important;
+	opacity: 0 !important;
+}
+
+/*
  * Fix Ant Design Select search input in WP admin.
  *
  * WordPress admin forms.css styles every <input> with a border, a 30px
@@ -945,10 +970,19 @@
 .ant-input-search input,
 .ant-input-search input:focus {
 	min-height: 0 !important;
+	height: auto !important;
 	margin: 0 !important;
 	border: 0 !important;
 	box-shadow: none !important;
 	outline: none !important;
+	/*
+	 * forms.css also sets line-height: 2 (a 28px line box on 14px text),
+	 * taller than Ant's 32px field allows for — the placeholder sits low
+	 * and the inner input overflows the frame as a stray box on focus.
+	 * Restore Ant's own line box (22px) so the field's geometry closes
+	 * back up. Quiz applies the same correction to its reports search.
+	 */
+	line-height: 1.5714285714285714 !important;
 }
 
 /*
@@ -964,4 +998,34 @@
 .ant-modal-close {
 	cursor: pointer !important;
 	pointer-events: auto !important;
+}
+
+/*
+ * Fix link-state colors on Ant Design button links in WP admin.
+ *
+ * Ant Design renders an <a href> button as <a class="ant-btn ...">.
+ * WordPress admin styles a:link / a:visited / a:focus with colors whose
+ * selectors out-specify Ant Design's class-based button text color, so a
+ * link button's label turns blue while focused (e.g. after returning from
+ * the tab it opened) or muddy after being visited. Restore the intended
+ * text color across link states. Only the solid variants (primary and
+ * default) are targeted — link/text buttons take their color from context
+ * and must not be forced here. Mirrors the fix in PressPrimer Quiz, with
+ * the focus/hover/active states added. Default buttons keep their :hover
+ * unforced — Ant colors that state itself.
+ *
+ * @since 2.2.0
+ */
+a.ant-btn-primary:link,
+a.ant-btn-primary:visited,
+a.ant-btn-primary:hover,
+a.ant-btn-primary:focus,
+a.ant-btn-primary:active {
+	color: #fff;
+}
+
+a.ant-btn-default:link,
+a.ant-btn-default:visited,
+a.ant-btn-default:focus {
+	color: rgba(0, 0, 0, 0.88);
 }
