@@ -1,9 +1,8 @@
 /**
  * CompletionModal Component
  *
- * The tour's finish stop: a next-steps checklist (grading queue,
- * settings, docs) and the 011 email-ask mount point (renders nothing
- * until Phase 5).
+ * The tour's finish stop: the completion message and the 011 email-ask
+ * mount point (renders nothing until Phase 5).
  *
  * @package
  * @since 1.0.0
@@ -12,13 +11,7 @@
 import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from 'antd';
-import {
-	CheckCircleOutlined,
-	LeftOutlined,
-	InboxOutlined,
-	SettingOutlined,
-	ReadOutlined,
-} from '@ant-design/icons';
+import { CheckCircleOutlined, LeftOutlined } from '@ant-design/icons';
 import EmailAskSlot from './EmailAskSlot';
 import ProgressDots from './ProgressDots';
 
@@ -41,7 +34,6 @@ const CompletionModal = ( {
 	onComplete,
 	onPrev,
 } ) => {
-	const data = window.pressprimerAssignmentOnboardingData || {};
 	const completeBtnRef = useRef( null );
 
 	/**
@@ -72,59 +64,6 @@ const CompletionModal = ( {
 		document.addEventListener( 'keydown', handleKeyDown );
 		return () => document.removeEventListener( 'keydown', handleKeyDown );
 	}, [ onComplete ] );
-
-	/**
-	 * Complete the tour, then navigate to an admin destination
-	 *
-	 * @param {string} url Destination URL.
-	 */
-	const handleNextStep = ( url ) => {
-		onComplete();
-		setTimeout( () => {
-			window.location.href = url;
-		}, 100 );
-	};
-
-	const gradingUrl =
-		data.urls?.grading || 'admin.php?page=pressprimer-assignment-grading';
-	const settingsUrl =
-		data.urls?.settings || 'admin.php?page=pressprimer-assignment-settings';
-	const docsUrl =
-		data.docsUrl ||
-		'https://pressprimer.com/knowledge-base/pressprimer-assignment/';
-
-	const nextSteps = [
-		{
-			key: 'grading',
-			icon: <InboxOutlined />,
-			text: __(
-				'Student submissions land in the Grading queue — grade them side by side.',
-				'pressprimer-assignment'
-			),
-			linkText: __( 'Open Grading', 'pressprimer-assignment' ),
-			onClick: () => handleNextStep( gradingUrl ),
-		},
-		{
-			key: 'settings',
-			icon: <SettingOutlined />,
-			text: __(
-				'Set defaults, appearance, and email notifications.',
-				'pressprimer-assignment'
-			),
-			linkText: __( 'Open Settings', 'pressprimer-assignment' ),
-			onClick: () => handleNextStep( settingsUrl ),
-		},
-		{
-			key: 'docs',
-			icon: <ReadOutlined />,
-			text: __(
-				'The Knowledge Base covers everything else.',
-				'pressprimer-assignment'
-			),
-			linkText: __( 'Browse the docs', 'pressprimer-assignment' ),
-			href: docsUrl,
-		},
-	];
 
 	return (
 		// eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
@@ -158,44 +97,6 @@ const CompletionModal = ( {
 				</h2>
 
 				<p className="ppa-onboarding-modal__content">{ content }</p>
-
-				{ /* Next steps */ }
-				<div className="ppa-onboarding-next">
-					<p className="ppa-onboarding-next__label">
-						{ __( 'Where to next', 'pressprimer-assignment' ) }
-					</p>
-					{ nextSteps.map( ( item ) => (
-						<div
-							className="ppa-onboarding-next__row"
-							key={ item.key }
-						>
-							<span className="ppa-onboarding-next__icon">
-								{ item.icon }
-							</span>
-							<span className="ppa-onboarding-next__text">
-								{ item.text }
-							</span>
-							{ item.href ? (
-								<a
-									className="ppa-onboarding-next__link"
-									href={ item.href }
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									{ item.linkText }
-								</a>
-							) : (
-								<button
-									type="button"
-									className="ppa-onboarding-next__link"
-									onClick={ item.onClick }
-								>
-									{ item.linkText }
-								</button>
-							) }
-						</div>
-					) ) }
-				</div>
 
 				{ /* 011 email opt-in mount point (Phase 5). */ }
 				<EmailAskSlot />
