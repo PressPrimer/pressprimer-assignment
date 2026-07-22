@@ -21,9 +21,12 @@ node_modules
 composer.phar
 composer.lock
 package-lock.json
+package.json
 
-# Note: composer.json and package.json are intentionally included per WordPress.org guidelines
-# to allow others to review, understand, and modify dependencies
+# Note: composer.json is intentionally included so others can review the
+# runtime dependency constraints. package.json is excluded — nothing reads
+# it at runtime and shipping it leaks build metadata (2026-07 decision,
+# aligning all four plugins with Enterprise).
 
 # Vendor dev-only packages (composer install --no-dev should remove these, but exclude as safety)
 vendor/bin
