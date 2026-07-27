@@ -8,7 +8,6 @@
  * @since 1.0.0
  */
 
-import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Radio, DatePicker, Space } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
@@ -25,7 +24,11 @@ const { RangePicker } = DatePicker;
  * @return {JSX.Element} Rendered component.
  */
 const DateRangePicker = ( { value, onChange } ) => {
-	const [ showCustom, setShowCustom ] = useState( value === 'custom' );
+	// Fully controlled: the parent's value drives both the highlighted
+	// preset and the custom picker's visibility, so external changes
+	// (Reset Filters, URL restores) can never desynchronise from a
+	// half-finished custom selection.
+	const showCustom = value === 'custom';
 
 	const presets = [
 		{
@@ -51,12 +54,10 @@ const DateRangePicker = ( { value, onChange } ) => {
 	];
 
 	const handlePresetChange = ( e ) => {
-		const newValue = e.target.value;
-		setShowCustom( newValue === 'custom' );
-
-		if ( newValue !== 'custom' ) {
-			onChange( newValue );
-		}
+		// Custom commits immediately (with no dates yet) so the radio
+		// highlights it right away; parents treat a date-less custom
+		// range as unfiltered until both dates are picked.
+		onChange( e.target.value );
 	};
 
 	const handleCustomChange = ( dates ) => {
