@@ -50,6 +50,11 @@ function pressprimer_assignment_uninstall() {
 		$remove_data = ( true === $settings['remove_data_on_uninstall'] || '1' === $settings['remove_data_on_uninstall'] || 1 === $settings['remove_data_on_uninstall'] );
 	}
 
+	// Clear any pending text-extraction events. Cron entries are plugin
+	// plumbing, not user data, so this runs regardless of the remove-data
+	// setting — orphaned entries would otherwise linger until they fire.
+	pressprimer_assignment_clear_scheduled_events();
+
 	if ( ! $remove_data ) {
 		// Keep all data - exit without removing anything
 		return;
@@ -97,6 +102,30 @@ function pressprimer_assignment_uninstall() {
 
 	// Clear any remaining transients
 	pressprimer_assignment_clear_transients();
+}
+
+/**
+ * Clear pending scheduled events
+ *
+ * The text-extraction services queue single events at upload time; any
+ * still pending at uninstall would sit orphaned in the cron array until
+ * their fire time. Removes every event for each extraction hook.
+ *
+ * @since 2.2.0
+ */
+function pressprimer_assignment_clear_scheduled_events() {
+	$hooks = [
+		'pressprimer_assignment_extract_docx_text',
+		'pressprimer_assignment_extract_odt_text',
+		'pressprimer_assignment_extract_txt_text',
+		'pressprimer_assignment_extract_rtf_text',
+		'pressprimer_assignment_extract_pptx_text',
+		'pressprimer_assignment_extract_pdf_text',
+	];
+
+	foreach ( $hooks as $hook ) {
+		wp_unschedule_hook( $hook );
+	}
 }
 
 /**
