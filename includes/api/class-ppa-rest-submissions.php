@@ -1150,17 +1150,35 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Determine disposition: attachment when ?download=1, inline otherwise.
 		$disposition = $request->get_param( 'download' ) ? 'attachment' : 'inline';
 
+		// Same delivery filter the frontend serve path applies — addons may
+		// substitute a processed copy (Enterprise serves watermarked
+		// downloads through it). Graders download through THIS route, so
+		// skipping it here would hand graders the original untouched file.
+		/** This filter is documented in includes/services/class-ppa-file-service.php */
+		$serve_path = apply_filters(
+			'pressprimer_assignment_file_download_path',
+			$full_path,
+			$file,
+			'attachment' === $disposition ? 'download' : 'view'
+		);
+		if ( ! is_string( $serve_path ) || '' === $serve_path || ! is_readable( $serve_path ) ) {
+			$serve_path = $full_path;
+		}
+
 		/** This filter is documented in includes/services/class-ppa-file-service.php */
 		$filename = apply_filters( 'pressprimer_assignment_file_download_filename', $file->original_filename, $file );
 
+		// A substituted copy's size can differ from the stored original's.
+		$content_length = file_exists( $serve_path ) ? filesize( $serve_path ) : $file->file_size;
+
 		nocache_headers();
 		header( 'Content-Type: ' . $file->mime_type );
-		header( 'Content-Length: ' . $file->file_size );
+		header( 'Content-Length: ' . $content_length );
 		header( 'Content-Disposition: ' . $disposition . '; filename="' . $filename . '"' );
 		header( 'X-Content-Type-Options: nosniff' );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Serving file for inline viewing.
-		readfile( $full_path );
+		readfile( $serve_path );
 		exit;
 	}
 
