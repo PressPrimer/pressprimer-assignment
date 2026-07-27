@@ -170,7 +170,14 @@ class PressPrimer_Assignment_Plugin {
 
 		foreach ( $extraction_hooks as $hook => $class ) {
 			if ( class_exists( $class ) ) {
-				add_action( $hook, array( $class, 'process_scheduled_extraction' ) );
+				add_action(
+					$hook,
+					static function ( $file_id ) use ( $class ) {
+						// Crash-guarded: a parser failure marks the file
+						// failed instead of fataling the cron request.
+						PressPrimer_Assignment_Extraction_Dispatcher::run_guarded( $class, $file_id );
+					}
+				);
 			}
 		}
 	}

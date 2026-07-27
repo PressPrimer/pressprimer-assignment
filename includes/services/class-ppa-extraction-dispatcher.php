@@ -136,45 +136,129 @@ class PressPrimer_Assignment_Extraction_Dispatcher {
 			return $result;
 		}
 
-		// Run quick extractability check.
-		$service = new $service_class();
-		$check   = $service->check_text_extractable( $full_path );
+		// Extraction is best-effort and must NEVER block an upload. A
+		// parser can crash with a plain \Error on hostile files or on
+		// hardened hosts (e.g. tmpfile() in disable_functions turns a
+		// pdfparser decode fallback into an undefined-function Error),
+		// so everything touching a service is Throwable-guarded — the
+		// upload succeeds and the file is marked extraction-failed.
+		try {
+			// Run quick extractability check.
+			$service = new $service_class();
+			$check   = $service->check_text_extractable( $full_path );
 
-		$file->text_extractable = $check['extractable'] ? 1 : 0;
-		$file->save();
+			$file->text_extractable = $check['extractable'] ? 1 : 0;
+			$file->save();
 
-		$result['extractable'] = $check['extractable'];
-		$result['word_count']  = $check['word_count'];
-		$result['method']      = $check['method'];
+			$result['extractable'] = $check['extractable'];
+			$result['word_count']  = $check['word_count'];
+			$result['method']      = $check['method'];
 
-		// Generate text preview for the frontend response.
-		if ( $check['extractable'] ) {
-			$preview_text = null;
+			// Generate text preview for the frontend response.
+			if ( $check['extractable'] ) {
+				$preview_text = null;
 
-			if ( 'pdf' === $extension ) {
-				// PDF service supports page-limited extraction for preview.
-				$preview_text = $service->extract_text(
-					$full_path,
-					PressPrimer_Assignment_PDF_Service::QUICK_CHECK_PAGES
-				);
-			} else {
-				// Other services extract everything — just truncate.
-				$preview_text = $service->extract_text( $full_path );
-			}
-
-			if ( ! is_wp_error( $preview_text ) && '' !== trim( $preview_text ) ) {
-				$preview_text = trim( $preview_text );
-				if ( mb_strlen( $preview_text ) > 1000 ) {
-					$preview_text = mb_substr( $preview_text, 0, 1000 );
+				if ( 'pdf' === $extension ) {
+					// PDF service supports page-limited extraction for preview.
+					$preview_text = $service->extract_text(
+						$full_path,
+						PressPrimer_Assignment_PDF_Service::QUICK_CHECK_PAGES
+					);
+				} else {
+					// Other services extract everything — just truncate.
+					$preview_text = $service->extract_text( $full_path );
 				}
-				$result['text_preview'] = $preview_text;
+
+				if ( ! is_wp_error( $preview_text ) && '' !== trim( $preview_text ) ) {
+					$preview_text = trim( $preview_text );
+					if ( mb_strlen( $preview_text ) > 1000 ) {
+						$preview_text = mb_substr( $preview_text, 0, 1000 );
+					}
+					$result['text_preview'] = $preview_text;
+				}
 			}
+
+			// Schedule full async extraction.
+			$service_class::schedule_full_extraction( $file_id );
+		} catch ( \Throwable $e ) {
+			// No async retry: the full pipeline shares the code that just
+			// crashed, so scheduling it would only fatal a cron tick too.
+			self::mark_extraction_failed( $file, $e );
+
+			$result['extractable']  = false;
+			$result['word_count']   = 0;
+			$result['method']       = 'none';
+			$result['text_preview'] = null;
 		}
 
-		// Schedule full async extraction.
-		$service_class::schedule_full_extraction( $file_id );
-
 		return $result;
+	}
+
+	/**
+	 * Record a crashed extraction attempt on the file record
+	 *
+	 * The file itself is fine — only the text-extraction pipeline died —
+	 * so the record carries a failed quality status and a human-readable
+	 * note for the grading screen, and the crash reason goes to the
+	 * error log for the site owner.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param PressPrimer_Assignment_Submission_File $file Submission file record.
+	 * @param \Throwable                             $e    The crash.
+	 */
+	private static function mark_extraction_failed( $file, $e ) {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Deliberate diagnostics: extraction crashes are swallowed by design and this is their only trace.
+		error_log(
+			sprintf(
+				'PressPrimer Assignment: text extraction crashed for file #%d (%s: %s in %s:%d). The upload itself was not affected.',
+				(int) $file->id,
+				get_class( $e ),
+				$e->getMessage(),
+				$e->getFile(),
+				$e->getLine()
+			)
+		);
+
+		$file->text_extractable      = 0;
+		$file->extraction_method     = 'none';
+		$file->extraction_quality    = PressPrimer_Assignment_Extraction_Quality::QUALITY_FAILED;
+		$file->extraction_error      = __( 'Text extraction failed unexpectedly on this server. The uploaded file itself is unaffected.', 'pressprimer-assignment' );
+		$file->extracted_at          = current_time( 'mysql', true );
+		$file->extracted_text_length = 0;
+		$file->extracted_word_count  = 0;
+		$file->save();
+	}
+
+	/**
+	 * Run a service's full extraction pipeline with a crash guard
+	 *
+	 * The cron and re-extract entry point: a parser crash marks the
+	 * file failed instead of fataling the request.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $service_class Extraction service class name.
+	 * @param int    $file_id       Submission file record ID.
+	 * @return bool True when extraction completed without crashing.
+	 */
+	public static function run_guarded( $service_class, $file_id ) {
+		$file_id = absint( $file_id );
+
+		if ( 0 === $file_id || ! class_exists( $service_class ) ) {
+			return false;
+		}
+
+		try {
+			$service_class::process_scheduled_extraction( $file_id );
+			return true;
+		} catch ( \Throwable $e ) {
+			$file = PressPrimer_Assignment_Submission_File::get( $file_id );
+			if ( $file ) {
+				self::mark_extraction_failed( $file, $e );
+			}
+			return false;
+		}
 	}
 
 	/**
@@ -232,10 +316,11 @@ class PressPrimer_Assignment_Extraction_Dispatcher {
 			);
 		}
 
-		// Call the service's process_scheduled_extraction directly.
-		// It handles the full flow: extract, sanitise, score, store.
+		// Run the full flow (extract, sanitise, score, store) through the
+		// crash guard — a parser failure becomes a stored failed status
+		// in the returned payload, never a fatal on the REST request.
 		$service_class = $types[ $extension ];
-		$service_class::process_scheduled_extraction( $file_id );
+		self::run_guarded( $service_class, $file_id );
 
 		// Reload the file to get the updated values.
 		$file = PressPrimer_Assignment_Submission_File::get( $file_id );

@@ -256,7 +256,7 @@ class PressPrimer_Assignment_RTF_Service {
 			}
 
 			return $text;
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			return new WP_Error(
 				'pressprimer_assignment_rtf_parser_error',
 				$e->getMessage()
