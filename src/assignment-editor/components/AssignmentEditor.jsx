@@ -58,6 +58,32 @@ const hoursToDays = ( hours ) => {
 	return Math.ceil( numeric / 24 );
 };
 
+/**
+ * Coerce the incoming allowed-file-types value to an array (or null).
+ *
+ * The data layer must deliver an array, but a JSON string here is
+ * treacherous: a checkbox group fed a string renders correct-looking
+ * boxes (substring matching), then the first toggle spreads the string
+ * into characters and wipes the selection. Never pass a string through.
+ *
+ * @param {*} value Raw value from the localized editor data.
+ * @return {Array|null} Extension array, or null so the caller's default applies.
+ */
+const normalizeFileTypes = ( value ) => {
+	if ( Array.isArray( value ) ) {
+		return value;
+	}
+	if ( typeof value === 'string' && '' !== value ) {
+		try {
+			const parsed = JSON.parse( value );
+			return Array.isArray( parsed ) ? parsed : null;
+		} catch ( e ) {
+			return null;
+		}
+	}
+	return null;
+};
+
 const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ form ] = Form.useForm();
 	const [ saving, setSaving ] = useState( false );
@@ -108,7 +134,9 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				// Fallback list for legacy rows with no saved types —
 				// deliberately excludes pptx (2.2): existing assignments
 				// never gain a new allowed type from an update.
-				allowed_file_types: assignmentData.allowed_file_types || [
+				allowed_file_types: normalizeFileTypes(
+					assignmentData.allowed_file_types
+				) || [
 					'pdf',
 					'docx',
 					'txt',

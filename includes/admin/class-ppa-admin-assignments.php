@@ -463,7 +463,13 @@ class PressPrimer_Assignment_Admin_Assignments {
 					'passing_score'         => (float) $assignment->passing_score,
 					'allow_resubmission'    => (int) $assignment->allow_resubmission,
 					'max_resubmissions'     => (int) $assignment->max_resubmissions,
-					'allowed_file_types'    => $assignment->allowed_file_types,
+					// Decoded to an array — the raw property is a JSON string,
+					// which Ant's Checkbox.Group renders convincingly (string
+					// contains the extension) but wipes on first toggle. Null
+					// stays null so the editor applies its legacy default.
+					'allowed_file_types'    => ( null !== $assignment->allowed_file_types && '' !== $assignment->allowed_file_types )
+						? $assignment->get_allowed_file_types()
+						: null,
 					'max_file_size'         => (int) $assignment->max_file_size,
 					'max_files'             => (int) $assignment->max_files,
 					'notification_email'    => $assignment->notification_email ?? '',

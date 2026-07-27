@@ -1239,7 +1239,11 @@ class PressPrimer_Assignment_REST_Assignments {
 			'passing_score'         => (float) $assignment->passing_score,
 			'allow_resubmission'    => (int) $assignment->allow_resubmission,
 			'max_resubmissions'     => (int) $assignment->max_resubmissions,
-			'allowed_file_types'    => $assignment->allowed_file_types,
+			// Decoded to an array — the raw property is the JSON string
+			// stored in the column; consumers get the same shape they send.
+			'allowed_file_types'    => ( null !== $assignment->allowed_file_types && '' !== $assignment->allowed_file_types )
+				? $assignment->get_allowed_file_types()
+				: null,
 			'max_file_size'         => (int) $assignment->max_file_size,
 			'max_files'             => (int) $assignment->max_files,
 			'submission_type'       => $assignment->submission_type,
