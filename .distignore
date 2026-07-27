@@ -67,6 +67,8 @@ vendor/*/README.md
 vendor/*/*/README.md
 vendor/*/tests
 vendor/*/*/tests
+vendor/henck/rtf-to-html/index.php
+vendor/henck/rtf-to-html/rtf.html
 vendor/*/doc
 vendor/*/*/doc
 vendor/*/.editorconfig
