@@ -313,7 +313,9 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		}
 
 		// Due date and late policy (2.2, feature 009).
-		$this->render_late_policy( $assignment );
+		if ( ! empty( $display['show_late_policy'] ) ) {
+			$this->render_late_policy( $assignment );
+		}
 
 		// Instructions.
 		if ( ! empty( $display['show_instructions'] ) && ! empty( $assignment->instructions ) ) {

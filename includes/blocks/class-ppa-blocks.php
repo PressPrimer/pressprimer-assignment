@@ -163,6 +163,10 @@ class PressPrimer_Assignment_Blocks {
 						'type'    => 'boolean',
 						'default' => true,
 					],
+					'showLatePolicy'   => [
+						'type'    => 'boolean',
+						'default' => true,
+					],
 				],
 			]
 		);
@@ -199,6 +203,7 @@ class PressPrimer_Assignment_Blocks {
 			'show_instructions' => isset( $attributes['showInstructions'] ) ? ( $attributes['showInstructions'] ? 'true' : 'false' ) : 'true',
 			'show_max_points'   => isset( $attributes['showMaxPoints'] ) ? ( $attributes['showMaxPoints'] ? 'true' : 'false' ) : 'true',
 			'show_file_info'    => isset( $attributes['showFileInfo'] ) ? ( $attributes['showFileInfo'] ? 'true' : 'false' ) : 'true',
+			'show_late_policy'  => isset( $attributes['showLatePolicy'] ) ? ( $attributes['showLatePolicy'] ? 'true' : 'false' ) : 'true',
 		];
 
 		// Call the shortcode handler.
