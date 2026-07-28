@@ -31,6 +31,10 @@
 		"showFileInfo": {
 			"type": "boolean",
 			"default": true
+		},
+		"showLatePolicy": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"textdomain": "pressprimer-assignment",

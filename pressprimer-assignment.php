@@ -3,7 +3,7 @@
  * Plugin Name:       PressPrimer Assignment
  * Plugin URI:        https://pressprimer.com/assignment
  * Description:       Comprehensive assignment management for WordPress educators.
- * Version:           2.1.1
+ * Version:           2.2.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            PressPrimer
@@ -25,12 +25,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'PRESSPRIMER_ASSIGNMENT_VERSION', '2.1.1' );
+define( 'PRESSPRIMER_ASSIGNMENT_VERSION', '2.2.0' );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_FILE', __FILE__ );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'PRESSPRIMER_ASSIGNMENT_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'PRESSPRIMER_ASSIGNMENT_DB_VERSION', '1.10.0' );
+define( 'PRESSPRIMER_ASSIGNMENT_DB_VERSION', '1.11.0' );
 
 // Composer autoloader (for vendor dependencies)
 if ( file_exists( PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'vendor/autoload.php' ) ) {

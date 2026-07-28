@@ -88,6 +88,7 @@ class PressPrimer_Assignment_Plugin {
 
 		// Register statistics cache invalidation hooks.
 		$this->register_statistics_hooks();
+		$this->register_email_optin_hooks();
 
 		// Register privacy exporters/erasers.
 		$this->init_privacy();
@@ -161,6 +162,7 @@ class PressPrimer_Assignment_Plugin {
 		$extraction_hooks = array(
 			'pressprimer_assignment_extract_pdf_text'  => 'PressPrimer_Assignment_PDF_Service',
 			'pressprimer_assignment_extract_docx_text' => 'PressPrimer_Assignment_DOCX_Service',
+			'pressprimer_assignment_extract_pptx_text' => 'PressPrimer_Assignment_PPTX_Text_Service',
 			'pressprimer_assignment_extract_odt_text'  => 'PressPrimer_Assignment_ODT_Service',
 			'pressprimer_assignment_extract_rtf_text'  => 'PressPrimer_Assignment_RTF_Service',
 			'pressprimer_assignment_extract_txt_text'  => 'PressPrimer_Assignment_Text_Service',
@@ -168,7 +170,14 @@ class PressPrimer_Assignment_Plugin {
 
 		foreach ( $extraction_hooks as $hook => $class ) {
 			if ( class_exists( $class ) ) {
-				add_action( $hook, array( $class, 'process_scheduled_extraction' ) );
+				add_action(
+					$hook,
+					static function ( $file_id ) use ( $class ) {
+						// Crash-guarded: a parser failure marks the file
+						// failed instead of fataling the cron request.
+						PressPrimer_Assignment_Extraction_Dispatcher::run_guarded( $class, $file_id );
+					}
+				);
 			}
 		}
 	}
@@ -234,6 +243,26 @@ class PressPrimer_Assignment_Plugin {
 	}
 
 	/**
+	 * Register email opt-in lifecycle hooks
+	 *
+	 * Keeps the site-wide submissions-received counter current — the
+	 * 011 milestone prompt fires from it.
+	 *
+	 * @since 2.2.0
+	 */
+	private function register_email_optin_hooks() {
+		if ( ! class_exists( 'PressPrimer_Assignment_Email_Optin_Service' ) ) {
+			return;
+		}
+
+		// Fires for both file and text submissions.
+		add_action(
+			'pressprimer_assignment_submission_submitted',
+			[ 'PressPrimer_Assignment_Email_Optin_Service', 'increment_submission_count' ]
+		);
+	}
+
+	/**
 	 * Initialize admin components
 	 *
 	 * Loads admin-only functionality when in wp-admin.
@@ -254,6 +283,13 @@ class PressPrimer_Assignment_Plugin {
 		// Initialize onboarding
 		if ( class_exists( 'PressPrimer_Assignment_Onboarding' ) ) {
 			PressPrimer_Assignment_Onboarding::get_instance();
+		}
+
+		// Initialize Upgrade page (2.2). Admin-only marketing surface —
+		// the class registers nothing when the Enterprise addon is active.
+		if ( class_exists( 'PressPrimer_Assignment_Upgrade_Page' ) ) {
+			$upgrade_page = new PressPrimer_Assignment_Upgrade_Page();
+			$upgrade_page->init();
 		}
 	}
 
@@ -377,6 +413,12 @@ class PressPrimer_Assignment_Plugin {
 		if ( class_exists( 'PressPrimer_Assignment_REST_Categories' ) ) {
 			$categories_api = new PressPrimer_Assignment_REST_Categories();
 			$categories_api->init();
+		}
+
+		// Email opt-in REST API (2.2).
+		if ( class_exists( 'PressPrimer_Assignment_REST_Email_Optin' ) ) {
+			$email_optin_api = new PressPrimer_Assignment_REST_Email_Optin();
+			$email_optin_api->init();
 		}
 	}
 

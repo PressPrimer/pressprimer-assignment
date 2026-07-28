@@ -274,6 +274,11 @@ class PressPrimer_Assignment_Admin_Settings {
 			'headerBgColor'  => $header_bg_color,
 			'settings'       => $settings,
 			'settingsTabs'   => $settings_tabs,
+			// Premium touchpoints eligible for this user (empty for
+			// non-admins) — resolved server-side by the registry.
+			'touchpoints'    => class_exists( 'PressPrimer_Assignment_Touchpoints' )
+				? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'settings' )
+				: [],
 			'defaults'       => [
 				'siteName'   => get_bloginfo( 'name' ),
 				'adminEmail' => get_bloginfo( 'admin_email' ),

@@ -54,22 +54,22 @@ These rules govern how AI assistants work on this codebase.
 
 1. **PHP Syntax Check** - On any new or modified PHP files:
    ```bash
-   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" -l path/to/file.php
+   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin/php" -l path/to/file.php
    ```
 
 2. **PHPCS (WordPress Coding Standards)** - On modified PHP files:
    ```bash
-   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=phpcs.xml.dist --report=full path/to/file.php
+   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=phpcs.xml.dist --report=full path/to/file.php
    ```
 
 3. **Security-Specific Checks** - On files handling user input, database queries, or output:
    ```bash
-   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=WordPress-Extra --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.NonceVerification,WordPress.DB.PreparedSQL --report=full path/to/file.php
+   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=WordPress-Extra --sniffs=WordPress.Security.EscapeOutput,WordPress.Security.ValidatedSanitizedInput,WordPress.Security.NonceVerification,WordPress.DB.PreparedSQL --report=full path/to/file.php
    ```
 
 4. **PHP Compatibility (7.4 - 8.4)** - On new PHP files:
    ```bash
-   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.27+1/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-8.4 --extensions=php path/to/file.php
+   "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin/php" ./vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-8.4 --extensions=php path/to/file.php
    ```
 
 5. **JavaScript Lint** - If JavaScript was modified:
@@ -579,6 +579,22 @@ apiFetch({ path: window.pressprimer_assignment_data.restUrl }); // Same problem
 - Enterprise addon: `/ppaent/v1/*`
 
 **Do NOT pass `rest_url()` output to React components as an API base URL.** If localized data includes a `restUrl` field, it is for reference/display only, never as an `apiFetch` path.
+
+### Date & Time Formats (CRITICAL)
+
+**Never hardcode a date display format.** Every plugin in the suite carries `src/shared/date-formats.js` with the admin display standard — import from it:
+
+| Constant | Value | Use for |
+|----------|-------|---------|
+| `ADMIN_DATETIME_FORMAT` | `MMM D, YYYY h:mm A` → "Jul 15, 2026 12:00 AM" | Every admin date+time display and DatePicker `format` |
+| `ADMIN_SHOWTIME` | 12-hour, `h:mm A`, 15-minute steps | Every DatePicker `showTime` prop, so all picker popups match |
+| `ADMIN_DATE_FORMAT` | `MMM D, YYYY` | Date-only pickers and compact report displays |
+
+Rules:
+- **An Ant `<DatePicker>` / `<RangePicker>` without a `format` prop displays ISO (`2026-07-17`)** — always set the prop.
+- **PHP twin for admin-surface strings** (grader tooltips, the editor's site-time line): `'M j, Y g:i A'`.
+- **Student-facing PHP surfaces use the site's WordPress settings** (`get_option( 'date_format' )` / `'time_format'` with `wp_date()` / `date_i18n()`) — never the admin standard. Site owners and translators control those.
+- **API wire formats** stay `YYYY-MM-DD HH:mm:ss` (datetimes) and `YYYY-MM-DD` (date params) — payloads only, never display.
 
 ### Form Field Widths
 

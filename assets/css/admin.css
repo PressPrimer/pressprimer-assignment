@@ -88,3 +88,944 @@
 .ppa-meta-box-description {
 	margin-top: 10px;
 }
+
+/* =============================================================
+   Upgrade page (2.2)
+
+   Styles for the in-product Upgrade page shown to administrators
+   on sites without the Enterprise addon. Ported from PressPrimer
+   Quiz 3.0's upgrade-page.css with ppa- naming. Visually distinct
+   from the rest of the admin so it reads as a deliberate marketing
+   surface (dark hero, color-accented tier cards, light celebratory
+   footer, teal sticky purchase bar) while still using WP admin
+   spacing conventions.
+
+   The palette is defined once as scoped custom properties on the
+   page container; every rule below references the variables. Tier
+   accent colors are the suite-wide tier colors shared with Quiz
+   (Educator blue, School teal, Enterprise purple).
+   ============================================================= */
+
+.ppa-upgrade-page {
+	--ppa-upgrade-accent: #14b8a6;
+	--ppa-upgrade-accent-hover: #0d9488;
+	--ppa-upgrade-accent-dark: #0f766e;
+	--ppa-upgrade-accent-light: #5eead4;
+	--ppa-upgrade-accent-tint: #f0fdfa;
+	--ppa-upgrade-accent-tint-strong: #ecfdf5;
+	--ppa-upgrade-ink: #0f172a;
+	--ppa-upgrade-hero-mid: #1e3a5f;
+	--ppa-upgrade-text: #1e293b;
+	--ppa-upgrade-text-secondary: #475569;
+	--ppa-upgrade-text-muted: #64748b;
+	--ppa-upgrade-heading: #1d2327;
+	--ppa-upgrade-subtext: #50575e;
+	--ppa-upgrade-body: #334155;
+	--ppa-upgrade-border: #e2e8f0;
+	--ppa-upgrade-border-light: #f1f5f9;
+	--ppa-upgrade-surface: #ffffff;
+	--ppa-upgrade-surface-tint: #f8fafc;
+	--ppa-upgrade-neutral: #c3c4c7;
+	--ppa-upgrade-educator: #2271b1;
+	--ppa-upgrade-educator-bright: #3b82f6;
+	--ppa-upgrade-enterprise: #7c3aed;
+	--ppa-upgrade-enterprise-bright: #9333ea;
+	--ppa-upgrade-footer-tint-start: #eff6ff;
+	--ppa-upgrade-footer-tint-end: #dbeafe;
+	--ppa-upgrade-footer-border: #bfdbfe;
+	--ppa-upgrade-white: #ffffff;
+	max-width: 1240px;
+	margin: 20px auto 0;
+	padding-bottom: 80px;
+}
+
+.ppa-upgrade-page section {
+	margin-bottom: 56px;
+}
+
+/* -------------------------------------------------------------
+   Hero — dark navy → teal gradient, white text, mascot at right
+   inside a soft white circle so it reads against the gradient.
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-hero {
+	position: relative;
+	background: linear-gradient(135deg, var(--ppa-upgrade-ink) 0%, var(--ppa-upgrade-hero-mid) 55%, var(--ppa-upgrade-accent) 130%);
+	border-radius: 12px;
+	padding: 48px 56px;
+	color: var(--ppa-upgrade-white);
+	display: flex;
+	align-items: center;
+	gap: 32px;
+	overflow: hidden;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+}
+
+/* Subtle dot pattern behind the hero text for visual interest. */
+.ppa-upgrade-hero::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+	background-size: 22px 22px;
+	pointer-events: none;
+}
+
+.ppa-upgrade-hero-content {
+	flex: 1;
+	min-width: 0;
+	position: relative;
+	z-index: 1;
+}
+
+.ppa-upgrade-hero-logo {
+	display: block;
+	height: 56px;
+	width: auto;
+	margin: 0 0 28px;
+}
+
+.ppa-upgrade-hero h1 {
+	font-size: 34px;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--ppa-upgrade-white);
+	margin: 0 0 18px;
+	padding: 0;
+}
+
+.ppa-upgrade-intro {
+	font-size: 16px;
+	line-height: 1.6;
+	color: rgba(255, 255, 255, 0.92);
+	max-width: 640px;
+	margin: 0 0 28px;
+}
+
+/* Primary CTA — bright teal so it pops against the dark hero.
+   Hover follows the existing plugin pattern: darken bg + border. */
+.ppa-upgrade-cta.button.button-primary {
+	background: var(--ppa-upgrade-accent);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	padding: 12px 36px;
+	height: auto;
+	font-size: 17px;
+	line-height: 1.4;
+	font-weight: 600;
+	text-shadow: none;
+	box-shadow: 0 4px 12px rgba(20, 184, 166, 0.35);
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	border-radius: 6px;
+}
+
+.ppa-upgrade-cta.button.button-primary:hover {
+	background: var(--ppa-upgrade-accent-hover);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+}
+
+.ppa-upgrade-cta.button.button-primary:focus {
+	background: var(--ppa-upgrade-accent-hover);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	box-shadow: 0 0 0 1px var(--ppa-upgrade-white), 0 0 0 3px var(--ppa-upgrade-accent-hover);
+}
+
+.ppa-upgrade-cta-arrow {
+	font-size: 18px;
+	line-height: 1;
+}
+
+/* Mascot circle — wrapper is clipped to a circle and the image
+   fills it. Image bg (white) matches wrapper bg so the mascot
+   appears centered in a clean white disk. Outer ring shadow gives
+   the soft halo on the dark hero. */
+.ppa-upgrade-hero-mascot-wrap {
+	width: 220px;
+	height: 220px;
+	flex-shrink: 0;
+	position: relative;
+	z-index: 1;
+	background: var(--ppa-upgrade-white);
+	border-radius: 50%;
+	overflow: hidden;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 6px rgba(255, 255, 255, 0.15);
+}
+
+.ppa-upgrade-hero-mascot {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	display: block;
+}
+
+/* -------------------------------------------------------------
+   Section headers (shared by Tiers + Comparison)
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-section-header {
+	text-align: center;
+	padding-top: 16px;
+	margin-bottom: 36px;
+}
+
+.ppa-upgrade-section-header h2 {
+	margin: 0 0 14px;
+	font-size: 26px;
+	font-weight: 700;
+	color: var(--ppa-upgrade-heading);
+	line-height: 1.25;
+}
+
+.ppa-upgrade-section-header p {
+	margin: 0;
+	font-size: 15px;
+	color: var(--ppa-upgrade-subtext);
+}
+
+/* -------------------------------------------------------------
+   Tier cards — three columns, middle one (School) is featured.
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-tier-cards {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
+	align-items: stretch;
+	padding-top: 16px;
+}
+
+.ppa-upgrade-tier-card {
+	position: relative;
+	background: var(--ppa-upgrade-surface);
+	border: 1px solid var(--ppa-upgrade-border);
+	border-radius: 12px;
+	padding: 32px 28px 28px;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ppa-upgrade-tier-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+}
+
+.ppa-upgrade-tier-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 6px;
+	border-radius: 12px 12px 0 0;
+	background: var(--ppa-upgrade-neutral);
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-educator::before {
+	background: linear-gradient(90deg, var(--ppa-upgrade-educator), var(--ppa-upgrade-educator-bright));
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-school::before {
+	background: linear-gradient(90deg, var(--ppa-upgrade-accent), var(--ppa-upgrade-accent-hover));
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-enterprise::before {
+	background: linear-gradient(90deg, var(--ppa-upgrade-enterprise), var(--ppa-upgrade-enterprise-bright));
+}
+
+.ppa-upgrade-tier-card.is-featured {
+	border-color: var(--ppa-upgrade-accent);
+	border-width: 2px;
+	box-shadow: 0 8px 24px rgba(20, 184, 166, 0.18);
+	transform: translateY(-8px);
+}
+
+.ppa-upgrade-tier-card.is-featured:hover {
+	transform: translateY(-10px);
+	box-shadow: 0 12px 30px rgba(20, 184, 166, 0.25);
+}
+
+.ppa-upgrade-tier-badge {
+	position: absolute;
+	top: -14px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--ppa-upgrade-accent-dark);
+	color: var(--ppa-upgrade-white);
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 6px 14px;
+	border-radius: 999px;
+	box-shadow: 0 3px 8px rgba(15, 118, 110, 0.35);
+	white-space: nowrap;
+}
+
+.ppa-upgrade-tier-name {
+	margin: 0 0 6px;
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--ppa-upgrade-ink);
+}
+
+.ppa-upgrade-tier-tagline {
+	margin: 0 0 16px;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--ppa-upgrade-accent-dark);
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-educator .ppa-upgrade-tier-tagline {
+	color: var(--ppa-upgrade-educator);
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-enterprise .ppa-upgrade-tier-tagline {
+	color: var(--ppa-upgrade-enterprise);
+}
+
+.ppa-upgrade-tier-description {
+	margin: 0 0 20px;
+	font-size: 14px;
+	line-height: 1.55;
+	color: var(--ppa-upgrade-text-secondary);
+}
+
+.ppa-upgrade-tier-highlights {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 24px;
+	flex-grow: 1;
+}
+
+.ppa-upgrade-tier-highlights li {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--ppa-upgrade-text);
+	padding: 6px 0;
+	border-bottom: 1px solid var(--ppa-upgrade-border-light);
+}
+
+.ppa-upgrade-tier-highlights li:last-child {
+	border-bottom: none;
+}
+
+.ppa-upgrade-tier-check {
+	color: var(--ppa-upgrade-accent);
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 1.5;
+	flex-shrink: 0;
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-educator .ppa-upgrade-tier-check {
+	color: var(--ppa-upgrade-educator);
+}
+
+.ppa-upgrade-tier-card.ppa-upgrade-tier-enterprise .ppa-upgrade-tier-check {
+	color: var(--ppa-upgrade-enterprise);
+}
+
+.ppa-upgrade-tier-link.button {
+	align-self: stretch;
+	text-align: center;
+	height: auto;
+	padding: 14px 20px;
+	font-size: 16px;
+	font-weight: 600;
+	border-radius: 6px;
+	line-height: 1.2;
+}
+
+.ppa-upgrade-tier-link.button.button-secondary:focus {
+	box-shadow: 0 0 0 1px var(--ppa-upgrade-white), 0 0 0 3px var(--ppa-upgrade-educator);
+}
+
+.ppa-upgrade-tier-link.button.button-primary {
+	background: var(--ppa-upgrade-accent);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	text-shadow: none;
+	box-shadow: none;
+}
+
+.ppa-upgrade-tier-link.button.button-primary:hover {
+	background: var(--ppa-upgrade-accent-hover);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+}
+
+.ppa-upgrade-tier-link.button.button-primary:focus {
+	background: var(--ppa-upgrade-accent-hover);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	box-shadow: 0 0 0 1px var(--ppa-upgrade-white), 0 0 0 3px var(--ppa-upgrade-accent-hover);
+}
+
+/* -------------------------------------------------------------
+   Narrow sections — the comparison table and footer CTA are
+   centered and constrained to 900px so they read like body
+   copy rather than full-bleed marketing tiles.
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-comparison,
+.ppa-upgrade-footer-cta {
+	max-width: 900px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* -------------------------------------------------------------
+   Comparison table
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-table-scroller {
+	background: var(--ppa-upgrade-surface);
+	border: 1px solid var(--ppa-upgrade-border);
+	border-radius: 12px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.ppa-upgrade-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 0;
+}
+
+.ppa-upgrade-table thead th {
+	background: var(--ppa-upgrade-surface-tint);
+	border-bottom: 2px solid var(--ppa-upgrade-border);
+	color: var(--ppa-upgrade-ink);
+	font-weight: 600;
+	font-size: 14px;
+	text-align: center;
+	padding: 18px 16px;
+	vertical-align: middle;
+}
+
+.ppa-upgrade-table thead th.ppa-upgrade-col-feature {
+	text-align: left;
+	min-width: 280px;
+}
+
+.ppa-upgrade-table thead th.ppa-upgrade-col-tier {
+	min-width: 110px;
+}
+
+.ppa-upgrade-table thead th.ppa-upgrade-col-school {
+	background: var(--ppa-upgrade-accent-tint-strong);
+	color: var(--ppa-upgrade-accent-dark);
+	position: relative;
+}
+
+.ppa-upgrade-col-name {
+	display: block;
+	font-size: 15px;
+}
+
+.ppa-upgrade-col-pill {
+	display: inline-block;
+	margin-top: 4px;
+	background: var(--ppa-upgrade-accent-dark);
+	color: var(--ppa-upgrade-white);
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 2px 8px;
+	border-radius: 999px;
+}
+
+.ppa-upgrade-table tbody td,
+.ppa-upgrade-table tbody th {
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--ppa-upgrade-border-light);
+	font-size: 14px;
+	color: var(--ppa-upgrade-text);
+	vertical-align: middle;
+	background: transparent;
+}
+
+/* Row-header cells (`<th scope="row">`) match the visual weight of
+   regular data cells — the scope attribute is for screen readers, not
+   a cue to bold the text. */
+.ppa-upgrade-cell-label {
+	text-align: left;
+	font-weight: 400;
+	color: var(--ppa-upgrade-text);
+}
+
+.ppa-upgrade-cell {
+	text-align: center;
+}
+
+.ppa-upgrade-table tbody td.ppa-upgrade-cell-school {
+	background: var(--ppa-upgrade-accent-tint);
+}
+
+.ppa-upgrade-category-row th {
+	background: var(--ppa-upgrade-surface-tint);
+	color: var(--ppa-upgrade-text-secondary);
+	text-align: left;
+	padding: 10px 16px;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.6px;
+	border-top: 1px solid var(--ppa-upgrade-border);
+	border-bottom: 1px solid var(--ppa-upgrade-border);
+}
+
+.ppa-upgrade-category-row th.ppa-upgrade-cell-school {
+	background: var(--ppa-upgrade-surface-tint);
+}
+
+.ppa-upgrade-cell-yes {
+	color: var(--ppa-upgrade-accent);
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.ppa-upgrade-cell-no {
+	color: var(--ppa-upgrade-text-muted);
+	font-size: 18px;
+	line-height: 1;
+}
+
+.ppa-upgrade-cell-note {
+	color: var(--ppa-upgrade-text);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+/* -------------------------------------------------------------
+   Footer CTA — soft blue card with mascot in a circle. Calls out
+   the 14-day money-back guarantee. Uses box-sizing: border-box so
+   the section's outer width matches the comparison table's outer
+   width (both end at 900px).
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-footer-cta {
+	box-sizing: border-box;
+	background: linear-gradient(135deg, var(--ppa-upgrade-footer-tint-start) 0%, var(--ppa-upgrade-footer-tint-end) 100%);
+	border: 1px solid var(--ppa-upgrade-footer-border);
+	border-radius: 12px;
+	padding: 32px 36px;
+	display: flex;
+	align-items: center;
+	gap: 28px;
+	box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+}
+
+.ppa-upgrade-footer-mascot-wrap {
+	width: 140px;
+	height: 140px;
+	flex-shrink: 0;
+	background: var(--ppa-upgrade-white);
+	border-radius: 50%;
+	overflow: hidden;
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2), 0 0 0 6px rgba(255, 255, 255, 0.7);
+}
+
+.ppa-upgrade-footer-mascot {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	display: block;
+}
+
+.ppa-upgrade-footer-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.ppa-upgrade-footer-cta h2 {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--ppa-upgrade-ink);
+	margin: 0 0 10px;
+	line-height: 1.25;
+}
+
+.ppa-upgrade-footer-cta p {
+	font-size: 15px;
+	line-height: 1.6;
+	color: var(--ppa-upgrade-body);
+	margin: 0 0 20px;
+}
+
+.ppa-upgrade-footer-button.button.button-primary {
+	background: var(--ppa-upgrade-accent);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	padding: 12px 32px;
+	height: auto;
+	font-size: 16px;
+	font-weight: 600;
+	text-shadow: none;
+	box-shadow: 0 3px 8px rgba(20, 184, 166, 0.3);
+	border-radius: 6px;
+	line-height: 1.4;
+}
+
+.ppa-upgrade-footer-button.button.button-primary:hover {
+	background: var(--ppa-upgrade-accent-hover);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+}
+
+.ppa-upgrade-footer-button.button.button-primary:focus {
+	background: var(--ppa-upgrade-accent-hover);
+	border-color: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	box-shadow: 0 0 0 1px var(--ppa-upgrade-white), 0 0 0 3px var(--ppa-upgrade-accent-hover);
+}
+
+/* -------------------------------------------------------------
+   Sticky purchase bar — pinned to bottom of viewport. Uses the
+   brand teal so it reads as a marketing surface rather than an
+   extension of the dark WordPress admin chrome. Inner content
+   is constrained to 900px to match the body sections above.
+   ------------------------------------------------------------- */
+
+.ppa-upgrade-sticky-bar {
+	position: fixed;
+	bottom: 0;
+	left: 160px; /* WP expanded admin menu */
+	right: 0;
+	background: var(--ppa-upgrade-accent-hover);
+	color: var(--ppa-upgrade-white);
+	border-top: 4px solid var(--ppa-upgrade-accent-light);
+	box-shadow: 0 -4px 16px rgba(13, 148, 136, 0.3);
+	z-index: 9999;
+}
+
+.folded .ppa-upgrade-sticky-bar {
+	left: 36px;
+}
+
+.auto-fold .ppa-upgrade-sticky-bar {
+	left: 36px;
+}
+
+@media screen and (min-width: 961px) {
+	.auto-fold .ppa-upgrade-sticky-bar {
+		left: 160px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+	.ppa-upgrade-sticky-bar {
+		left: 0;
+	}
+}
+
+.ppa-upgrade-sticky-bar-inner {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 14px 24px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+}
+
+.ppa-upgrade-sticky-bar-text {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.ppa-upgrade-sticky-bar-text strong {
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--ppa-upgrade-white);
+	line-height: 1.3;
+}
+
+.ppa-upgrade-sticky-bar-text span {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.92);
+}
+
+/* Sticky bar CTA — inverted (white on teal) so the call to
+   action remains visually dominant against the teal bar. */
+.ppa-upgrade-sticky-bar-cta.button.button-primary {
+	background: var(--ppa-upgrade-white);
+	border-color: var(--ppa-upgrade-white);
+	color: var(--ppa-upgrade-accent-hover);
+	padding: 12px 36px;
+	height: auto;
+	font-size: 17px;
+	font-weight: 700;
+	text-shadow: none;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+	border-radius: 6px;
+	flex-shrink: 0;
+	line-height: 1.3;
+}
+
+.ppa-upgrade-sticky-bar-cta.button.button-primary:hover {
+	background: var(--ppa-upgrade-border-light);
+	border-color: var(--ppa-upgrade-border-light);
+	color: var(--ppa-upgrade-accent-dark);
+}
+
+.ppa-upgrade-sticky-bar-cta.button.button-primary:focus {
+	background: var(--ppa-upgrade-border-light);
+	border-color: var(--ppa-upgrade-border-light);
+	color: var(--ppa-upgrade-accent-dark);
+	box-shadow: 0 0 0 1px var(--ppa-upgrade-accent-hover), 0 0 0 3px var(--ppa-upgrade-white);
+}
+
+/* -------------------------------------------------------------
+   Responsive — stack hero, tier cards, footer CTA, sticky bar
+   ------------------------------------------------------------- */
+
+@media screen and (max-width: 1024px) {
+	.ppa-upgrade-tier-cards {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	.ppa-upgrade-tier-card.is-featured {
+		transform: none;
+	}
+
+	.ppa-upgrade-tier-card.is-featured:hover {
+		transform: translateY(-2px);
+	}
+}
+
+@media screen and (max-width: 782px) {
+	.ppa-upgrade-page {
+		padding-bottom: 140px;
+	}
+
+	.ppa-upgrade-page section {
+		margin-bottom: 40px;
+	}
+
+	.ppa-upgrade-hero {
+		flex-direction: column;
+		text-align: center;
+		padding: 32px 24px;
+		gap: 20px;
+	}
+
+	.ppa-upgrade-hero-content {
+		order: 2;
+	}
+
+	.ppa-upgrade-hero-mascot-wrap {
+		order: 1;
+		width: 160px;
+		height: 160px;
+	}
+
+	.ppa-upgrade-hero-logo {
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.ppa-upgrade-hero h1 {
+		font-size: 26px;
+	}
+
+	.ppa-upgrade-intro {
+		font-size: 15px;
+	}
+
+	.ppa-upgrade-section-header h2 {
+		font-size: 22px;
+	}
+
+	.ppa-upgrade-table thead th.ppa-upgrade-col-feature {
+		min-width: 200px;
+	}
+
+	.ppa-upgrade-footer-cta {
+		flex-direction: column;
+		text-align: center;
+		padding: 28px 24px;
+	}
+
+	.ppa-upgrade-footer-mascot-wrap {
+		width: 120px;
+		height: 120px;
+	}
+
+	.ppa-upgrade-footer-cta p {
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.ppa-upgrade-sticky-bar-inner {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+		padding: 12px 16px;
+	}
+
+	.ppa-upgrade-sticky-bar-text {
+		text-align: center;
+	}
+
+	.ppa-upgrade-sticky-bar-cta.button.button-primary {
+		width: 100%;
+	}
+}
+
+/* -------------------------------------------------------------
+   Reduced motion — strip transitions, transforms, and the
+   featured-card lift for users who prefer reduced motion.
+   ------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	.ppa-upgrade-tier-card,
+	.ppa-upgrade-tier-card.is-featured,
+	.ppa-upgrade-tier-card.is-featured:hover,
+	.ppa-upgrade-tier-card:hover {
+		transform: none;
+		transition: none;
+	}
+}
+
+/*
+ * Fix Ant Design radio/checkbox native inputs in WP admin.
+ *
+ * WordPress admin forms.css styles input[type="radio"] and
+ * input[type="checkbox"] with explicit width, height, and positioning that
+ * override Ant Design v5's CSS-in-JS styles. This makes the native <input>
+ * visible alongside the custom styled <span class="ant-radio-inner"> /
+ * <span class="ant-checkbox-inner">, causing duplicate radio buttons and
+ * checkboxes to appear. Mirrors the identical fix in PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-radio-input,
+.ant-checkbox-input {
+	position: absolute !important;
+	inset: 0 !important;
+	z-index: 1 !important;
+	width: 100% !important;
+	height: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	cursor: pointer !important;
+	opacity: 0 !important;
+}
+
+/*
+ * Fix Ant Design Select search input in WP admin.
+ *
+ * WordPress admin forms.css styles every <input> with a border, a 30px
+ * min-height, and a blue :focus box-shadow. Those leak into Ant Design's
+ * Select search input and render as an oversized, offset blue box when a
+ * Select is focused. This stylesheet loads on every PressPrimer Assignment
+ * admin page (free and add-ons all use pressprimer-assignment-* page slugs),
+ * so resetting the inner input here corrects every admin dropdown in one
+ * place — Ant draws the focus ring on the selector itself. Mirrors the
+ * identical fix in PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-select input,
+.ant-select input:focus {
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+	outline: none !important;
+	background: transparent !important;
+}
+
+/*
+ * Fix Ant Design search input (Input.Search) in WP admin.
+ *
+ * WordPress admin forms.css styles input[type="search"] with its own
+ * min-height, border, and a blue :focus box-shadow. Those leak into Ant
+ * Design's Input.Search field: the min-height overflows Ant's wrapper,
+ * pushing the placeholder to the bottom of the box and drawing a stray focus
+ * box below the frame. The .ant-select reset above does not apply here (this
+ * input is not inside .ant-select), so reset the search input too — Ant draws
+ * the border and focus ring on the wrapper. Mirrors the identical fix in
+ * PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-input-search input,
+.ant-input-search input:focus {
+	min-height: 0 !important;
+	height: auto !important;
+	margin: 0 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+	outline: none !important;
+	/*
+	 * forms.css also sets line-height: 2 (a 28px line box on 14px text),
+	 * taller than Ant's 32px field allows for — the placeholder sits low
+	 * and the inner input overflows the frame as a stray box on focus.
+	 * Restore Ant's own line box (22px) so the field's geometry closes
+	 * back up. Quiz applies the same correction to its reports search.
+	 */
+	line-height: 1.5714285714285714 !important;
+}
+
+/*
+ * Fix Ant Design modal close button in WP admin.
+ *
+ * WordPress admin CSS applies styles to bare <button> elements that interfere
+ * with the Ant Design v5 modal close button, making it unclickable even
+ * though the X icon renders. Reset the button so the click target covers the
+ * icon. Mirrors the identical fix in PressPrimer Quiz.
+ *
+ * @since 2.2.0
+ */
+.ant-modal-close {
+	cursor: pointer !important;
+	pointer-events: auto !important;
+}
+
+/*
+ * Fix link-state colors on Ant Design button links in WP admin.
+ *
+ * Ant Design renders an <a href> button as <a class="ant-btn ...">.
+ * WordPress admin styles a:link / a:visited / a:focus with colors whose
+ * selectors out-specify Ant Design's class-based button text color, so a
+ * link button's label turns blue while focused (e.g. after returning from
+ * the tab it opened) or muddy after being visited. Restore the intended
+ * text color across link states. Only the solid variants (primary and
+ * default) are targeted — link/text buttons take their color from context
+ * and must not be forced here. Mirrors the fix in PressPrimer Quiz, with
+ * the focus/hover/active states added. Default buttons keep their :hover
+ * unforced — Ant colors that state itself.
+ *
+ * @since 2.2.0
+ */
+a.ant-btn-primary:link,
+a.ant-btn-primary:visited,
+a.ant-btn-primary:hover,
+a.ant-btn-primary:focus,
+a.ant-btn-primary:active {
+	color: #fff;
+}
+
+a.ant-btn-default:link,
+a.ant-btn-default:visited,
+a.ant-btn-default:focus {
+	color: rgba(0, 0, 0, 0.88);
+}

@@ -1001,6 +1001,40 @@
 	line-height: 1.5;
 }
 
+/* Due date + late policy notice (2.2). Container reuses .ppa-notice
+   .ppa-notice-info (RTL border flip and print handling come with it). */
+.ppa-late-policy .ppa-late-policy-due {
+	margin: 0;
+	font-size: var(--ppa-font-size-md, 1rem);
+	color: var(--ppa-text, #1d2327);
+}
+
+.ppa-late-policy .ppa-late-policy-due-label {
+	font-weight: 600;
+}
+
+.ppa-late-policy .ppa-late-policy-list {
+	margin: var(--ppa-space-sm) 0 0;
+	padding-left: var(--ppa-space-lg);
+	font-size: 0.875rem;
+	color: var(--ppa-text-secondary, #50575e);
+}
+
+.ppa-late-policy .ppa-late-policy-list li {
+	margin-bottom: var(--ppa-space-xs);
+}
+
+.ppa-late-policy .ppa-late-policy-cutoff {
+	font-weight: 600;
+	color: var(--ppa-error, #d63638);
+}
+
+.ppa-late-policy .ppa-late-policy-note {
+	margin: var(--ppa-space-sm) 0 0;
+	font-size: var(--ppa-font-size-xs, 0.75rem);
+	color: var(--ppa-text-light, #787c82);
+}
+
 /* ==========================================================================
    My Submissions Dashboard
    ========================================================================== */
@@ -1931,6 +1965,12 @@
 		box-shadow: none;
 	}
 
+	.ppa-late-policy {
+		page-break-inside: avoid;
+		background: none;
+		border: 1px solid #000;
+	}
+
 	.ppa-feedback {
 		page-break-inside: avoid;
 	}
@@ -1996,6 +2036,12 @@
 
 [dir="rtl"] .ppa-notice-success {
 	border-right-color: var(--ppa-success);
+}
+
+/* Late policy list indentation */
+[dir="rtl"] .ppa-late-policy .ppa-late-policy-list {
+	padding-left: 0;
+	padding-right: var(--ppa-space-lg);
 }
 
 /* File info text alignment */

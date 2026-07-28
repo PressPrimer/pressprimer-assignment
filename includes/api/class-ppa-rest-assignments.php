@@ -447,6 +447,10 @@ class PressPrimer_Assignment_REST_Assignments {
 	public function create_item( $request ) {
 		$data = $this->sanitize_assignment_data( $request );
 
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
 		// Set author to current user.
 		$data['author_id'] = get_current_user_id();
 
@@ -521,6 +525,10 @@ class PressPrimer_Assignment_REST_Assignments {
 		}
 
 		$data = $this->sanitize_assignment_data( $request );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
 
 		// Track which fields changed for the audit log.
 		$old_status     = $assignment->status;
@@ -811,9 +819,11 @@ class PressPrimer_Assignment_REST_Assignments {
 	 * Extracts and sanitizes all assignment fields from the request.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.0 Can return WP_Error for invalid due dates, late
+	 *              policies, or late penalty schedules.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
-	 * @return array Sanitized assignment data.
+	 * @return array|WP_Error Sanitized assignment data, or WP_Error.
 	 */
 	private function sanitize_assignment_data( $request ) {
 		$data = [];
@@ -908,6 +918,63 @@ class PressPrimer_Assignment_REST_Assignments {
 			}
 		}
 
+		// Due date (2.2): accepted as a site-timezone datetime string,
+		// stored in UTC like the other datetime columns. An empty value
+		// clears the due date.
+		if ( $request->has_param( 'due_at' ) ) {
+			$due_at_raw = $request->get_param( 'due_at' );
+
+			if ( null === $due_at_raw || '' === trim( (string) $due_at_raw ) ) {
+				$data['due_at'] = null;
+			} else {
+				$due_at_raw = sanitize_text_field( (string) $due_at_raw );
+				// Accept the HTML datetime-local separator too.
+				$due_at_raw = str_replace( 'T', ' ', $due_at_raw );
+
+				if ( false === strtotime( $due_at_raw ) ) {
+					return new WP_Error(
+						'pressprimer_assignment_invalid_due_at',
+						__( 'Invalid due date format.', 'pressprimer-assignment' ),
+						[ 'status' => 400 ]
+					);
+				}
+
+				$data['due_at'] = get_gmt_from_date( $due_at_raw );
+			}
+		}
+
+		// Late policy (2.2) — enum, invalid values rejected.
+		if ( null !== $request->get_param( 'late_policy' ) ) {
+			$late_policy = sanitize_text_field( $request->get_param( 'late_policy' ) );
+			if ( ! in_array( $late_policy, [ 'accept', 'penalty', 'reject' ], true ) ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_late_policy',
+					__( 'Invalid late policy. Must be accept, penalty, or reject.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$data['late_policy'] = $late_policy;
+		}
+
+		// Late policy config (2.2): validated and rebuilt from the
+		// validated numeric fields — the raw client payload is never
+		// stored.
+		if ( $request->has_param( 'late_penalty_schedule' ) ) {
+			$schedule_raw = $request->get_param( 'late_penalty_schedule' );
+
+			if ( null === $schedule_raw || [] === $schedule_raw || '' === $schedule_raw ) {
+				$data['late_penalty_schedule_json'] = null;
+			} else {
+				$schedule = $this->validate_late_penalty_schedule( $schedule_raw );
+
+				if ( is_wp_error( $schedule ) ) {
+					return $schedule;
+				}
+
+				$data['late_penalty_schedule_json'] = wp_json_encode( $schedule );
+			}
+		}
+
 		// JSON fields.
 		if ( null !== $request->get_param( 'allowed_file_types' ) ) {
 			$file_types = $request->get_param( 'allowed_file_types' );
@@ -927,6 +994,82 @@ class PressPrimer_Assignment_REST_Assignments {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Validate a late policy config payload
+	 *
+	 * Enforces the simplified 2.2 model: a single optional penalty
+	 * percentage (0–100) and a single optional cutoff (hours > 0), at
+	 * least one of which must be present, plus the deduction basis.
+	 * Under the 'penalty' policy the editor sends both ("late by up to X,
+	 * deduct Y%, closed after X"); under 'accept' it sends only the
+	 * cutoff.
+	 *
+	 * Returns a clean structure built exclusively from the validated
+	 * numeric fields, ready for wp_json_encode() — the raw client
+	 * payload is never stored.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param mixed $raw Client-supplied config (array expected).
+	 * @return array|WP_Error Clean config array or a 400 WP_Error.
+	 */
+	private function validate_late_penalty_schedule( $raw ) {
+		if ( ! is_array( $raw ) ) {
+			return new WP_Error(
+				'pressprimer_assignment_invalid_schedule',
+				__( 'The late policy settings are not valid.', 'pressprimer-assignment' ),
+				[ 'status' => 400 ]
+			);
+		}
+
+		// Penalty: optional, 0–100.
+		$penalty     = null;
+		$penalty_raw = isset( $raw['penalty_percent'] ) ? $raw['penalty_percent'] : null;
+
+		if ( null !== $penalty_raw && '' !== $penalty_raw ) {
+			if ( ! is_numeric( $penalty_raw ) || (float) $penalty_raw < 0 || (float) $penalty_raw > 100 ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule',
+					__( 'The late penalty must be between 0 and 100 percent.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$penalty = round( (float) $penalty_raw, 2 );
+		}
+
+		// Cutoff: optional, hours > 0.
+		$cutoff     = null;
+		$cutoff_raw = isset( $raw['cutoff_hours'] ) ? $raw['cutoff_hours'] : null;
+
+		if ( null !== $cutoff_raw && '' !== $cutoff_raw ) {
+			if ( ! is_numeric( $cutoff_raw ) || (float) $cutoff_raw <= 0 ) {
+				return new WP_Error(
+					'pressprimer_assignment_invalid_schedule',
+					__( 'The cutoff must be a number of hours greater than zero.', 'pressprimer-assignment' ),
+					[ 'status' => 400 ]
+				);
+			}
+			$cutoff = round( (float) $cutoff_raw, 2 );
+		}
+
+		if ( null === $penalty && null === $cutoff ) {
+			return new WP_Error(
+				'pressprimer_assignment_invalid_schedule',
+				__( 'The late policy needs a penalty, a cutoff, or both.', 'pressprimer-assignment' ),
+				[ 'status' => 400 ]
+			);
+		}
+
+		// Basis: what the percentage deducts from.
+		$basis = isset( $raw['basis'] ) && 'raw_score' === $raw['basis'] ? 'raw_score' : 'max_points';
+
+		return [
+			'cutoff_hours'    => $cutoff,
+			'penalty_percent' => $penalty,
+			'basis'           => $basis,
+		];
 	}
 
 	/**
@@ -1086,30 +1229,41 @@ class PressPrimer_Assignment_REST_Assignments {
 		}
 
 		$data = [
-			'id'                 => (int) $assignment->id,
-			'uuid'               => $assignment->uuid,
-			'title'              => $assignment->title,
-			'description'        => $assignment->description,
-			'instructions'       => $assignment->instructions,
-			'grading_guidelines' => $assignment->grading_guidelines,
-			'max_points'         => (float) $assignment->max_points,
-			'passing_score'      => (float) $assignment->passing_score,
-			'allow_resubmission' => (int) $assignment->allow_resubmission,
-			'max_resubmissions'  => (int) $assignment->max_resubmissions,
-			'allowed_file_types' => $assignment->allowed_file_types,
-			'max_file_size'      => (int) $assignment->max_file_size,
-			'max_files'          => (int) $assignment->max_files,
-			'submission_type'    => $assignment->submission_type,
-			'status'             => $assignment->status,
-			'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
-			'author_id'          => (int) $assignment->author_id,
-			'notification_email' => $assignment->notification_email ?? '',
-			'submission_count'   => (int) $assignment->submission_count,
-			'graded_count'       => (int) $assignment->graded_count,
-			'categories'         => $category_ids,
-			'category_details'   => $category_data,
-			'created_at'         => $assignment->created_at,
-			'updated_at'         => $assignment->updated_at,
+			'id'                    => (int) $assignment->id,
+			'uuid'                  => $assignment->uuid,
+			'title'                 => $assignment->title,
+			'description'           => $assignment->description,
+			'instructions'          => $assignment->instructions,
+			'grading_guidelines'    => $assignment->grading_guidelines,
+			'max_points'            => (float) $assignment->max_points,
+			'passing_score'         => (float) $assignment->passing_score,
+			'allow_resubmission'    => (int) $assignment->allow_resubmission,
+			'max_resubmissions'     => (int) $assignment->max_resubmissions,
+			// Decoded to an array — the raw property is the JSON string
+			// stored in the column; consumers get the same shape they send.
+			'allowed_file_types'    => ( null !== $assignment->allowed_file_types && '' !== $assignment->allowed_file_types )
+				? $assignment->get_allowed_file_types()
+				: null,
+			'max_file_size'         => (int) $assignment->max_file_size,
+			'max_files'             => (int) $assignment->max_files,
+			'submission_type'       => $assignment->submission_type,
+			// Due date in both site-local time (for editors/display) and
+			// UTC (the stored value); null when no due date is set.
+			'due_at'                => $assignment->due_at ? get_date_from_gmt( $assignment->due_at ) : null,
+			'due_at_gmt'            => $assignment->due_at ? $assignment->due_at : null,
+			'late_policy'           => $assignment->late_policy,
+			// Decoded, normalized schedule (tiers, cutoff_hours, basis) or null.
+			'late_penalty_schedule' => $assignment->get_late_penalty_schedule(),
+			'status'                => $assignment->status,
+			'ai_auto_grade'         => (int) $assignment->ai_auto_grade,
+			'author_id'             => (int) $assignment->author_id,
+			'notification_email'    => $assignment->notification_email ?? '',
+			'submission_count'      => (int) $assignment->submission_count,
+			'graded_count'          => (int) $assignment->graded_count,
+			'categories'            => $category_ids,
+			'category_details'      => $category_data,
+			'created_at'            => $assignment->created_at,
+			'updated_at'            => $assignment->updated_at,
 		];
 
 		/**

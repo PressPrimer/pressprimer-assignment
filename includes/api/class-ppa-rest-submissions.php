@@ -610,6 +610,18 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Get sibling submission IDs for navigation.
 		$siblings = $this->get_siblings( $submission );
 
+		// Lateness context (2.2, feature 009). late_penalty is the stored
+		// breakdown written at grading time; late_status is the live
+		// preview (lateness + covering tier) the grading interface shows
+		// before a score exists. Computed only for the penalty policy.
+		$late_penalty = $submission->get_meta( 'late_penalty' );
+		$late_status  = null;
+
+		if ( $assignment && 'penalty' === $assignment->late_policy && class_exists( 'PressPrimer_Assignment_Grading_Service' ) ) {
+			$grading_service = new PressPrimer_Assignment_Grading_Service();
+			$late_status     = $grading_service->get_late_status( $submission, $assignment );
+		}
+
 		// Surface auto-cleanup notice fields. The Educator addon's data
 		// cleanup tool stamps these on the parent submission when it
 		// prunes graded-submission attachments, so the My Submissions /
@@ -640,7 +652,7 @@ class PressPrimer_Assignment_REST_Submissions {
 		}
 
 		$response_data = [
-			'submission' => [
+			'submission'  => [
 				'id'                                      => (int) $submission->id,
 				'uuid'                                    => $submission->uuid,
 				'assignment_id'                           => (int) $submission->assignment_id,
@@ -672,18 +684,22 @@ class PressPrimer_Assignment_REST_Submissions {
 				'cleanup_attachments_pruned_count'        => $cleanup_pruned_count,
 				'cleanup_attachments_pruned_at'           => $cleanup_pruned_at,
 				'cleanup_attachments_pruned_at_formatted' => $cleanup_pruned_at_formatted,
+				'late_penalty'                            => is_array( $late_penalty ) ? $late_penalty : null,
 			],
-			'assignment' => $assignment ? [
-				'id'                 => (int) $assignment->id,
-				'title'              => $assignment->title,
-				'description'        => $assignment->description,
-				'instructions'       => $assignment->instructions,
-				'max_points'         => (float) $assignment->max_points,
-				'passing_score'      => (float) $assignment->passing_score,
-				'grading_guidelines' => $assignment->grading_guidelines,
+			'assignment'  => $assignment ? [
+				'id'                    => (int) $assignment->id,
+				'title'                 => $assignment->title,
+				'description'           => $assignment->description,
+				'instructions'          => $assignment->instructions,
+				'max_points'            => (float) $assignment->max_points,
+				'passing_score'         => (float) $assignment->passing_score,
+				'grading_guidelines'    => $assignment->grading_guidelines,
+				'late_policy'           => $assignment->late_policy,
+				'late_penalty_schedule' => $assignment->get_late_penalty_schedule(),
 			] : null,
-			'files'      => $file_data,
-			'siblings'   => $siblings,
+			'late_status' => $late_status,
+			'files'       => $file_data,
+			'siblings'    => $siblings,
 		];
 
 		/**
@@ -1134,17 +1150,35 @@ class PressPrimer_Assignment_REST_Submissions {
 		// Determine disposition: attachment when ?download=1, inline otherwise.
 		$disposition = $request->get_param( 'download' ) ? 'attachment' : 'inline';
 
+		// Same delivery filter the frontend serve path applies — addons may
+		// substitute a processed copy (Enterprise serves watermarked
+		// downloads through it). Graders download through THIS route, so
+		// skipping it here would hand graders the original untouched file.
+		/** This filter is documented in includes/services/class-ppa-file-service.php */
+		$serve_path = apply_filters(
+			'pressprimer_assignment_file_download_path',
+			$full_path,
+			$file,
+			'attachment' === $disposition ? 'download' : 'view'
+		);
+		if ( ! is_string( $serve_path ) || '' === $serve_path || ! is_readable( $serve_path ) ) {
+			$serve_path = $full_path;
+		}
+
 		/** This filter is documented in includes/services/class-ppa-file-service.php */
 		$filename = apply_filters( 'pressprimer_assignment_file_download_filename', $file->original_filename, $file );
 
+		// A substituted copy's size can differ from the stored original's.
+		$content_length = file_exists( $serve_path ) ? filesize( $serve_path ) : $file->file_size;
+
 		nocache_headers();
 		header( 'Content-Type: ' . $file->mime_type );
-		header( 'Content-Length: ' . $file->file_size );
+		header( 'Content-Length: ' . $content_length );
 		header( 'Content-Disposition: ' . $disposition . '; filename="' . $filename . '"' );
 		header( 'X-Content-Type-Options: nosniff' );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Serving file for inline viewing.
-		readfile( $full_path );
+		readfile( $serve_path );
 		exit;
 	}
 

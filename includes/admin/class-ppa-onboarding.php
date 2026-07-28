@@ -62,12 +62,40 @@ class PressPrimer_Assignment_Onboarding {
 	/**
 	 * Total number of onboarding steps
 	 *
-	 * Steps: welcome, menu, dashboard, assignments, grading, settings, complete.
+	 * Guided-build tour (2.2): welcome, basics, grading, file
+	 * settings, publish, page, complete.
 	 *
 	 * @since 1.0.0
 	 * @var int
 	 */
 	const TOTAL_STEPS = 7;
+
+	/**
+	 * Option name: map of assignment ID => page ID created by the tour
+	 *
+	 * Makes the "Put it on a page" action idempotent without a meta
+	 * query — re-running it for the same assignment reuses the page.
+	 *
+	 * @since 2.2.0
+	 * @var string
+	 */
+	const SETUP_PAGES_OPTION = 'pressprimer_assignment_setup_pages';
+
+	/**
+	 * Bundled sample assignment template keys
+	 *
+	 * Each key maps to a JSON pack in assets/data/sample-assignments/.
+	 * The welcome step offers these as optional prefills for the real
+	 * assignment editor.
+	 *
+	 * @since 2.2.0
+	 * @var string[]
+	 */
+	const SAMPLE_KEYS = [
+		'reflective-essay',
+		'case-study-analysis',
+		'compliance-acknowledgment',
+	];
 
 	/**
 	 * Singleton instance
@@ -101,7 +129,133 @@ class PressPrimer_Assignment_Onboarding {
 	private function __construct() {
 		add_action( 'wp_ajax_pressprimer_assignment_onboarding_progress', [ $this, 'handle_progress_ajax' ] );
 		add_action( 'wp_ajax_pressprimer_assignment_get_onboarding_state', [ $this, 'handle_get_state_ajax' ] );
+		add_action( 'wp_ajax_pressprimer_assignment_setup_create_page', [ $this, 'handle_create_page_ajax' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_assets' ] );
+
+		// 2.2: nonce'd relaunch links (Settings, dashboard) reset the
+		// tour state server-side before the tour auto-opens.
+		add_action( 'admin_init', [ $this, 'maybe_handle_relaunch' ] );
+	}
+
+	/**
+	 * Check whether the current user can use the setup wizard
+	 *
+	 * Anyone who manages assignments gets the guided build — admins and
+	 * (on Educator sites) teachers alike, each with their own per-user
+	 * state. Admin-only content inside the wizard (the step 6 premium
+	 * line) is gated separately.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return bool True when the user can run the wizard.
+	 */
+	private function user_can_use_wizard() {
+		return current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			|| current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL );
+	}
+
+	/**
+	 * Get the tour relaunch URL
+	 *
+	 * Points at the PPA dashboard with a nonce'd parameter; arriving with
+	 * it resets the user's tour state, and the tour auto-opens there.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string Relaunch URL.
+	 */
+	public static function get_relaunch_url() {
+		return wp_nonce_url(
+			add_query_arg(
+				'ppa-relaunch',
+				'1',
+				admin_url( 'admin.php?page=pressprimer-assignment' )
+			),
+			'pressprimer_assignment_setup_relaunch'
+		);
+	}
+
+	/**
+	 * Get all bundled sample assignment templates
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array[] Sanitized template arrays, keyed order per SAMPLE_KEYS.
+	 */
+	public static function get_sample_assignments() {
+		$samples = [];
+
+		foreach ( self::SAMPLE_KEYS as $key ) {
+			$sample = self::get_sample_assignment( $key );
+			if ( $sample ) {
+				$samples[] = $sample;
+			}
+		}
+
+		return $samples;
+	}
+
+	/**
+	 * Load and sanitize one bundled sample assignment template
+	 *
+	 * The packs ship with the plugin, but they are still treated as
+	 * data: every field is sanitized on load (json_decode is not
+	 * sanitization) and file types are validated against the editor's
+	 * own whitelist.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $key Template key (must be in SAMPLE_KEYS).
+	 * @return array|null Sanitized template, or null when unknown/unreadable.
+	 */
+	public static function get_sample_assignment( $key ) {
+		$key = sanitize_key( $key );
+
+		if ( ! in_array( $key, self::SAMPLE_KEYS, true ) ) {
+			return null;
+		}
+
+		$path = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'assets/data/sample-assignments/' . $key . '.json';
+
+		if ( ! file_exists( $path ) ) {
+			return null;
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a bundled plugin file, not a remote URL.
+		$raw = json_decode( (string) file_get_contents( $path ), true );
+
+		if ( ! is_array( $raw ) ) {
+			return null;
+		}
+
+		$valid_types = [ 'pdf', 'docx', 'pptx', 'txt', 'rtf', 'odt', 'jpg', 'jpeg', 'png', 'gif' ];
+		$file_types  = [];
+
+		if ( isset( $raw['allowed_file_types'] ) && is_array( $raw['allowed_file_types'] ) ) {
+			foreach ( $raw['allowed_file_types'] as $type ) {
+				$type = sanitize_key( $type );
+				if ( in_array( $type, $valid_types, true ) ) {
+					$file_types[] = $type;
+				}
+			}
+		}
+
+		$submission_type = isset( $raw['submission_type'] ) ? sanitize_key( $raw['submission_type'] ) : 'file';
+		if ( ! in_array( $submission_type, [ 'file', 'text', 'either' ], true ) ) {
+			$submission_type = 'file';
+		}
+
+		return [
+			'key'                => $key,
+			'title'              => isset( $raw['title'] ) ? sanitize_text_field( $raw['title'] ) : '',
+			'description'        => isset( $raw['description'] ) ? sanitize_text_field( $raw['description'] ) : '',
+			'instructions'       => isset( $raw['instructions'] ) ? wp_kses_post( $raw['instructions'] ) : '',
+			'grading_guidelines' => isset( $raw['grading_guidelines'] ) ? wp_kses_post( $raw['grading_guidelines'] ) : '',
+			'allowed_file_types' => $file_types,
+			'max_points'         => isset( $raw['max_points'] ) ? max( 1, absint( $raw['max_points'] ) ) : 100,
+			'passing_score'      => isset( $raw['passing_score'] ) ? absint( $raw['passing_score'] ) : 60,
+			'submission_type'    => $submission_type,
+		];
 	}
 
 	/**
@@ -121,7 +275,7 @@ class PressPrimer_Assignment_Onboarding {
 			return false;
 		}
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			return false;
 		}
 
@@ -151,6 +305,15 @@ class PressPrimer_Assignment_Onboarding {
 
 		update_user_meta( $user_id, self::META_COMPLETED, true );
 		update_user_meta( $user_id, self::META_STEP, self::TOTAL_STEPS );
+
+		/**
+		 * Fires when a user completes the setup wizard.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int $user_id The user who completed the wizard.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_completed', $user_id );
 	}
 
 	/**
@@ -172,6 +335,16 @@ class PressPrimer_Assignment_Onboarding {
 
 		// Always mark as completed so the tour doesn't reappear on navigation.
 		update_user_meta( $user_id, self::META_COMPLETED, true );
+
+		/**
+		 * Fires when a user skips the setup wizard.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int  $user_id   The user who skipped.
+		 * @param bool $permanent Whether the skip is permanent.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_skipped', $user_id, (bool) $permanent );
 	}
 
 	/**
@@ -191,6 +364,15 @@ class PressPrimer_Assignment_Onboarding {
 		delete_user_meta( $user_id, self::META_SKIPPED );
 		delete_user_meta( $user_id, self::META_STEP );
 		delete_user_meta( $user_id, self::META_STARTED );
+
+		/**
+		 * Fires when a user's setup wizard state is reset (relaunch).
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int $user_id The user whose wizard state was reset.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_reset', $user_id );
 	}
 
 	/**
@@ -209,6 +391,15 @@ class PressPrimer_Assignment_Onboarding {
 
 		// Clear any previous skip.
 		delete_user_meta( $user_id, self::META_SKIPPED );
+
+		/**
+		 * Fires when a user starts the setup wizard.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param int $user_id The user who started the wizard.
+		 */
+		do_action( 'pressprimer_assignment_onboarding_started', $user_id );
 	}
 
 	/**
@@ -269,21 +460,69 @@ class PressPrimer_Assignment_Onboarding {
 			__( 'PressPrimer Assignment', 'pressprimer-assignment' )
 		);
 
+		// Template picks are display data only; the full pack is loaded
+		// server-side by the editor from the nonce'd ppa-template param.
+		$templates = [];
+		foreach ( self::get_sample_assignments() as $sample ) {
+			$templates[] = [
+				'key'         => $sample['key'],
+				'title'       => $sample['title'],
+				'description' => $sample['description'],
+			];
+		}
+
 		return [
-			'state'     => $this->get_onboarding_state(),
-			'nonce'     => wp_create_nonce( 'pressprimer_assignment_onboarding' ),
-			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-			'pluginUrl' => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
-			'urls'      => [
-				'dashboard'   => admin_url( 'admin.php?page=pressprimer-assignment' ),
-				'assignments' => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
-				'submissions' => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
-				'grading'     => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
-				'categories'  => admin_url( 'admin.php?page=pressprimer-assignment-categories' ),
-				'reports'     => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
-				'settings'    => admin_url( 'admin.php?page=pressprimer-assignment-settings' ),
+			'state'         => $this->get_onboarding_state(),
+			'nonce'         => wp_create_nonce( 'pressprimer_assignment_onboarding' ),
+			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+			'restNonce'     => wp_create_nonce( 'wp_rest' ),
+			'relaunchUrl'   => self::get_relaunch_url(),
+			'templates'     => $templates,
+			'templateNonce' => wp_create_nonce( 'pressprimer_assignment_setup_template' ),
+			// Runtime detection only — nothing about the site's LMS is
+			// ever stored (the tour collects no data).
+			'lms'           => [
+				'learndash' => defined( 'LEARNDASH_VERSION' ),
+				'tutorlms'  => defined( 'TUTOR_VERSION' ),
 			],
-			'i18n'      => [
+			'docsUrl'       => class_exists( 'PressPrimer_Assignment_Upgrade_Page' )
+				? PressPrimer_Assignment_Upgrade_Page::utm_url(
+					'https://pressprimer.com/knowledge-base/pressprimer-assignment/',
+					'onboarding-docs',
+					'onboarding'
+				)
+				: 'https://pressprimer.com/knowledge-base/pressprimer-assignment/',
+			// The 011 email ask on the finish stop. Eligibility is
+			// resolved server-side: skipped silently once the user has
+			// answered anywhere or when the intake is disabled.
+			'emailOptin'    => [
+				'eligible'   => class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
+					&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'wizard' ),
+				'privacyUrl' => 'https://pressprimer.com/privacy/',
+			],
+			// The 10-submission milestone prompt (011): threshold-triggered
+			// and admin-only (the gate lives in the service, which also
+			// yields to a due review prompt); it additionally waits out a
+			// pending What's New wave — one ask per moment, never stack.
+			'milestone'     => [
+				'eligible' => class_exists( 'PressPrimer_Assignment_Email_Optin_Service' )
+					&& PressPrimer_Assignment_Email_Optin_Service::milestone_reached()
+					&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( get_current_user_id(), 'milestone' )
+					&& ! PressPrimer_Assignment_Email_Optin_Service::whats_new_visible( get_current_user_id() ),
+			],
+			'isAdmin'       => current_user_can( 'manage_options' ),
+			'pluginUrl'     => PRESSPRIMER_ASSIGNMENT_PLUGIN_URL,
+			'urls'          => [
+				'dashboard'     => admin_url( 'admin.php?page=pressprimer-assignment' ),
+				'assignments'   => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				'newAssignment' => admin_url( 'admin.php?page=pressprimer-assignment-assignments&action=new' ),
+				'submissions'   => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
+				'grading'       => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
+				'categories'    => admin_url( 'admin.php?page=pressprimer-assignment-categories' ),
+				'reports'       => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
+				'settings'      => admin_url( 'admin.php?page=pressprimer-assignment-settings' ),
+			],
+			'i18n'          => [
 				'pluginName'  => $plugin_name,
 				'welcomeBack' => __( 'Welcome back! Let\'s continue the tour.', 'pressprimer-assignment' ),
 			],
@@ -291,11 +530,12 @@ class PressPrimer_Assignment_Onboarding {
 	}
 
 	/**
-	 * Conditionally enqueue the onboarding React bundle
+	 * Conditionally enqueue the guided-tour React bundle
 	 *
-	 * Always loads on Assignment admin pages so the relaunch function
-	 * (window.ppaLaunchOnboarding) is available from the Dashboard.
-	 * The JS init function checks should_show before auto-rendering.
+	 * Loads on Assignment admin pages: the tour overlays the REAL admin
+	 * UI (2.2 pivot decision) and auto-opens while should_show is true.
+	 * The JS init function checks should_show before rendering, and the
+	 * relaunch links depend on the bundle being present on the dashboard.
 	 *
 	 * @since 1.0.0
 	 *
@@ -313,7 +553,7 @@ class PressPrimer_Assignment_Onboarding {
 			return;
 		}
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			return;
 		}
 
@@ -344,6 +584,20 @@ class PressPrimer_Assignment_Onboarding {
 			);
 		}
 
+		// wp-scripts emits a SECOND CSS file per entry — onboarding.css —
+		// for styles imported by components outside the entry's own
+		// style.css (e.g. shared EmailOptinAsk.css). Without it those
+		// components render unstyled.
+		$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/onboarding.css';
+		if ( file_exists( $component_css ) ) {
+			wp_enqueue_style(
+				'ppa-onboarding-components',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/onboarding.css',
+				[],
+				$asset['version']
+			);
+		}
+
 		wp_localize_script(
 			'ppa-onboarding',
 			'pressprimerAssignmentOnboardingData',
@@ -361,7 +615,7 @@ class PressPrimer_Assignment_Onboarding {
 	public function handle_progress_ajax() {
 		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			wp_send_json_error( [ 'message' => 'Permission denied.' ] );
 		}
 
@@ -373,6 +627,12 @@ class PressPrimer_Assignment_Onboarding {
 		switch ( $action_type ) {
 			case 'start':
 				$this->start_onboarding();
+				// The guided tour navigates to the editor immediately after
+				// starting, so the landing step must persist before the
+				// page unloads — otherwise the welcome modal reappears.
+				if ( $step > 0 ) {
+					$this->update_step( $step );
+				}
 				break;
 
 			case 'next':
@@ -410,10 +670,128 @@ class PressPrimer_Assignment_Onboarding {
 	public function handle_get_state_ajax() {
 		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
 
-		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+		if ( ! $this->user_can_use_wizard() ) {
 			wp_send_json_error( [ 'message' => 'Permission denied.' ] );
 		}
 
 		wp_send_json_success( $this->get_onboarding_state() );
+	}
+
+	/**
+	 * Handle the tour's one-click "Put it on a page" action
+	 *
+	 * Creates a published page containing the assignment block, titled
+	 * after the assignment. Idempotent: re-running for the same
+	 * assignment returns the previously created page. Requires the
+	 * assignment to be published — nothing goes live before the user's
+	 * explicit publish action in the editor.
+	 *
+	 * @since 2.2.0
+	 */
+	public function handle_create_page_ajax() {
+		check_ajax_referer( 'pressprimer_assignment_onboarding', 'nonce' );
+
+		if ( ! $this->user_can_use_wizard() ) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'pressprimer-assignment' ) ] );
+		}
+
+		$assignment_id = isset( $_POST['assignment_id'] ) ? absint( wp_unslash( $_POST['assignment_id'] ) ) : 0;
+
+		if ( ! $assignment_id ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid assignment.', 'pressprimer-assignment' ) ] );
+		}
+
+		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
+
+		if ( ! $assignment ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid assignment.', 'pressprimer-assignment' ) ] );
+		}
+
+		// Teachers may only create pages for their own assignments.
+		if (
+			(int) $assignment->author_id !== get_current_user_id()
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'pressprimer-assignment' ) ] );
+		}
+
+		if ( 'published' !== $assignment->status ) {
+			wp_send_json_error( [ 'message' => __( 'Publish the assignment first, then create its page.', 'pressprimer-assignment' ) ] );
+		}
+
+		// Idempotent: reuse the page this flow already created for this
+		// assignment (unless it has since been deleted).
+		$pages       = get_option( self::SETUP_PAGES_OPTION, [] );
+		$existing_id = isset( $pages[ $assignment_id ] ) ? absint( $pages[ $assignment_id ] ) : 0;
+
+		if ( $existing_id ) {
+			$existing = get_post( $existing_id );
+
+			if ( $existing && 'page' === $existing->post_type && 'trash' !== $existing->post_status ) {
+				wp_send_json_success(
+					[
+						'page_id'  => (int) $existing->ID,
+						'page_url' => get_permalink( $existing ),
+						'created'  => false,
+					]
+				);
+			}
+		}
+
+		$page_id = wp_insert_post(
+			[
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_title'   => $assignment->title,
+				'post_content' => '<!-- wp:pressprimer-assignment/assignment {"assignmentId":' . absint( $assignment_id ) . '} /-->',
+			],
+			true
+		);
+
+		if ( is_wp_error( $page_id ) ) {
+			wp_send_json_error( [ 'message' => __( 'Could not create the page.', 'pressprimer-assignment' ) ] );
+		}
+
+		if ( ! is_array( $pages ) ) {
+			$pages = [];
+		}
+		$pages[ $assignment_id ] = (int) $page_id;
+		update_option( self::SETUP_PAGES_OPTION, $pages, false );
+
+		wp_send_json_success(
+			[
+				'page_id'  => (int) $page_id,
+				'page_url' => get_permalink( $page_id ),
+				'created'  => true,
+			]
+		);
+	}
+
+	/**
+	 * Handle a tour relaunch request
+	 *
+	 * The Settings and dashboard "Setup wizard" links point at the PPA
+	 * dashboard with a nonce'd relaunch parameter; arriving with it
+	 * resets the user's tour state (the existing reset action) so the
+	 * tour auto-opens fresh.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_handle_relaunch() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing check; nonce verified below.
+		$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing check; nonce verified below.
+		if ( 0 !== strpos( $current_page, 'pressprimer-assignment' ) || ! isset( $_GET['ppa-relaunch'] ) ) {
+			return;
+		}
+
+		check_admin_referer( 'pressprimer_assignment_setup_relaunch' );
+
+		if ( ! $this->user_can_use_wizard() ) {
+			return;
+		}
+
+		$this->reset_onboarding();
 	}
 }

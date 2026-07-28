@@ -51,6 +51,7 @@ function Edit( props ) {
 		showInstructions,
 		showMaxPoints,
 		showFileInfo,
+		showLatePolicy,
 	} = attributes;
 	const blockProps = useBlockProps();
 
@@ -318,6 +319,21 @@ function Edit( props ) {
 						checked={ showFileInfo }
 						onChange={ ( value ) =>
 							setAttributes( { showFileInfo: value } )
+						}
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __(
+							'Show Due Date & Late Policy',
+							'pressprimer-assignment'
+						) }
+						help={ __(
+							'The due date notice shown above the instructions, including any late-submission terms.',
+							'pressprimer-assignment'
+						) }
+						checked={ showLatePolicy }
+						onChange={ ( value ) =>
+							setAttributes( { showLatePolicy: value } )
 						}
 					/>
 				</PanelBody>

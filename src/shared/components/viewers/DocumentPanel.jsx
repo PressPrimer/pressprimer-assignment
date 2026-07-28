@@ -18,12 +18,14 @@ import {
 	FileWordOutlined,
 	FileImageOutlined,
 	FileTextOutlined,
+	FilePptOutlined,
 	EditOutlined,
 	ReloadOutlined,
 } from '@ant-design/icons';
 import apiFetch from '@wordpress/api-fetch';
 import PdfViewer from './PdfViewer';
 import DocxViewer from './DocxViewer';
+import PptxViewer from './PptxViewer';
 import RtfViewer from './RtfViewer';
 import OdtViewer from './OdtViewer';
 import ImageViewer from './ImageViewer';
@@ -59,6 +61,7 @@ const QUALITY_CONFIG = {
 const FILE_ICONS = {
 	pdf: <FilePdfOutlined />,
 	docx: <FileWordOutlined />,
+	pptx: <FilePptOutlined />,
 	txt: <FileTextOutlined />,
 	rtf: <FileWordOutlined />,
 	odt: <FileWordOutlined />,
@@ -78,12 +81,16 @@ const FILE_ICONS = {
  * surfaces (admin SubmissionDetail, grading interface) and only when the
  * submission status is pre-grade (submitted / grading).
  *
- * @param {Object}        props              Component props.
- * @param {Array}         props.files        Array of file objects from REST API.
- * @param {string|null}   props.textContent  Text submission content (if any).
- * @param {number|null}   props.wordCount    Word count for text submissions.
- * @param {Function|null} props.onFileUpdate Callback when a file's extraction data is updated.
- * @param {boolean}       props.canReExtract Whether to show the "Re-extract" button.
+ * @param {Object}           props               Component props.
+ * @param {Array}            props.files         Array of file objects from REST API.
+ * @param {string|null}      props.textContent   Text submission content (if any).
+ * @param {number|null}      props.wordCount     Word count for text submissions.
+ * @param {Function|null}    props.onFileUpdate  Callback when a file's extraction data is updated.
+ * @param {boolean}          props.canReExtract  Whether to show the "Re-extract" button.
+ * @param {JSX.Element|null} props.toolbarNotice Optional node rendered in the toolbar area below the
+ *                                               file header. Used by instructor surfaces (e.g. the
+ *                                               grading interface's annotation touchpoint);
+ *                                               student-facing callers omit it.
  * @return {JSX.Element} Rendered component.
  */
 const DocumentPanel = ( {
@@ -92,6 +99,7 @@ const DocumentPanel = ( {
 	wordCount = null,
 	onFileUpdate = null,
 	canReExtract = false,
+	toolbarNotice = null,
 } ) => {
 	const [ reExtracting, setReExtracting ] = useState( null );
 
@@ -159,6 +167,10 @@ const DocumentPanel = ( {
 
 		if ( ext === 'docx' ) {
 			return <DocxViewer url={ file.download_url } />;
+		}
+
+		if ( ext === 'pptx' ) {
+			return <PptxViewer url={ file.download_url } />;
 		}
 
 		if ( [ 'jpg', 'jpeg', 'png', 'gif' ].includes( ext ) ) {
@@ -408,6 +420,18 @@ const DocumentPanel = ( {
 							{ __( 'Download', 'pressprimer-assignment' ) }
 						</Button>
 					</span>
+				</div>
+			) }
+
+			{ /* Toolbar notice slot (instructor surfaces only) */ }
+			{ toolbarNotice && (
+				<div
+					style={ {
+						padding: '6px 12px',
+						borderBottom: '1px solid #f0f0f0',
+					} }
+				>
+					{ toolbarNotice }
 				</div>
 			) }
 

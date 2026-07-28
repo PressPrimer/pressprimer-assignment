@@ -191,6 +191,102 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* Email course card (011 ask) */
+.ppa-dashboard-email-card {
+	position: relative;
+}
+
+/* One-time post-update What's New panel (011) */
+.ppa-whats-new {
+	position: relative;
+	margin-bottom: 24px;
+	border-left: 4px solid #14b8a6;
+}
+
+.ppa-whats-new__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 12px;
+}
+
+.ppa-whats-new__title .anticon {
+	color: #14b8a6;
+}
+
+.ppa-whats-new__section {
+	margin: 0 0 12px;
+}
+
+.ppa-whats-new__section-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 6px;
+}
+
+.ppa-whats-new__notes {
+	margin: 0;
+	padding-left: 20px;
+	list-style: disc;
+}
+
+.ppa-whats-new__notes li {
+	font-size: 13px;
+	line-height: 1.6;
+	color: #50575e;
+	margin-bottom: 4px;
+}
+
+.ppa-whats-new__read-more {
+	margin: 0 0 16px;
+	font-size: 13px;
+}
+
+.ppa-whats-new__read-more a {
+	color: #14b8a6;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.ppa-whats-new__read-more a:hover {
+	color: #0d9488;
+	text-decoration: underline;
+}
+
+.ppa-whats-new__ask {
+	padding-top: 16px;
+	border-top: 1px solid #f0f0f0;
+	max-width: 560px;
+}
+
+.ppa-dashboard-email-card__dismiss {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: transparent;
+	color: #8c8c8c;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	font-size: 12px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-dashboard-email-card__dismiss:hover {
+	background: #f0f0f0;
+	color: #1d2327;
+}
+
 .ppa-dashboard-card--large {
 	/* For larger cards like Recent Activity */
 }

@@ -256,7 +256,7 @@ class PressPrimer_Assignment_PDF_Service {
 			$text = $this->filter_garbage_text( $text );
 
 			return $text;
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			return new WP_Error(
 				'pressprimer_assignment_pdf_parser_error',
 				$e->getMessage()

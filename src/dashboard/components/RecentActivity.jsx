@@ -207,7 +207,24 @@ const RecentActivity = ( { submissions = [], loading } ) => {
 						'No recent activity',
 						'pressprimer-assignment'
 					) }
-				/>
+				>
+					{ /* Permanent relaunch entry point (2.2): the guided
+					    setup builds and publishes a first assignment. */ }
+					{ window.pressprimerAssignmentDashboardData?.urls
+						?.setup_wizard && (
+						<Button
+							href={
+								window.pressprimerAssignmentDashboardData.urls
+									.setup_wizard
+							}
+						>
+							{ __(
+								'Launch setup wizard',
+								'pressprimer-assignment'
+							) }
+						</Button>
+					) }
+				</Empty>
 			) : (
 				<Table
 					columns={ columns }

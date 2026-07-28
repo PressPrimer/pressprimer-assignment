@@ -33,6 +33,8 @@
 	padding: 48px;
 	max-width: 520px;
 	width: calc(100% - 32px);
+	max-height: calc(100vh - 48px);
+	overflow-y: auto;
 	text-align: center;
 	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 	animation: ppa-scale-in 0.3s ease-out;
@@ -42,21 +44,37 @@
 	max-width: 580px;
 }
 
+/* Welcome modal is wider to fit the template grid. */
+.ppa-onboarding-modal--welcome {
+	max-width: 660px;
+	padding: 40px 48px;
+}
+
+/* Flat, brand-teal icon badge (no gradients). */
 .ppa-onboarding-modal__icon {
 	width: 80px;
 	height: 80px;
 	margin: 0 auto 24px;
-	background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+	background: #f0fdfa;
 	border-radius: 20px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 40px;
-	color: #fff;
+	color: #14b8a6;
 }
 
 .ppa-onboarding-modal__icon--success {
-	background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+	background: #f6ffed;
+	color: #52c41a;
+}
+
+/* Celebration mascot (page-creation stop) */
+.ppa-onboarding-modal__mascot {
+	display: block;
+	height: 130px;
+	width: auto;
+	margin: 0 auto 20px;
 }
 
 /* Logo for welcome modal */
@@ -99,13 +117,13 @@
 	font-weight: 500;
 }
 
-/* Welcome modal specific button styles - teal color */
-.ppa-onboarding-modal--welcome .ppa-onboarding-modal__start-btn {
+/* All modal primary buttons use the brand teal. */
+.ppa-onboarding-modal .ant-btn-primary {
 	background-color: #14b8a6 !important;
 	border-color: #14b8a6 !important;
 }
 
-.ppa-onboarding-modal--welcome .ppa-onboarding-modal__start-btn:hover {
+.ppa-onboarding-modal .ant-btn-primary:hover {
 	background-color: #0d9488 !important;
 	border-color: #0d9488 !important;
 }
@@ -132,6 +150,250 @@
 	font-size: 13px;
 }
 
+/* ==========================================================================
+   Template Picker (Welcome modal)
+   ========================================================================== */
+
+.ppa-onboarding-templates {
+	margin: 0 0 28px;
+	text-align: left;
+}
+
+.ppa-onboarding-templates__label {
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #8c8c8c;
+	margin: 0 0 12px;
+}
+
+.ppa-onboarding-templates__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.ppa-onboarding-template-card {
+	position: relative;
+	display: block;
+	text-align: left;
+	background: #fff;
+	border: 1px solid #d9d9d9;
+	border-radius: 10px;
+	padding: 14px 40px 14px 16px;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background 0.15s ease,
+		box-shadow 0.15s ease;
+	font: inherit;
+}
+
+.ppa-onboarding-template-card:hover {
+	border-color: #14b8a6;
+	box-shadow: 0 1px 4px rgba(20, 184, 166, 0.15);
+}
+
+.ppa-onboarding-template-card:focus-visible {
+	outline: 2px solid #14b8a6;
+	outline-offset: 1px;
+}
+
+.ppa-onboarding-template-card--selected {
+	border-color: #14b8a6;
+	background: #f0fdfa;
+	box-shadow: 0 0 0 1px #14b8a6;
+}
+
+.ppa-onboarding-template-card__check {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: #14b8a6;
+	color: #fff;
+	font-size: 11px;
+	display: none;
+	align-items: center;
+	justify-content: center;
+}
+
+.ppa-onboarding-template-card--selected .ppa-onboarding-template-card__check {
+	display: flex;
+}
+
+.ppa-onboarding-template-card__title {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 4px;
+}
+
+.ppa-onboarding-template-card__desc {
+	display: block;
+	font-size: 12px;
+	line-height: 1.5;
+	color: #646970;
+}
+
+/* ==========================================================================
+   Milestone Notice (011 — 10 submissions)
+   ========================================================================== */
+
+.ppa-milestone-notice {
+	position: relative;
+	background: #fff;
+	border: 1px solid #e4e4e7;
+	border-left: 4px solid #14b8a6;
+	border-radius: 8px;
+	padding: 20px 48px 20px 24px;
+	margin: 16px 20px 8px 2px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.ppa-milestone-notice__dismiss {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: transparent;
+	color: #8c8c8c;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	font-size: 12px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-milestone-notice__dismiss:hover {
+	background: #f0f0f0;
+	color: #1d2327;
+}
+
+.ppa-milestone-notice__title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+	margin: 0 0 10px;
+}
+
+.ppa-milestone-notice .ppa-email-ask__body {
+	margin-left: 0;
+}
+
+.ppa-milestone-notice .ppa-email-ask__field-row .ant-input {
+	max-width: 300px;
+}
+
+/* Email ask section on the finish stop (011) — a soft brand-teal
+   panel so the ask stands out from the next-steps box above. */
+.ppa-onboarding-email-ask {
+	margin: 0 0 24px;
+	padding: 24px;
+	background: #f0fdfa;
+	border: 1px solid #ccfbf1;
+	border-radius: 12px;
+}
+
+.ppa-onboarding-email-ask .ppa-email-ask__field-row {
+	justify-content: center;
+}
+
+/* Modal close (X) button — page-creation stop */
+.ppa-onboarding-modal__close {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	color: #8c8c8c;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	font-size: 14px;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.ppa-onboarding-modal__close:hover {
+	background: #f0f0f0;
+	color: #1d2327;
+}
+
+.ppa-onboarding-modal {
+	position: relative;
+}
+
+/* ==========================================================================
+   Page-Creation Stop
+   ========================================================================== */
+
+.ppa-onboarding-page-url {
+	display: flex;
+	gap: 8px;
+	margin: 16px 0 24px;
+}
+
+.ppa-onboarding-page-url .ant-input {
+	text-align: left;
+}
+
+.ppa-onboarding-modal__lms-pointer {
+	font-size: 12px;
+	line-height: 1.5;
+	color: #8c8c8c;
+	margin: 20px 0;
+}
+
+.ppa-onboarding-modal__error {
+	margin-bottom: 16px;
+	text-align: left;
+}
+
+/* Modal footer nav: Back | progress dots | primary action */
+.ppa-onboarding-modal__nav {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+	padding-top: 16px;
+	border-top: 1px solid #f0f0f0;
+}
+
+.ppa-onboarding-modal__nav-left,
+.ppa-onboarding-modal__nav-right {
+	flex: 1 0 0;
+	display: flex;
+	align-items: center;
+}
+
+.ppa-onboarding-modal__nav-left {
+	justify-content: flex-start;
+}
+
+.ppa-onboarding-modal__nav-center {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ppa-onboarding-modal__nav-right {
+	justify-content: flex-end;
+}
+
 /* Quick Actions in Completion Modal */
 .ppa-onboarding-modal__quick-actions {
 	margin-bottom: 24px;
@@ -155,15 +417,23 @@
    Spotlight
    ========================================================================== */
 
+/* Guided-build targets scroll beneath the fixed admin bar without this. */
+.ppa-editor-card-basic,
+.ppa-editor-card-grading,
+.ppa-editor-card-file-types,
+.ppa-editor-header-actions {
+	scroll-margin-top: 60px;
+}
+
 .ppa-spotlight__overlay {
 	pointer-events: none;
 }
 
 .ppa-spotlight__highlight {
-	border: 3px solid #1890ff;
+	border: 3px solid #14b8a6;
 	box-shadow:
-		0 0 0 4px rgba(24, 144, 255, 0.2),
-		0 0 20px rgba(24, 144, 255, 0.3);
+		0 0 0 4px rgba(20, 184, 166, 0.2),
+		0 0 20px rgba(20, 184, 166, 0.3);
 	transition: all 0.3s ease;
 }
 
@@ -175,13 +445,13 @@
 	0%,
 	100% {
 		box-shadow:
-			0 0 0 4px rgba(24, 144, 255, 0.2),
-			0 0 20px rgba(24, 144, 255, 0.3);
+			0 0 0 4px rgba(20, 184, 166, 0.2),
+			0 0 20px rgba(20, 184, 166, 0.3);
 	}
 	50% {
 		box-shadow:
-			0 0 0 8px rgba(24, 144, 255, 0.1),
-			0 0 30px rgba(24, 144, 255, 0.4);
+			0 0 0 8px rgba(20, 184, 166, 0.1),
+			0 0 30px rgba(20, 184, 166, 0.4);
 	}
 }
 
@@ -191,15 +461,16 @@
 
 .ppa-tooltip {
 	position: fixed;
-	background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+	background: #fff;
+	border: 1px solid #e4e4e7;
+	border-top: 3px solid #14b8a6;
 	border-radius: 12px;
-	padding: 20px;
-	min-width: 280px;
-	max-width: 360px;
+	padding: 18px 20px 16px;
+	min-width: 300px;
+	max-width: 380px;
 	box-shadow:
-		0 8px 24px rgba(24, 144, 255, 0.35),
-		0 4px 12px rgba(0, 0, 0, 0.15),
-		0 0 0 1px rgba(24, 144, 255, 0.1);
+		0 12px 32px rgba(0, 0, 0, 0.18),
+		0 4px 12px rgba(0, 0, 0, 0.08);
 	animation: ppa-tooltip-in 0.2s ease-out;
 	transition: opacity 0.2s ease, top 0.2s ease, left 0.2s ease;
 }
@@ -220,7 +491,7 @@
 	position: absolute;
 	width: 12px;
 	height: 12px;
-	background: #1890ff;
+	background: #fff;
 	transform: rotate(45deg);
 }
 
@@ -228,26 +499,31 @@
 	bottom: -6px;
 	left: 50%;
 	margin-left: -6px;
-	background: #096dd9;
+	border-right: 1px solid #e4e4e7;
+	border-bottom: 1px solid #e4e4e7;
 }
 
 .ppa-tooltip__arrow--bottom {
-	top: -6px;
+	top: -7px;
 	left: 50%;
 	margin-left: -6px;
+	background: #14b8a6;
 }
 
 .ppa-tooltip__arrow--left {
 	right: -6px;
 	top: 50%;
 	margin-top: -6px;
-	background: #096dd9;
+	border-top: 1px solid #e4e4e7;
+	border-right: 1px solid #e4e4e7;
 }
 
 .ppa-tooltip__arrow--right {
 	left: -6px;
 	top: 50%;
 	margin-top: -6px;
+	border-bottom: 1px solid #e4e4e7;
+	border-left: 1px solid #e4e4e7;
 }
 
 /* Close button */
@@ -258,8 +534,8 @@
 	width: 24px;
 	height: 24px;
 	border: none;
-	background: rgba(255, 255, 255, 0.15);
-	color: rgba(255, 255, 255, 0.8);
+	background: transparent;
+	color: #8c8c8c;
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -271,8 +547,19 @@
 }
 
 .ppa-tooltip__close:hover {
-	background: rgba(255, 255, 255, 0.25);
-	color: #fff;
+	background: #f0f0f0;
+	color: #1d2327;
+}
+
+/* Brand header */
+.ppa-tooltip__brand {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #14b8a6;
+	margin: 0 0 8px;
+	padding-right: 28px;
 }
 
 /* Content */
@@ -283,14 +570,14 @@
 .ppa-tooltip__title {
 	font-size: 16px;
 	font-weight: 600;
-	color: #fff;
+	color: #1d2327;
 	margin: 0 0 8px 0;
 	padding-right: 20px;
 }
 
 .ppa-tooltip__body {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.9);
+	color: #50575e;
 	line-height: 1.6;
 }
 
@@ -307,8 +594,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding-top: 16px;
-	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	padding-top: 14px;
+	border-top: 1px solid #f0f0f0;
 	gap: 8px;
 }
 
@@ -333,31 +620,66 @@
 	flex: 0 0 auto;
 }
 
-.ppa-tooltip__step-indicator {
-	font-size: 12px;
-	color: rgba(255, 255, 255, 0.7);
+/* Progress dots — shared by the tooltip and the modal stops */
+.ppa-progress-dots {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.ppa-progress-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 4px;
+	background: #e0e0e0;
+	transition: all 0.2s ease;
+}
+
+.ppa-progress-dot--done {
+	background: #99e2d8;
+}
+
+.ppa-progress-dot--active {
+	width: 18px;
+	background: #14b8a6;
+}
+
+/* Disabled-Next tooltip needs a hoverable wrapper (disabled buttons
+   swallow mouse events). */
+.ppa-tooltip__next-wrap {
+	display: inline-block;
 }
 
 /* Override Ant Design button styles in tooltip */
 .ppa-tooltip .ant-btn-text {
-	color: rgba(255, 255, 255, 0.85);
+	color: #646970;
 }
 
 .ppa-tooltip .ant-btn-text:hover {
-	color: #fff;
-	background: rgba(255, 255, 255, 0.15);
+	color: #1d2327;
+	background: #f5f5f5;
 }
 
 .ppa-tooltip .ant-btn-primary {
-	background: #fff;
-	color: #1890ff;
-	border-color: #fff;
+	background: #14b8a6;
+	color: #fff;
+	border-color: #14b8a6;
 }
 
 .ppa-tooltip .ant-btn-primary:hover {
-	background: rgba(255, 255, 255, 0.9);
-	color: #096dd9;
-	border-color: rgba(255, 255, 255, 0.9);
+	background: #0d9488;
+	color: #fff;
+	border-color: #0d9488;
+}
+
+/* The teal override above would otherwise swallow Ant's disabled
+   look — a disabled Next must LOOK disabled. */
+.ppa-tooltip .ant-btn-primary:disabled,
+.ppa-tooltip .ant-btn-primary:disabled:hover {
+	background: #f5f5f5;
+	color: rgba(0, 0, 0, 0.25);
+	border-color: #d9d9d9;
+	cursor: not-allowed;
 }
 
 /* ==========================================================================
@@ -384,14 +706,16 @@
 }
 
 .ppa-onboarding-floating__content {
-	background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+	background: #fff;
+	border: 1px solid #e4e4e7;
+	border-top: 3px solid #14b8a6;
 	border-radius: 12px;
 	padding: 20px;
 	width: 320px;
 	max-width: calc(100vw - 48px);
 	box-shadow:
-		0 8px 24px rgba(24, 144, 255, 0.35),
-		0 4px 12px rgba(0, 0, 0, 0.15);
+		0 12px 32px rgba(0, 0, 0, 0.18),
+		0 4px 12px rgba(0, 0, 0, 0.08);
 	position: relative;
 }
 
@@ -402,8 +726,8 @@
 	width: 24px;
 	height: 24px;
 	border: none;
-	background: rgba(255, 255, 255, 0.15);
-	color: rgba(255, 255, 255, 0.8);
+	background: transparent;
+	color: #8c8c8c;
 	cursor: pointer;
 	font-size: 20px;
 	line-height: 1;
@@ -416,21 +740,21 @@
 }
 
 .ppa-onboarding-floating__close:hover {
-	background: rgba(255, 255, 255, 0.25);
-	color: #fff;
+	background: #f0f0f0;
+	color: #1d2327;
 }
 
 .ppa-onboarding-floating__title {
 	font-size: 16px;
 	font-weight: 600;
-	color: #fff;
+	color: #1d2327;
 	margin: 0 0 8px 0;
 	padding-right: 24px;
 }
 
 .ppa-onboarding-floating__text {
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.9);
+	color: #50575e;
 	line-height: 1.6;
 	margin: 0 0 16px 0;
 }
@@ -440,7 +764,7 @@
 	align-items: center;
 	justify-content: space-between;
 	padding-top: 16px;
-	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	border-top: 1px solid #f0f0f0;
 }
 
 .ppa-onboarding-floating__btn {
@@ -453,30 +777,30 @@
 }
 
 .ppa-onboarding-floating__btn--back {
-	background: rgba(255, 255, 255, 0.15);
-	border: 1px solid rgba(255, 255, 255, 0.3);
-	color: #fff;
+	background: #fff;
+	border: 1px solid #d9d9d9;
+	color: #50575e;
 }
 
 .ppa-onboarding-floating__btn--back:hover {
-	background: rgba(255, 255, 255, 0.25);
-	border-color: rgba(255, 255, 255, 0.5);
+	border-color: #14b8a6;
+	color: #14b8a6;
 }
 
 .ppa-onboarding-floating__btn--next {
-	background: #fff;
-	border: 1px solid #fff;
-	color: #1890ff;
+	background: #14b8a6;
+	border: 1px solid #14b8a6;
+	color: #fff;
 }
 
 .ppa-onboarding-floating__btn--next:hover {
-	background: rgba(255, 255, 255, 0.9);
-	border-color: rgba(255, 255, 255, 0.9);
+	background: #0d9488;
+	border-color: #0d9488;
 }
 
 .ppa-onboarding-floating__step {
 	font-size: 12px;
-	color: rgba(255, 255, 255, 0.7);
+	color: #8c8c8c;
 }
 
 /* ==========================================================================
@@ -515,6 +839,10 @@
 
 	.ppa-onboarding-modal__title {
 		font-size: 22px;
+	}
+
+	.ppa-onboarding-templates__grid {
+		grid-template-columns: 1fr;
 	}
 
 	.ppa-tooltip {

@@ -1,32 +1,39 @@
 /**
  * CompletionModal Component
  *
- * Final step of the onboarding tour — displays a success message
- * with quick-action buttons to create an assignment or view settings.
- * Follows the same pattern as PressPrimer Quiz CompletionModal.
+ * The tour's finish stop: the completion message and the 011 email-ask
+ * mount point (renders nothing until Phase 5).
  *
  * @package
  * @since 1.0.0
  */
 
 import { useEffect, useRef } from '@wordpress/element';
-import { Button, Row, Col } from 'antd';
-import {
-	CheckCircleOutlined,
-	PlusOutlined,
-	SettingOutlined,
-} from '@ant-design/icons';
+import { __ } from '@wordpress/i18n';
+import { Button } from 'antd';
+import { CheckCircleOutlined, LeftOutlined } from '@ant-design/icons';
+import EmailAskSlot from './EmailAskSlot';
+import ProgressDots from './ProgressDots';
 
 /**
  * CompletionModal Component
  *
- * @param {Object}   props            Component props.
- * @param {string}   props.title      Modal title.
- * @param {string}   props.content    Modal body text.
- * @param {Function} props.onComplete Complete tour handler.
+ * @param {Object}   props             Component props.
+ * @param {string}   props.title       Modal title.
+ * @param {string}   props.content     Modal body text.
+ * @param {number}   props.currentStep Current 1-based tour step.
+ * @param {number}   props.totalSteps  Total tour step count.
+ * @param {Function} props.onComplete  Complete tour handler.
+ * @param {Function} props.onPrev      Back to the previous step.
  */
-const CompletionModal = ( { title, content, onComplete } ) => {
-	const data = window.pressprimerAssignmentOnboardingData || {};
+const CompletionModal = ( {
+	title,
+	content,
+	currentStep,
+	totalSteps,
+	onComplete,
+	onPrev,
+} ) => {
 	const completeBtnRef = useRef( null );
 
 	/**
@@ -57,27 +64,6 @@ const CompletionModal = ( { title, content, onComplete } ) => {
 		document.addEventListener( 'keydown', handleKeyDown );
 		return () => document.removeEventListener( 'keydown', handleKeyDown );
 	}, [ onComplete ] );
-
-	/**
-	 * Handle a quick action button click
-	 *
-	 * Completes the tour, then navigates after a short delay.
-	 *
-	 * @param {string} url Destination URL.
-	 */
-	const handleQuickAction = ( url ) => {
-		onComplete();
-		setTimeout( () => {
-			window.location.href = url;
-		}, 100 );
-	};
-
-	const assignmentsUrl = data.urls?.assignments
-		? data.urls.assignments + '&action=new'
-		: 'admin.php?page=pressprimer-assignment-assignments&action=new';
-
-	const settingsUrl =
-		data.urls?.settings || 'admin.php?page=pressprimer-assignment-settings';
 
 	return (
 		// eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
@@ -112,49 +98,38 @@ const CompletionModal = ( { title, content, onComplete } ) => {
 
 				<p className="ppa-onboarding-modal__content">{ content }</p>
 
-				{ /* Quick Actions */ }
-				<div className="ppa-onboarding-modal__quick-actions">
-					<p className="ppa-onboarding-modal__quick-actions-title">
-						Get started with:
-					</p>
-					<Row gutter={ [ 12, 12 ] }>
-						<Col span={ 12 }>
-							<Button
-								block
-								icon={ <PlusOutlined /> }
-								className="ppa-onboarding-modal__action-btn"
-								onClick={ () =>
-									handleQuickAction( assignmentsUrl )
-								}
-							>
-								Create Assignment
-							</Button>
-						</Col>
-						<Col span={ 12 }>
-							<Button
-								block
-								icon={ <SettingOutlined /> }
-								className="ppa-onboarding-modal__action-btn"
-								onClick={ () =>
-									handleQuickAction( settingsUrl )
-								}
-							>
-								Settings
-							</Button>
-						</Col>
-					</Row>
-				</div>
+				{ /* 011 email opt-in mount point (Phase 5). */ }
+				<EmailAskSlot />
 
-				<div className="ppa-onboarding-modal__actions">
-					<Button
-						ref={ completeBtnRef }
-						type="primary"
-						size="large"
-						className="ppa-onboarding-modal__complete-btn"
-						onClick={ onComplete }
-					>
-						Close Tour
-					</Button>
+				<div className="ppa-onboarding-modal__nav">
+					<div className="ppa-onboarding-modal__nav-left">
+						{ onPrev && (
+							<Button
+								type="text"
+								icon={ <LeftOutlined /> }
+								className="ppa-onboarding-modal__skip-btn"
+								onClick={ onPrev }
+							>
+								{ __( 'Back', 'pressprimer-assignment' ) }
+							</Button>
+						) }
+					</div>
+					<div className="ppa-onboarding-modal__nav-center">
+						<ProgressDots
+							currentStep={ currentStep }
+							totalSteps={ totalSteps }
+						/>
+					</div>
+					<div className="ppa-onboarding-modal__nav-right">
+						<Button
+							ref={ completeBtnRef }
+							type="primary"
+							className="ppa-onboarding-modal__complete-btn"
+							onClick={ onComplete }
+						>
+							{ __( 'Close Tour', 'pressprimer-assignment' ) }
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -715,6 +715,19 @@ class PressPrimer_Assignment_Submission_Handler {
 	private function can_user_submit( $user_id, $assignment ) {
 		$user_id = absint( $user_id );
 
+		// Late policy enforcement (2.2, feature 009): a 'reject' policy
+		// refuses any late submission; a 'penalty' policy with a schedule
+		// cutoff refuses submissions once lateness exceeds the cutoff.
+		// Checked first — it applies equally to first submissions and
+		// resubmissions. The student's draft (files, notes) is untouched
+		// by a refusal; only the finalize step is blocked.
+		$late_check = $this->check_late_refusal( $user_id, $assignment );
+
+		if ( is_wp_error( $late_check ) ) {
+			/** This filter is documented below. */
+			return apply_filters( 'pressprimer_assignment_can_submit', $late_check, $user_id, $assignment );
+		}
+
 		// Count existing non-draft submissions.
 		$submitted_count = $this->count_user_submissions( $user_id, $assignment->id );
 
@@ -742,6 +755,84 @@ class PressPrimer_Assignment_Submission_Handler {
 
 		/** This filter is documented above. */
 		return apply_filters( 'pressprimer_assignment_can_submit', true, $user_id, $assignment );
+	}
+
+	/**
+	 * Check whether the late policy refuses a submission right now
+	 *
+	 * Lateness is measured against the student's effective due date
+	 * (assignment default superseded by addon dates via the
+	 * pressprimer_assignment_due_date_for_user filter — the same single
+	 * path the grading service uses). With no effective due date the
+	 * policy is inert and nothing is ever refused.
+	 *
+	 * - late_policy 'reject': any late submission is refused, with the
+	 *   due date shown.
+	 * - late_policy 'penalty' or 'accept' with a cutoff: submissions are
+	 *   refused once lateness exceeds the cutoff, with the cutoff moment
+	 *   shown. Without a cutoff, late submissions are always accepted
+	 *   (and, under 'penalty', penalized at grading time).
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int                               $user_id    User ID.
+	 * @param PressPrimer_Assignment_Assignment $assignment Assignment instance.
+	 * @return true|WP_Error True if allowed, WP_Error when refused.
+	 */
+	private function check_late_refusal( $user_id, $assignment ) {
+		if ( ! in_array( $assignment->late_policy, [ 'reject', 'penalty', 'accept' ], true ) ) {
+			return true;
+		}
+
+		$due_at = $assignment->get_due_date_for_user( $user_id );
+		if ( empty( $due_at ) ) {
+			return true;
+		}
+
+		$due_timestamp = strtotime( $due_at . ' UTC' );
+		if ( false === $due_timestamp ) {
+			return true;
+		}
+
+		$late_seconds = time() - $due_timestamp;
+		if ( $late_seconds <= 0 ) {
+			return true;
+		}
+
+		$datetime_format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
+
+		if ( 'reject' === $assignment->late_policy ) {
+			return new WP_Error(
+				'pressprimer_assignment_past_due',
+				sprintf(
+					/* translators: %s: the due date and time */
+					__( 'This assignment stopped accepting submissions on %s.', 'pressprimer-assignment' ),
+					wp_date( $datetime_format, $due_timestamp )
+				)
+			);
+		}
+
+		// Accept and penalty policies: only a configured cutoff refuses
+		// submissions.
+		$schedule = $assignment->get_late_penalty_schedule();
+		if ( null === $schedule || null === $schedule['cutoff_hours'] ) {
+			return true;
+		}
+
+		$cutoff_timestamp = $due_timestamp + (int) round( $schedule['cutoff_hours'] * HOUR_IN_SECONDS );
+
+		if ( time() > $cutoff_timestamp ) {
+			return new WP_Error(
+				'pressprimer_assignment_past_cutoff',
+				sprintf(
+					/* translators: %s: the cutoff date and time */
+					__( 'This assignment stopped accepting submissions on %s.', 'pressprimer-assignment' ),
+					wp_date( $datetime_format, $cutoff_timestamp )
+				)
+			);
+		}
+
+		return true;
 	}
 
 	/**

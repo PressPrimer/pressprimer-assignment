@@ -50,6 +50,7 @@ class PressPrimer_Assignment_File_Service {
 	const DEFAULT_ALLOWED_EXTENSIONS = [
 		'pdf',
 		'docx',
+		'pptx',
 		'txt',
 		'rtf',
 		'odt',
@@ -68,6 +69,7 @@ class PressPrimer_Assignment_File_Service {
 	const ALLOWED_MIME_TYPES = [
 		'application/pdf'                         => [ 'pdf' ],
 		'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => [ 'docx' ],
+		'application/vnd.openxmlformats-officedocument.presentationml.presentation' => [ 'pptx' ],
 		'text/plain'                              => [ 'txt' ],
 		'text/x-c'                                => [ 'txt' ],
 		'application/rtf'                         => [ 'rtf' ],
@@ -177,6 +179,18 @@ class PressPrimer_Assignment_File_Service {
 		$mime_check = $this->verify_mime_type( $file['tmp_name'], $extension );
 		if ( is_wp_error( $mime_check ) ) {
 			return $mime_check;
+		}
+
+		// Layer 5b: Content inspection for PPTX (2.2, feature 008).
+		// PPTX is a ZIP container — verify the PK signature and that
+		// [Content_Types].xml declares the presentation main part, so a
+		// renamed .zip (or another Office format) is rejected even when
+		// finfo's detection is generous.
+		if ( 'pptx' === $extension ) {
+			$content_check = $this->verify_pptx_content( $file['tmp_name'] );
+			if ( is_wp_error( $content_check ) ) {
+				return $content_check;
+			}
 		}
 
 		// Layer 6: Check file size.
@@ -520,6 +534,30 @@ class PressPrimer_Assignment_File_Service {
 		}
 
 		/**
+		 * Filters the filesystem path served for a submission file download.
+		 *
+		 * Returning a different path swaps the streamed file contents while
+		 * everything else about the response — permission checks, the
+		 * served filename, download events — stays unchanged. The
+		 * Enterprise addon uses this to serve watermarked copies of grader
+		 * downloads. When the filtered path is missing or unreadable the
+		 * original is served, so a misbehaving filter can never break a
+		 * download. In-browser viewing streams through a separate path and
+		 * always renders originals.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param string                                 $full_path Absolute path of the stored file.
+		 * @param PressPrimer_Assignment_Submission_File $file      The file record.
+		 * @param string                                 $context   Serve context. Currently always 'download'.
+		 */
+		$serve_path = apply_filters( 'pressprimer_assignment_file_download_path', $full_path, $file, 'download' );
+
+		if ( ! is_string( $serve_path ) || '' === $serve_path || ! is_readable( $serve_path ) ) {
+			$serve_path = $full_path;
+		}
+
+		/**
 		 * Fires when a submission file is downloaded.
 		 *
 		 * @since 2.0.0
@@ -543,10 +581,10 @@ class PressPrimer_Assignment_File_Service {
 		);
 
 		// Set headers and output file.
-		$this->send_file_headers( $file );
+		$this->send_file_headers( $file, $serve_path );
 
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Serving file for download.
-		readfile( $full_path );
+		readfile( $serve_path );
 		exit;
 	}
 
@@ -708,6 +746,68 @@ class PressPrimer_Assignment_File_Service {
 	}
 
 	/**
+	 * Verify a PPTX file's container contents
+	 *
+	 * Magic-byte layer for PPTX (2.2, feature 008): checks the PK ZIP
+	 * signature, then opens the archive and requires [Content_Types].xml
+	 * to declare the PresentationML main part. A .zip renamed to .pptx
+	 * passes the PK check but fails the content-type inspection; a DOCX
+	 * renamed to .pptx fails it too.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $tmp_path Path to the uploaded temp file.
+	 * @return true|WP_Error True if valid, WP_Error on failure.
+	 */
+	private function verify_pptx_content( $tmp_path ) {
+		$invalid = new WP_Error(
+			'pressprimer_assignment_invalid_pptx',
+			__( 'File content does not match a PowerPoint presentation.', 'pressprimer-assignment' )
+		);
+
+		// PK ZIP signature (0x50 0x4B).
+		$handle = fopen( $tmp_path, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading magic bytes from an upload temp file.
+		if ( false === $handle ) {
+			return $invalid;
+		}
+
+		$signature = fread( $handle, 2 ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading magic bytes from an upload temp file.
+		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Closing the magic-byte handle.
+
+		if ( 'PK' !== $signature ) {
+			return $invalid;
+		}
+
+		if ( ! class_exists( 'ZipArchive' ) ) {
+			// Without ZipArchive the main-part inspection is impossible;
+			// fail closed rather than accept an unverifiable container.
+			return new WP_Error(
+				'pressprimer_assignment_zip_unavailable',
+				__( 'PowerPoint uploads are not supported on this server (ZipArchive is unavailable).', 'pressprimer-assignment' )
+			);
+		}
+
+		$zip = new ZipArchive();
+		if ( true !== $zip->open( $tmp_path ) ) {
+			return $invalid;
+		}
+
+		$content_types = $zip->getFromName( '[Content_Types].xml' );
+		$zip->close();
+
+		if ( false === $content_types || '' === $content_types ) {
+			return $invalid;
+		}
+
+		// The presentation main part declaration required of every PPTX.
+		if ( false === strpos( $content_types, 'application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml' ) ) {
+			return $invalid;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Detect MIME type of a file
 	 *
 	 * Uses multiple methods to determine the MIME type.
@@ -754,13 +854,17 @@ class PressPrimer_Assignment_File_Service {
 	/**
 	 * Send file download headers
 	 *
-	 * Sets appropriate HTTP headers for file download.
+	 * Sets appropriate HTTP headers for file download. Content-Length
+	 * reflects the file actually being served — which may differ from
+	 * the stored size when the download-path filter swapped in an
+	 * alternate copy (e.g., Enterprise watermarking).
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param PressPrimer_Assignment_Submission_File $file File instance.
+	 * @param PressPrimer_Assignment_Submission_File $file       File instance.
+	 * @param string                                 $serve_path Absolute path of the file being served.
 	 */
-	private function send_file_headers( $file ) {
+	private function send_file_headers( $file, $serve_path ) {
 		// Prevent caching of downloaded files.
 		nocache_headers();
 
@@ -782,9 +886,11 @@ class PressPrimer_Assignment_File_Service {
 		 */
 		$filename = apply_filters( 'pressprimer_assignment_file_download_filename', $file->original_filename, $file );
 
+		$content_length = file_exists( $serve_path ) ? filesize( $serve_path ) : $file->file_size;
+
 		header( 'Content-Type: ' . $file->mime_type );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-		header( 'Content-Length: ' . $file->file_size );
+		header( 'Content-Length: ' . $content_length );
 		header( 'Content-Transfer-Encoding: binary' );
 		header( 'X-Content-Type-Options: nosniff' );
 	}

@@ -8,6 +8,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import dayjs from 'dayjs';
 import {
 	Form,
 	Button,
@@ -27,6 +28,7 @@ import {
 } from '@ant-design/icons';
 
 import SettingsPanel from './SettingsPanel';
+import SchedulingPanel from './SchedulingPanel';
 import FileSettingsPanel from './FileSettingsPanel';
 import CategoriesPanel from './CategoriesPanel';
 
@@ -38,6 +40,50 @@ const { Title, Paragraph } = Typography;
  * @param {Object} props                Component props.
  * @param {Object} props.assignmentData Initial assignment data from wp_localize_script.
  */
+/**
+ * Convert stored hours into whole days for the editor fields.
+ *
+ * The 2.2 policy stores durations in hours; the editor works in days.
+ * Non-multiples of 24 (legacy data) round up so the stored window is
+ * never presented shorter than it is.
+ *
+ * @param {number|string|null} hours Stored hour count.
+ * @return {number|null} Whole days, or null when empty.
+ */
+const hoursToDays = ( hours ) => {
+	const numeric = parseFloat( hours );
+	if ( isNaN( numeric ) || numeric <= 0 ) {
+		return null;
+	}
+	return Math.ceil( numeric / 24 );
+};
+
+/**
+ * Coerce the incoming allowed-file-types value to an array (or null).
+ *
+ * The data layer must deliver an array, but a JSON string here is
+ * treacherous: a checkbox group fed a string renders correct-looking
+ * boxes (substring matching), then the first toggle spreads the string
+ * into characters and wipes the selection. Never pass a string through.
+ *
+ * @param {*} value Raw value from the localized editor data.
+ * @return {Array|null} Extension array, or null so the caller's default applies.
+ */
+const normalizeFileTypes = ( value ) => {
+	if ( Array.isArray( value ) ) {
+		return value;
+	}
+	if ( typeof value === 'string' && '' !== value ) {
+		try {
+			const parsed = JSON.parse( value );
+			return Array.isArray( parsed ) ? parsed : null;
+		} catch ( e ) {
+			return null;
+		}
+	}
+	return null;
+};
+
 const AssignmentEditor = ( { assignmentData = {} } ) => {
 	const [ form ] = Form.useForm();
 	const [ saving, setSaving ] = useState( false );
@@ -85,7 +131,12 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				max_file_size:
 					parseInt( assignmentData.max_file_size, 10 ) || 5242880,
 				max_files: parseInt( assignmentData.max_files, 10 ) || 5,
-				allowed_file_types: assignmentData.allowed_file_types || [
+				// Fallback list for legacy rows with no saved types —
+				// deliberately excludes pptx (2.2): existing assignments
+				// never gain a new allowed type from an update.
+				allowed_file_types: normalizeFileTypes(
+					assignmentData.allowed_file_types
+				) || [
 					'pdf',
 					'docx',
 					'txt',
@@ -100,12 +151,80 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				ai_auto_grade: aiAutoGrade,
 			};
 
+			// Late policy (2.2): map the stored config into the editor's
+			// day-based fields. The penalty window doubles as the cutoff
+			// ("late by up to X days, deduct Y%, closed after that").
+			const schedule = assignmentData.late_penalty_schedule || null;
+			const cutoffDays = hoursToDays(
+				schedule ? schedule.cutoff_hours : null
+			);
+
+			fieldValues.due_at = assignmentData.due_at
+				? dayjs( assignmentData.due_at )
+				: null;
+			fieldValues.late_policy = assignmentData.late_policy || 'accept';
+			fieldValues.late_penalty_days = cutoffDays || 7;
+			fieldValues.late_penalty_percent =
+				schedule && schedule.penalty_percent !== null
+					? parseFloat( schedule.penalty_percent )
+					: 10;
+			fieldValues.late_penalty_basis =
+				schedule && schedule.basis === 'raw_score'
+					? 'raw_score'
+					: 'max_points';
+			fieldValues.late_cutoff_enabled = !! cutoffDays;
+			fieldValues.late_cutoff_days = cutoffDays || 7;
+
 			form.setFieldsValue( fieldValues );
 
 			// Initialize rubric data from existing rubric structure.
 			if ( assignmentData.rubric ) {
 				setRubricData( assignmentData.rubric );
 			}
+		} else if ( assignmentData.template ) {
+			// Guided-tour template prefill (new assignments only): the
+			// sanitized pack hydrates the real form, so rich text renders
+			// in the actual editor. Only fields the pack provides are set
+			// — the tour's "blank" pack carries just status=published, so
+			// the publish stop is a single Save click. No draft exists
+			// until the user saves.
+			const template = assignmentData.template;
+			const templateValues = {};
+
+			if ( template.title ) {
+				templateValues.title = template.title;
+			}
+			if ( template.description ) {
+				templateValues.description = template.description;
+			}
+			if ( template.instructions ) {
+				templateValues.instructions = template.instructions;
+			}
+			if ( template.grading_guidelines ) {
+				templateValues.grading_guidelines = template.grading_guidelines;
+			}
+			if ( template.max_points ) {
+				templateValues.max_points =
+					parseFloat( template.max_points ) || 100;
+			}
+			if ( template.passing_score ) {
+				templateValues.passing_score =
+					parseFloat( template.passing_score ) || 60;
+			}
+			if ( template.submission_type ) {
+				templateValues.submission_type = template.submission_type;
+			}
+			if (
+				Array.isArray( template.allowed_file_types ) &&
+				template.allowed_file_types.length
+			) {
+				templateValues.allowed_file_types = template.allowed_file_types;
+			}
+			if ( template.status ) {
+				templateValues.status = template.status;
+			}
+
+			form.setFieldsValue( templateValues );
 		}
 	}, [ assignmentData, form ] );
 
@@ -120,10 +239,25 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 
 			const assignmentId = currentId || assignmentData.id;
 
-			// Prepare payload — exclude rubric_enabled (managed by Educator endpoints).
-			const { rubric_enabled: rubricEnabledValue, ...rest } = values;
+			// Prepare payload — exclude rubric_enabled (managed by Educator
+			// endpoints) and the late-policy helper fields (collapsed into
+			// one structured config object below).
+			const {
+				rubric_enabled: rubricEnabledValue,
+				late_penalty_days: latePenaltyDays,
+				late_penalty_percent: latePenaltyPercent,
+				late_penalty_basis: latePenaltyBasis,
+				late_cutoff_enabled: lateCutoffEnabled,
+				late_cutoff_days: lateCutoffDays,
+				...rest
+			} = values;
+
 			const payload = {
 				...rest,
+				due_at: values.due_at
+					? values.due_at.format( 'YYYY-MM-DD HH:mm:ss' )
+					: null,
+				late_policy: values.late_policy || 'accept',
 				allow_resubmission: values.allow_resubmission ? 1 : 0,
 				max_resubmissions: values.allow_resubmission
 					? values.max_resubmissions
@@ -131,6 +265,25 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 				ai_auto_grade: values.ai_auto_grade ? 1 : 0,
 				categories: selectedCategories,
 			};
+
+			// The config is sent for the penalty policy ("late by up to X
+			// days, deduct Y%, closed after X") and for accept (optional
+			// cutoff only, or null to clear it); 'reject' leaves any
+			// stored config untouched so switching back restores it.
+			if ( values.late_policy === 'penalty' ) {
+				payload.late_penalty_schedule = latePenaltyDays
+					? {
+							cutoff_hours: latePenaltyDays * 24,
+							penalty_percent: latePenaltyPercent,
+							basis: latePenaltyBasis || 'max_points',
+					  }
+					: null;
+			} else if ( values.late_policy === 'accept' ) {
+				payload.late_penalty_schedule =
+					lateCutoffEnabled && lateCutoffDays
+						? { cutoff_hours: lateCutoffDays * 24 }
+						: null;
+			}
 
 			// Submit via REST API.
 			const endpoint = assignmentId
@@ -353,6 +506,16 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 			children: <FileSettingsPanel form={ form } />,
 		},
 		{
+			key: 'scheduling',
+			label: __( 'Scheduling', 'pressprimer-assignment' ),
+			// forceRender: the due date and late policy fields must be
+			// registered with the form even when this tab is never opened —
+			// otherwise saving would submit undefined for them and wipe the
+			// stored values.
+			forceRender: true,
+			children: <SchedulingPanel form={ form } />,
+		},
+		{
 			key: 'categories',
 			label: __( 'Categories', 'pressprimer-assignment' ),
 			children: (
@@ -384,7 +547,11 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						description: '',
 						instructions: '',
 						grading_guidelines: '',
-						status: 'draft',
+						// New assignments default to Published: needing to
+						// remember the status switch was a stumbling block.
+						// Nothing exists until the user saves, and Draft
+						// stays one click away.
+						status: 'published',
 						theme: 'default',
 						submission_type: 'file',
 						max_points: 100,
@@ -397,6 +564,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						allowed_file_types: [
 							'pdf',
 							'docx',
+							'pptx',
 							'txt',
 							'rtf',
 							'odt',
@@ -407,6 +575,13 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 						],
 						rubric_enabled: false,
 						ai_auto_grade: false,
+						due_at: null,
+						late_policy: 'accept',
+						late_penalty_days: 7,
+						late_penalty_percent: 10,
+						late_penalty_basis: 'max_points',
+						late_cutoff_enabled: false,
+						late_cutoff_days: 7,
 					} }
 				>
 					{ /* Header */ }
@@ -430,7 +605,7 @@ const AssignmentEditor = ( { assignmentData = {} } ) => {
 												'pressprimer-assignment'
 										  ) }
 								</Title>
-								<Space>
+								<Space className="ppa-editor-header-actions">
 									<Button
 										icon={ <CloseOutlined /> }
 										onClick={ handleCancel }

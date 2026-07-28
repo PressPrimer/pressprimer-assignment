@@ -15,6 +15,8 @@ import ActivityChart from './ActivityChart';
 import PopularAssignments from './PopularAssignments';
 import QuickActions from './QuickActions';
 import RecentActivity from './RecentActivity';
+import EmailCourseCard from './EmailCourseCard';
+import WhatsNewPanel from './WhatsNewPanel';
 
 /**
  * Dashboard Component
@@ -148,6 +150,13 @@ const Dashboard = ( { initialData = {} } ) => {
 				tip={ __( 'Loading…', 'pressprimer-assignment' ) }
 			>
 				<div className="ppa-dashboard-content">
+					{ /* One-time post-update What's New panel (011) */ }
+					<WhatsNewPanel
+						whatsNew={ dashboardData.whatsNew || {} }
+						optin={ dashboardData.emailOptin || {} }
+						pluginName={ pluginName }
+					/>
+
 					{ /* Top Row: Stats Cards (2fr) + Quick Actions (1fr) */ }
 					<div className="ppa-dashboard-top-row">
 						<StatsCards stats={ stats } loading={ loading } />
@@ -175,6 +184,9 @@ const Dashboard = ( { initialData = {} } ) => {
 							<PopularAssignments
 								assignments={ stats?.popular_assignments || [] }
 								loading={ loading }
+							/>
+							<EmailCourseCard
+								optin={ dashboardData.emailOptin || {} }
 							/>
 						</div>
 					</div>

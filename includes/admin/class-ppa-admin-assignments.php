@@ -430,6 +430,14 @@ class PressPrimer_Assignment_Admin_Assignments {
 					? absint( $plugin_settings['default_max_files'] )
 					: 5,
 			];
+
+			// Guided tour (2.2): a template pick arrives as a nonce'd URL
+			// param and prefills the real editor form. No draft row exists
+			// until the user saves.
+			$template = $this->get_requested_template();
+			if ( $template ) {
+				$assignment_data['template'] = $template;
+			}
 		}
 
 		if ( $assignment_id > 0 ) {
@@ -446,23 +454,34 @@ class PressPrimer_Assignment_Admin_Assignments {
 				}
 
 				$assignment_data = [
-					'id'                 => (int) $assignment->id,
-					'title'              => $assignment->title,
-					'description'        => $assignment->description,
-					'instructions'       => $assignment->instructions,
-					'grading_guidelines' => $assignment->grading_guidelines,
-					'max_points'         => (float) $assignment->max_points,
-					'passing_score'      => (float) $assignment->passing_score,
-					'allow_resubmission' => (int) $assignment->allow_resubmission,
-					'max_resubmissions'  => (int) $assignment->max_resubmissions,
-					'allowed_file_types' => $assignment->allowed_file_types,
-					'max_file_size'      => (int) $assignment->max_file_size,
-					'max_files'          => (int) $assignment->max_files,
-					'notification_email' => $assignment->notification_email ?? '',
-					'submission_type'    => $assignment->submission_type,
-					'status'             => $assignment->status,
-					'ai_auto_grade'      => (int) $assignment->ai_auto_grade,
-					'categories'         => $category_ids,
+					'id'                    => (int) $assignment->id,
+					'title'                 => $assignment->title,
+					'description'           => $assignment->description,
+					'instructions'          => $assignment->instructions,
+					'grading_guidelines'    => $assignment->grading_guidelines,
+					'max_points'            => (float) $assignment->max_points,
+					'passing_score'         => (float) $assignment->passing_score,
+					'allow_resubmission'    => (int) $assignment->allow_resubmission,
+					'max_resubmissions'     => (int) $assignment->max_resubmissions,
+					// Decoded to an array — the raw property is a JSON string,
+					// which Ant's Checkbox.Group renders convincingly (string
+					// contains the extension) but wipes on first toggle. Null
+					// stays null so the editor applies its legacy default.
+					'allowed_file_types'    => ( null !== $assignment->allowed_file_types && '' !== $assignment->allowed_file_types )
+						? $assignment->get_allowed_file_types()
+						: null,
+					'max_file_size'         => (int) $assignment->max_file_size,
+					'max_files'             => (int) $assignment->max_files,
+					'notification_email'    => $assignment->notification_email ?? '',
+					'submission_type'       => $assignment->submission_type,
+					'status'                => $assignment->status,
+					'ai_auto_grade'         => (int) $assignment->ai_auto_grade,
+					'categories'            => $category_ids,
+					// Due date in site-local time for the editor's picker;
+					// the REST layer converts back to UTC on save.
+					'due_at'                => $assignment->due_at ? get_date_from_gmt( $assignment->due_at ) : null,
+					'late_policy'           => $assignment->late_policy,
+					'late_penalty_schedule' => $assignment->get_late_penalty_schedule(),
 				];
 			}
 		}
@@ -518,16 +537,74 @@ class PressPrimer_Assignment_Admin_Assignments {
 			'ppa-assignment-editor',
 			'pressprimerAssignmentAdmin',
 			[
-				'adminUrl' => admin_url(),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'listUrl'  => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
-				'addons'   => [
+				'adminUrl'       => admin_url(),
+				'nonce'          => wp_create_nonce( 'wp_rest' ),
+				'listUrl'        => admin_url( 'admin.php?page=pressprimer-assignment-assignments' ),
+				// Site clock context for the Scheduling tab: users pick due
+				// dates in the SITE time zone, not their local one. The
+				// format is the PHP twin of the admin React standard
+				// (ADMIN_DATETIME_FORMAT, "Jul 15, 2026 12:00 AM").
+				'timezoneString' => wp_timezone_string(),
+				'siteNow'        => wp_date( 'M j, Y g:i A' ),
+				'addons'         => [
 					'educator'   => PressPrimer_Assignment_Addon_Manager::is_educator_active(),
 					'school'     => PressPrimer_Assignment_Addon_Manager::is_school_active(),
 					'enterprise' => PressPrimer_Assignment_Addon_Manager::is_enterprise_active(),
 				],
+				// Premium touchpoints eligible for this user (empty for
+				// non-admins) — resolved server-side by the registry.
+				'touchpoints'    => class_exists( 'PressPrimer_Assignment_Touchpoints' )
+					? PressPrimer_Assignment_Touchpoints::get_eligible_for_surface( 'editor' )
+					: [],
 			]
 		);
+	}
+
+	/**
+	 * Get the sample template requested via the guided-tour URL param
+	 *
+	 * Reads the nonce'd ppa-template parameter the tour appends to the
+	 * new-assignment URL. Any failure (missing/expired nonce, unknown
+	 * key) silently returns null so the editor simply opens blank.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return array|null Sanitized template pack, or null.
+	 */
+	private function get_requested_template() {
+		if ( ! isset( $_GET['ppa-template'] ) ) {
+			return null;
+		}
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'pressprimer_assignment_setup_template' ) ) {
+			return null;
+		}
+
+		if ( ! class_exists( 'PressPrimer_Assignment_Onboarding' ) ) {
+			return null;
+		}
+
+		$key = sanitize_key( wp_unslash( $_GET['ppa-template'] ) );
+
+		// The tour's "start blank" pick carries no prefill content, but
+		// the tour context still defaults Status to Published so the
+		// publish stop is a single Save click.
+		if ( 'blank' === $key ) {
+			return [
+				'key'    => 'blank',
+				'status' => 'published',
+			];
+		}
+
+		$template = PressPrimer_Assignment_Onboarding::get_sample_assignment( $key );
+
+		if ( $template ) {
+			$template['status'] = 'published';
+		}
+
+		return $template;
 	}
 
 	/**

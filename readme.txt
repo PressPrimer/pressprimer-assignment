@@ -3,7 +3,7 @@ Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.1.1
+Stable tag: 2.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -26,8 +26,8 @@ Built-in assignment tools in WordPress LMS plugins are often afterthoughts, limi
 
 PressPrimer Assignment delivers a focused, polished assignment workflow with the features educators actually need:
 
-* **Flexible Submission Types** – Accept file uploads, rich text submissions, or let students choose. Support for PDF, DOCX, TXT, RTF, ODT, and image files out of the box.
-* **Grade Without Leaving WordPress** – A dedicated grading queue with a side-by-side interface: the student's document renders on the left while you score and write feedback on the right. Built-in viewers for PDF, Word documents, images, and text files mean you never have to download, open, and track files on your desktop.
+* **Flexible Submission Types** – Accept file uploads, rich text submissions, or let students choose. Support for PDF, DOCX, PPTX, TXT, RTF, ODT, and image files out of the box.
+* **Grade Without Leaving WordPress** – A dedicated grading queue with a side-by-side interface: the student's document renders on the left while you score and write feedback on the right. Built-in viewers for PDF, Word documents, PowerPoint decks, images, and text files mean you never have to download, open, and track files on your desktop.
 * **Native LMS Integration** – Works with LearnDash, Tutor LMS, LifterLMS, and LearnPress. Assignments appear in lessons, passing grades trigger lesson completion, and instructor roles are mapped automatically.
 * **Secure File Handling** – Six-layer file validation and permission-based file serving. Student files are never directly accessible via URL.
 * **Customizable Email Notifications** – Automatic emails for submission confirmation, grade release, and new submission alerts. Fully customizable templates with token placeholders.
@@ -57,8 +57,8 @@ PressPrimer Assignment includes everything you need to manage assignments at any
 
 * Centralized grading queue with filter and sort
 * Side-by-side grading interface: document viewer on the left, grading panel on the right
-* Built-in viewers render PDF, DOCX, images, and text files directly in WordPress; no downloading required
-* Automatic text extraction from PDF, DOCX, ODT, RTF, and TXT files with quality scoring
+* Built-in viewers render PDF, DOCX, PPTX slides, images, and text files directly in WordPress; no downloading required
+* Automatic text extraction from PDF, DOCX, PPTX, ODT, RTF, and TXT files with quality scoring
 * Rich text feedback editor with bold, italic, lists, and links — feedback is rendered with its formatting on the student view, not as plain text
 * Submissions list filterable by score range, feedback presence, and submission date range
 * Grading guidelines reference panel pulled from the assignment
@@ -173,7 +173,7 @@ If you have LearnDash, Tutor LMS, LifterLMS, or LearnPress installed, integratio
 
 == Privacy ==
 
-PressPrimer Assignment stores student submission data (files, text, grades, and feedback) in your WordPress database under your full control. No data is transmitted to external servers. All submitted files are stored in a protected directory under `wp-content/uploads/ppa-submissions/` and served via PHP with permission checks.
+PressPrimer Assignment stores student submission data (files, text, grades, and feedback) in your WordPress database under your full control. No student or submission data is ever transmitted to external servers. The single exception to "nothing leaves your site" is the optional email-course opt-in described under External Services — it sends only an email address that an administrator or teacher explicitly typed in and submitted. All submitted files are stored in a protected directory under `wp-content/uploads/ppa-submissions/` and served via PHP with permission checks.
 
 The plugin integrates with the WordPress Privacy API:
 
@@ -181,6 +181,28 @@ The plugin integrates with the WordPress Privacy API:
 * **Tools > Erase Personal Data** — permanently deletes all submissions, grades, and uploaded files for the requested user.
 
 Administrators can permanently delete all plugin data (database tables, uploaded files, options, and user meta) via Settings > Advanced > "Remove all data on uninstall" before uninstalling the plugin.
+
+== External Services ==
+
+This plugin offers an optional free email course for teachers and administrators. When — and only when — a user types their email address into the opt-in form and clicks the subscribe button, the plugin connects to pressprimer.com to register the subscription.
+
+* **When:** Only on an explicit opt-in submission. No request is ever made automatically — no telemetry, no activation pings, no environment data.
+* **What data:** The typed email address and a tag naming which screen the form was on. Nothing else.
+* **Unsubscribing:** Every email includes an unsubscribe link, honored immediately.
+* **Terms of Service:** https://pressprimer.com/terms/
+* **Privacy Policy:** https://pressprimer.com/privacy/
+
+Dismissing the offer is remembered permanently and is stored only on your own site.
+
+== Third-Party Libraries ==
+
+The plugin bundles the following open-source JavaScript libraries (compiled into the plugin's script bundles; nothing is loaded from a CDN and no external requests are made):
+
+* **PDF.js** (`pdfjs-dist` 3.11.174) — Apache-2.0 by Mozilla — renders PDF submissions in the browser. https://github.com/mozilla/pdf.js
+* **Mammoth** (`mammoth` 1.8.0) — BSD-2-Clause — renders Word (.docx) submissions in the browser. https://github.com/mwilliamson/mammoth.js
+* **PptxViewJS** (`pptxviewjs` 1.1.9, pinned) — MIT — renders PowerPoint (.pptx) submissions as slides on a canvas. Rendering is approximate for exotic constructs; the original file is always downloadable. https://github.com/gptsci/pptxviewjs
+* **Chart.js** (`chart.js` 4.x) — MIT — used by PptxViewJS to draw charts embedded in presentations. https://github.com/chartjs/Chart.js
+* **JSZip** (`jszip` 3.x) — MIT — reads the PPTX (ZIP) container in the browser. https://github.com/Stuk/jszip
 
 == Frequently Asked Questions ==
 
@@ -241,6 +263,20 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
+
+= 2.2.0 =
+* Added: PowerPoint (.pptx) submission support
+* Added: Due dates with a late policy and optional scoring penalty
+* Added: A guided setup tour that walks new users through creating and publishing a real assignment, with starter templates, one-click page creation and optional email course for admins (explicit opt-in only — only the typed email address is ever sent; see External Services)
+* Added: What's New panel shown to administrators once after each major update
+* Added: Upgrade page describing the premium addons, with locked report previews (administrators only)
+* Added: New developer filter to customize which file is served on submission downloads (used by the Enterprise addon to deliver watermarked copies)
+* Changed: New assignments now default to Published status
+* Fixed: The grading count badge in the admin menu displays correctly on WordPress 7.0
+* Fixed: Admin search fields no longer misalign their placeholder text or show a stray focus box
+* Fixed: Uninstalling the plugin now removes any pending text-extraction tasks from the scheduled-task queue
+* Fixed: A crash inside the text-extraction library can no longer block a student's file upload
+* Fixed: On the assignment editor's File Settings tab, clicking a file-type checkbox no longer clears the other selected types on an existing assignment
 
 = 2.1.1 =
 * Improved: Tightened permission checks on the categories REST endpoint so teachers can only view individual categories they own or have access to. Single-teacher sites are unaffected.

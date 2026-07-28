@@ -47,6 +47,11 @@ class PressPrimer_Assignment_Admin {
 		add_action( 'admin_menu', [ $this, 'register_menus' ] );
 		add_action( 'admin_menu', [ $this, 'add_grading_badge' ], 999 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_global_styles' ] );
+		add_action( 'admin_init', [ $this, 'maybe_flag_whats_new' ] );
+
+		// One-time post-activation redirect to the guided tour (2.2).
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_setup' ] );
 
 		// Initialize sub-admin classes.
 		$this->init_sub_admins();
@@ -207,6 +212,158 @@ class PressPrimer_Assignment_Admin {
 	}
 
 	/**
+	 * Redirect the activating user to the setup wizard — once, ever
+	 *
+	 * Consumes the short-lived flag the activator set. All guards live in
+	 * get_setup_redirect_url(); this wrapper only performs the redirect.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_redirect_to_setup() {
+		$url = $this->get_setup_redirect_url();
+
+		if ( $url ) {
+			wp_safe_redirect( $url );
+			exit;
+		}
+	}
+
+	/**
+	 * Resolve whether this request should redirect to the setup wizard
+	 *
+	 * Redirects only when ALL guards pass:
+	 * - normal web request (not AJAX, cron, or WP-CLI)
+	 * - not the network admin
+	 * - the flag exists and records the current user
+	 * - not a bulk activation (activate-multi)
+	 * - the user can manage assignments
+	 * - no assignments exist yet (reinstall guard)
+	 *
+	 * The flag is deleted before any redirect (and on terminal guard
+	 * failures for the matched user), so the redirect can never fire
+	 * twice — anything interrupted is caught by the setup banner instead.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @return string|null Redirect URL, or null when no redirect happens.
+	 */
+	private function get_setup_redirect_url() {
+		if ( wp_doing_ajax() || wp_doing_cron() ) {
+			return null;
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return null;
+		}
+
+		if ( is_network_admin() ) {
+			return null;
+		}
+
+		$flag_user = (int) get_transient( 'pressprimer_assignment_setup_redirect' );
+
+		if ( ! $flag_user || get_current_user_id() !== $flag_user ) {
+			// No flag, or it belongs to another user — leave it for them
+			// (it expires on its own).
+			return null;
+		}
+
+		// Bulk activation: never redirect, and never retry — the banner
+		// takes over from here.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only detection of the bulk-activation context.
+		if ( isset( $_GET['activate-multi'] ) ) {
+			delete_transient( 'pressprimer_assignment_setup_redirect' );
+			return null;
+		}
+
+		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_OWN )
+			&& ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL )
+		) {
+			delete_transient( 'pressprimer_assignment_setup_redirect' );
+			return null;
+		}
+
+		// Single-shot: the flag is consumed before redirecting.
+		delete_transient( 'pressprimer_assignment_setup_redirect' );
+
+		// Reinstall guard: an install with existing assignments never
+		// redirects (the version option guard lives in the activator).
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix; one-time activation check.
+		$assignment_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ppa_assignments" );
+
+		if ( $assignment_count > 0 ) {
+			return null;
+		}
+
+		// The guided tour auto-opens on the PPA dashboard for users whose
+		// should_show state is fresh — that's where the redirect lands.
+		return admin_url( 'admin.php?page=pressprimer-assignment' );
+	}
+
+	/**
+	 * Detect a plugin update and arm the What's New panel
+	 *
+	 * Plugin updates never fire activation, so the stored version
+	 * option goes stale until this check runs. When an UPDATE crosses
+	 * into 2.2.0 the What's New marker is set; fresh installs never
+	 * qualify (activation writes the current version before this ever
+	 * sees a mismatch). The reactivation-style update path is covered
+	 * by the same check in the activator.
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_flag_whats_new() {
+		$stored = get_option( 'pressprimer_assignment_version' );
+
+		if ( false === $stored || PRESSPRIMER_ASSIGNMENT_VERSION === $stored ) {
+			return;
+		}
+
+		if ( class_exists( 'PressPrimer_Assignment_Email_Optin_Service' ) ) {
+			PressPrimer_Assignment_Email_Optin_Service::maybe_flag_whats_new_on_update( $stored );
+		}
+
+		update_option( 'pressprimer_assignment_version', PRESSPRIMER_ASSIGNMENT_VERSION );
+	}
+
+	/**
+	 * Enqueue admin-wide styles
+	 *
+	 * The grading count badge renders in the admin menu on EVERY admin
+	 * page, so its styles cannot live in the PPA-page-only stylesheet.
+	 * The badge also owns its full styling: WordPress 7.0's admin
+	 * redesign drops the core count-bubble background on hover, so the
+	 * badge no longer borrows core's .awaiting-mod classes for any
+	 * state.
+	 *
+	 * @since 2.2.0
+	 */
+	public function enqueue_global_styles() {
+		wp_register_style( 'ppa-admin-global', false, [], PRESSPRIMER_ASSIGNMENT_VERSION );
+		wp_enqueue_style( 'ppa-admin-global' );
+
+		// Static literal CSS only — no variables interpolated.
+		$css = '#adminmenu .ppa-menu-counter {'
+			. 'display: inline-block;'
+			. 'vertical-align: top;'
+			. 'box-sizing: border-box;'
+			. 'margin: 1px 0 -1px 4px;'
+			. 'padding: 0 6px;'
+			. 'min-width: 18px;'
+			. 'height: 18px;'
+			. 'border-radius: 9px;'
+			. 'background-color: #2271b1;'
+			. 'color: #fff;'
+			. 'font-size: 11px;'
+			. 'line-height: 18px;'
+			. 'text-align: center;'
+			. '}';
+
+		wp_add_inline_style( 'ppa-admin-global', $css );
+	}
+
+	/**
 	 * Enqueue admin assets
 	 *
 	 * Loads CSS and JavaScript on PressPrimer Assignment admin pages.
@@ -323,6 +480,20 @@ class PressPrimer_Assignment_Admin {
 			);
 		}
 
+		// wp-scripts emits a SECOND CSS file per entry — {name}.css — for
+		// styles imported by components outside the entry's own style.css
+		// (e.g. shared EmailOptinAsk.css). Without it those components
+		// render unstyled.
+		$component_css = PRESSPRIMER_ASSIGNMENT_PLUGIN_PATH . 'build/' . $bundle_name . '.css';
+		if ( file_exists( $component_css ) ) {
+			wp_enqueue_style(
+				'ppa-' . $bundle_name . '-components',
+				PRESSPRIMER_ASSIGNMENT_PLUGIN_URL . 'build/' . $bundle_name . '.css',
+				[],
+				$asset['version']
+			);
+		}
+
 		// Localize bundle-specific data.
 		if ( 'dashboard' === $bundle_name ) {
 			$this->localize_dashboard_data();
@@ -389,6 +560,51 @@ class PressPrimer_Assignment_Admin {
 			$plugin_name
 		);
 
+		$user_id           = get_current_user_id();
+		$optin_available   = class_exists( 'PressPrimer_Assignment_Email_Optin_Service' );
+		$whats_new_visible = $optin_available
+			&& PressPrimer_Assignment_Email_Optin_Service::whats_new_visible( $user_id );
+
+		/**
+		 * Filters the What's New panel sections.
+		 *
+		 * Major releases ship the free plugin and the addons together;
+		 * each addon appends its own section here so the whole wave
+		 * shows in one panel. Each section: [ 'title' => plugin name,
+		 * 'items' => string[] ]. Plain text only — everything renders
+		 * escaped.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param array<int, array{title: string, items: string[]}> $sections Release note sections.
+		 */
+		$whats_new_sections = apply_filters(
+			'pressprimer_assignment_whats_new_sections',
+			[
+				[
+					'title' => __( 'PressPrimer Assignment', 'pressprimer-assignment' ),
+					'items' => [
+						__( 'PowerPoint (.pptx) submissions — students can submit decks, and you can preview them as slides right in the grading view.', 'pressprimer-assignment' ),
+						__( 'Due dates with a late policy — accept late work, deduct a percentage for a set number of days, or reject it, with an optional submission cutoff.', 'pressprimer-assignment' ),
+						__( 'A new guided setup tour that walks you through building and publishing a real assignment.', 'pressprimer-assignment' ),
+					],
+				],
+			]
+		);
+
+		// Sanitize the (filterable) sections element by element.
+		$sanitized_sections = [];
+		foreach ( (array) $whats_new_sections as $section ) {
+			if ( ! is_array( $section ) || empty( $section['items'] ) ) {
+				continue;
+			}
+
+			$sanitized_sections[] = [
+				'title' => isset( $section['title'] ) ? sanitize_text_field( $section['title'] ) : '',
+				'items' => array_values( array_map( 'sanitize_text_field', (array) $section['items'] ) ),
+			];
+		}
+
 		wp_localize_script(
 			'ppa-dashboard',
 			'pressprimerAssignmentDashboardData',
@@ -403,6 +619,40 @@ class PressPrimer_Assignment_Admin {
 					'submissions'       => admin_url( 'admin.php?page=pressprimer-assignment-submissions' ),
 					'grading'           => admin_url( 'admin.php?page=pressprimer-assignment-grading' ),
 					'reports'           => admin_url( 'admin.php?page=pressprimer-assignment-reports' ),
+					'setup_wizard'      => class_exists( 'PressPrimer_Assignment_Onboarding' )
+						? PressPrimer_Assignment_Onboarding::get_relaunch_url()
+						: '',
+				],
+				// The one-time post-update What's New panel (011): release
+				// notes paired with the ask. The panel shows regardless of
+				// opt-in state; the ask inside resolves its own eligibility.
+				'whatsNew'      => [
+					'show'        => $whats_new_visible,
+					'version'     => $optin_available
+						? PressPrimer_Assignment_Email_Optin_Service::get_whats_new_version()
+						: '',
+					'sections'    => $sanitized_sections,
+					'blogUrl'     => class_exists( 'PressPrimer_Assignment_Upgrade_Page' )
+						? PressPrimer_Assignment_Upgrade_Page::utm_url(
+							'https://pressprimer.com/blog/',
+							'whats-new-read-more',
+							'whats-new'
+						)
+						: 'https://pressprimer.com/blog/',
+					'askEligible' => $optin_available
+						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( $user_id, 'whats-new' ),
+				],
+				// The 011 email-course card: admins only (lifecycle
+				// surfaces never render for teachers), suppressed once
+				// answered anywhere, dismissible separately — and it
+				// yields while the What's New panel is up (one ask per
+				// moment, never stack).
+				'emailOptin'    => [
+					'eligible'   => ! $whats_new_visible
+						&& current_user_can( 'manage_options' )
+						&& $optin_available
+						&& PressPrimer_Assignment_Email_Optin_Service::is_eligible( $user_id, 'dashboard-card' ),
+					'privacyUrl' => 'https://pressprimer.com/privacy/',
 				],
 			]
 		);
@@ -434,6 +684,14 @@ class PressPrimer_Assignment_Admin {
 		 * @param array $addon_reports Array of addon report definitions.
 		 */
 		$addon_reports = apply_filters( 'pressprimer_assignment_reports_addon_reports', [] );
+
+		// Merge the registered cards with the premium report catalog: active
+		// tiers resolve to the real cards registered above, inactive tiers
+		// render as locked upgrade cards (administrators only), in a stable
+		// catalog order so the grid never reflows when an addon is toggled.
+		if ( class_exists( 'PressPrimer_Assignment_Upgrade_Page' ) ) {
+			$addon_reports = PressPrimer_Assignment_Upgrade_Page::get_premium_report_cards( $addon_reports );
+		}
 
 		/**
 		 * Filters the reports mascot image URL.
@@ -598,8 +856,8 @@ class PressPrimer_Assignment_Admin {
 		foreach ( $submenu['pressprimer-assignment'] as $key => $item ) {
 			if ( 'pressprimer-assignment-grading' === $item[2] ) {
 				$submenu['pressprimer-assignment'][ $key ][0] .= sprintf( // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- WordPress core pattern for admin menu badges.
-					' <span class="awaiting-mod count-%1$d"><span class="pending-count">%1$d</span></span>',
-					$count
+					' <span class="ppa-menu-counter">%s</span>',
+					number_format_i18n( $count )
 				);
 				break;
 			}

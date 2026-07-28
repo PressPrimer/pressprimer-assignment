@@ -111,6 +111,7 @@ class PressPrimer_Assignment_Shortcodes {
 			'show_instructions' => 'true',
 			'show_max_points'   => 'true',
 			'show_file_info'    => 'true',
+			'show_late_policy'  => 'true',
 		];
 
 		$atts = shortcode_atts( $defaults, $atts, 'pressprimer_assignment' );

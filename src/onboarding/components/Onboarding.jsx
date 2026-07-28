@@ -12,10 +12,13 @@
  */
 
 import { useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import useOnboarding from '../hooks/useOnboarding';
 import { getStep, STEP_TYPE } from '../tourSteps';
+import { readSavedAssignment, writeSavedAssignment } from '../setupSession';
 import WelcomeModal from './WelcomeModal';
 import CompletionModal from './CompletionModal';
+import PageCreateModal from './PageCreateModal';
 import SpotlightTooltip from './SpotlightTooltip';
 
 /**
@@ -63,29 +66,107 @@ const Onboarding = () => {
 		closeTour,
 	} = useOnboarding();
 
-	const [ resolvedSelector, setResolvedSelector ] = useState( null );
+	// undefined = still resolving (render nothing yet),
+	// null      = given up (render the floating fallback),
+	// string    = found.
+	const [ resolvedSelector, setResolvedSelector ] = useState( undefined );
+
+	// The assignment saved during the tour — needed by the page step
+	// and by the publish stop's Next gate.
+	const [ savedAssignment, setSavedAssignment ] =
+		useState( readSavedAssignment );
 
 	const step = getStep( currentStep );
 
 	/**
+	 * Listen for editor saves (bridged from PPAEditorAfterSave)
+	 *
+	 * Remembers the saved assignment for the page step, and advances
+	 * the publish stop automatically when the user publishes for real.
+	 */
+	useEffect( () => {
+		const onSaved = ( event ) => {
+			const { id, status } = event.detail || {};
+
+			if ( id ) {
+				setSavedAssignment( { id, status: status || null } );
+				writeSavedAssignment( id, status );
+			}
+
+			if (
+				isActive &&
+				step?.id === 'publish' &&
+				status === 'published'
+			) {
+				nextStep();
+			}
+		};
+
+		window.addEventListener( 'ppa:assignment-saved', onSaved );
+		return () =>
+			window.removeEventListener( 'ppa:assignment-saved', onSaved );
+	}, [ isActive, step, nextStep ] );
+
+	/**
 	 * Resolve selector for spotlight steps
+	 *
+	 * Polls until the target exists: the React admin screens (and
+	 * TinyMCE) mount asynchronously, so a single early check races the
+	 * page and falls back to highlighting the whole container.
 	 */
 	useEffect( () => {
 		if ( ! step || step.type !== STEP_TYPE.SPOTLIGHT ) {
-			setResolvedSelector( null );
+			setResolvedSelector( undefined );
 			return;
 		}
 
-		// Wait for DOM to be ready.
-		const timer = setTimeout( () => {
-			const found = findValidSelector(
-				step.selector,
-				step.fallbackSelector
-			);
-			setResolvedSelector( found );
-		}, 100 );
+		// Let the step prepare its target first (e.g. switching to the
+		// editor tab its target lives on).
+		if ( typeof step.onEnter === 'function' ) {
+			step.onEnter();
+		}
 
-		return () => clearTimeout( timer );
+		setResolvedSelector( undefined );
+
+		const startedAt = Date.now();
+		let poll = null;
+
+		const tryResolve = () => {
+			const found = findValidSelector( step.selector, null );
+
+			if ( found ) {
+				setResolvedSelector( found );
+				if ( poll ) {
+					clearInterval( poll );
+					poll = null;
+				}
+				return;
+			}
+
+			// Primary target never appeared — settle for the fallback
+			// container, or the floating tooltip if even that is gone.
+			if ( Date.now() - startedAt > 4000 ) {
+				setResolvedSelector(
+					step.fallbackSelector &&
+						document.querySelector( step.fallbackSelector )
+						? step.fallbackSelector
+						: null
+				);
+				if ( poll ) {
+					clearInterval( poll );
+					poll = null;
+				}
+			}
+		};
+
+		poll = setInterval( tryResolve, 200 );
+		tryResolve();
+
+		return () => {
+			if ( poll ) {
+				clearInterval( poll );
+			}
+		};
 	}, [ step ] );
 
 	if ( ! isActive || ! step || isLoading ) {
@@ -104,19 +185,44 @@ const Onboarding = () => {
 		);
 	}
 
+	// Page creation stop.
+	if ( step.id === 'page' ) {
+		return (
+			<PageCreateModal
+				title={ step.title }
+				content={ step.content }
+				assignmentId={ savedAssignment.id }
+				currentStep={ currentStep }
+				totalSteps={ totalSteps }
+				onNext={ nextStep }
+				onPrev={ prevStep }
+				onClose={ closeTour }
+			/>
+		);
+	}
+
 	// Completion modal (last step).
 	if ( step.id === 'complete' ) {
 		return (
 			<CompletionModal
 				title={ step.title }
 				content={ step.content }
+				currentStep={ currentStep }
+				totalSteps={ totalSteps }
 				onComplete={ completeTour }
+				onPrev={ prevStep }
 			/>
 		);
 	}
 
 	// Spotlight steps.
 	if ( step.type === STEP_TYPE.SPOTLIGHT ) {
+		// Still waiting for the target to mount — render nothing rather
+		// than flashing the floating fallback.
+		if ( resolvedSelector === undefined ) {
+			return null;
+		}
+
 		// If no valid selector found, show a floating tooltip.
 		if ( ! resolvedSelector ) {
 			return (
@@ -164,12 +270,34 @@ const Onboarding = () => {
 			);
 		}
 
+		// The publish stop's Next stays disabled until a published save
+		// happens — otherwise users advance to a page stop they can't
+		// use and get lost. Saving as draft keeps it disabled too, with
+		// a message that says exactly what's missing.
+		let nextDisabled = false;
+		let nextDisabledReason = null;
+
+		if ( step.id === 'publish' && savedAssignment.status !== 'published' ) {
+			nextDisabled = true;
+			nextDisabledReason = savedAssignment.id
+				? __(
+						'Set Status to Published and save to continue.',
+						'pressprimer-assignment'
+				  )
+				: __(
+						'You must save the assignment to continue.',
+						'pressprimer-assignment'
+				  );
+		}
+
 		return (
 			<SpotlightTooltip
 				selector={ resolvedSelector }
 				title={ step.title }
 				content={ step.content }
 				position={ step.position }
+				nextDisabled={ nextDisabled }
+				nextDisabledReason={ nextDisabledReason }
 				currentStep={ currentStep }
 				totalSteps={ totalSteps }
 				onPrev={ currentStep > 1 ? prevStep : null }
