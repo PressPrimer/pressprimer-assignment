@@ -265,18 +265,17 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 == Changelog ==
 
 = 2.2.0 =
-* Added: PowerPoint (.pptx) submissions — preview decks as slides right in the grading view, with a per-slide text fallback and server-side text extraction
-* Added: Due dates with a late policy — accept late work as-is, deduct a percentage for a set number of days and then close submissions, or reject late work outright, with an optional cutoff for penalty-free acceptance too
-* Added: A guided setup tour that walks new users through creating and publishing a real assignment, with starter templates and one-click page creation
-* Added: What's New panel shown to administrators once after each major update, with release notes for the whole plugin suite
-* Added: Optional free email course for administrators (explicit opt-in only — only the typed email address is ever sent; see External Services)
+* Added: PowerPoint (.pptx) submission support
+* Added: Due dates with a late policy and optional scoring penalty
+* Added: A guided setup tour that walks new users through creating and publishing a real assignment, with starter templates, one-click page creation and optional email course for admins (explicit opt-in only — only the typed email address is ever sent; see External Services)
+* Added: What's New panel shown to administrators once after each major update
 * Added: Upgrade page describing the premium addons, with locked report previews (administrators only)
-* Added: New developer filter to customize which file is served on submission downloads — used by the Enterprise addon to deliver watermarked copies
-* Changed: New assignments now default to Published status so publishing isn't a stumbling block
+* Added: New developer filter to customize which file is served on submission downloads (used by the Enterprise addon to deliver watermarked copies)
+* Changed: New assignments now default to Published status
 * Fixed: The grading count badge in the admin menu displays correctly on WordPress 7.0
-* Fixed: Admin search fields no longer misalign their placeholder text or show a stray focus box (a conflict between WordPress admin styles and the plugin's component library, also affecting addon screens like Groups)
+* Fixed: Admin search fields no longer misalign their placeholder text or show a stray focus box
 * Fixed: Uninstalling the plugin now removes any pending text-extraction tasks from the scheduled-task queue
-* Fixed: A crash inside the text-extraction library can no longer block a student's file upload — the upload now always completes and the file is simply marked as having no text preview (previously, certain PDFs on hosts with hardened PHP settings could make submission fail entirely)
+* Fixed: A crash inside the text-extraction library can no longer block a student's file upload
 * Fixed: On the assignment editor's File Settings tab, clicking a file-type checkbox no longer clears the other selected types on an existing assignment
 
 = 2.1.1 =
