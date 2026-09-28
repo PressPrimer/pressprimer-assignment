@@ -24,6 +24,9 @@ import {
 	ClearOutlined,
 	ExperimentOutlined,
 	FileSearchOutlined,
+	KeyOutlined,
+	TeamOutlined,
+	FileProtectOutlined,
 } from '@ant-design/icons';
 
 import GeneralTab from './GeneralTab';
@@ -49,6 +52,14 @@ const ADDON_ICONS = {
 	'data-cleanup': <ClearOutlined />,
 	xapi: <ExperimentOutlined />,
 	plagiarism: <FileSearchOutlined />,
+	// KeyOutlined matches Quiz's license tab; Team and FileProtect
+	// match the icons those features use on their own screens. Every
+	// registered tab id needs an entry here — an unmapped id falls
+	// back to the same generic icon as the General tab, and duplicate
+	// icons in this nav are a defect.
+	license: <KeyOutlined />,
+	groups: <TeamOutlined />,
+	watermarking: <FileProtectOutlined />,
 	default: <SettingOutlined />,
 };
 
