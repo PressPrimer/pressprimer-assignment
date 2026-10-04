@@ -66,9 +66,10 @@ class PressPrimer_Assignment_Submissions_Renderer {
 
 			$formatted_date = '';
 			if ( ! empty( $date_value ) ) {
-				$formatted_date = date_i18n(
+				// Stored as UTC — wp_date() converts to the site time zone.
+				$formatted_date = wp_date(
 					get_option( 'date_format' ),
-					strtotime( $date_value )
+					strtotime( $date_value . ' UTC' )
 				);
 			}
 

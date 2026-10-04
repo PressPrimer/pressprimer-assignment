@@ -170,7 +170,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						printf(
 							/* translators: %s: date the files were removed */
 							esc_html__( 'Files attached to this submission were removed by automated data cleanup on %s. Your grade and feedback are preserved.', 'pressprimer-assignment' ),
-							esc_html( date_i18n( get_option( 'date_format' ), $ppa_cleanup_pruned_at ) )
+							esc_html( wp_date( get_option( 'date_format' ), $ppa_cleanup_pruned_at ) )
 						);
 					} else {
 						esc_html_e( 'Files attached to this submission were removed by automated data cleanup. Your grade and feedback are preserved.', 'pressprimer-assignment' );
@@ -303,9 +303,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 					$prev_date = '';
 					if ( ! empty( $prev->submitted_at ) ) {
-						$prev_date = date_i18n(
+						$prev_date = wp_date(
 							get_option( 'date_format' ),
-							strtotime( $prev->submitted_at )
+							strtotime( $prev->submitted_at . ' UTC' )
 						);
 					}
 
