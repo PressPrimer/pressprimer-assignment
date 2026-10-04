@@ -593,8 +593,50 @@ apiFetch({ path: window.pressprimer_assignment_data.restUrl }); // Same problem
 Rules:
 - **An Ant `<DatePicker>` / `<RangePicker>` without a `format` prop displays ISO (`2026-07-17`)** — always set the prop.
 - **PHP twin for admin-surface strings** (grader tooltips, the editor's site-time line): `'M j, Y g:i A'`.
-- **Student-facing PHP surfaces use the site's WordPress settings** (`get_option( 'date_format' )` / `'time_format'` with `wp_date()` / `date_i18n()`) — never the admin standard. Site owners and translators control those.
+- **Student-facing PHP surfaces use the site's WordPress settings** (`get_option( 'date_format' )` / `'time_format'`) — never the admin standard. Site owners and translators control those. Which *function* formats the value depends on how the column is stored — see Time Zones below.
 - **API wire formats** stay `YYYY-MM-DD HH:mm:ss` (datetimes) and `YYYY-MM-DD` (date params) — payloads only, never display.
+
+### Time Zones: Storage Conventions (CRITICAL)
+
+Format strings decide how a date *looks*; storage conventions decide whether it shows the *right time*. Getting this wrong displays times shifted by the site's UTC offset — a real support ticket (2.2.1 cycle) found student submission cards showing UTC. Every datetime has exactly one convention, and display code must match it.
+
+**Free plugin columns — all UTC except the database-defaulted ones:**
+
+| Column(s) | Convention | Written by |
+|---|---|---|
+| `ppa_assignments.due_at` | UTC | REST save converts with `get_gmt_from_date()` |
+| `ppa_submissions.submitted_at`, `graded_at`, `returned_at` | UTC | `current_time( 'mysql', true )` |
+| `ppa_submission_files.extracted_at` | UTC | `current_time( 'mysql', true )` |
+| `created_at`, `updated_at`, `uploaded_at` (any table) | **Database server clock** — UTC on most hosts, NOT guaranteed | MySQL `DEFAULT CURRENT_TIMESTAMP` |
+| Unix timestamps in meta (e.g. `cleanup_attachments_pruned_at`) | Absolute (time zone–free) | `time()` |
+| `pressprimer_assignment_due_date_for_user` filter value | UTC — a contract; addons convert *into* it | — |
+
+**Writing:** new datetime columns store UTC via `current_time( 'mysql', true )`. Never `current_time( 'mysql' )` (site-local) for a stored value.
+
+**Displaying a UTC column:**
+
+```php
+// CORRECT - wp_date() converts the instant to the site time zone
+echo esc_html( wp_date( get_option( 'date_format' ), strtotime( $submission->submitted_at . ' UTC' ) ) );
+
+// CORRECT - equivalent, for MySQL-format output
+echo esc_html( get_date_from_gmt( $submission->submitted_at, get_option( 'date_format' ) ) );
+
+// WRONG - date_i18n() does NOT convert; it displays the raw UTC wall time
+echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $submission->submitted_at ) ) ); // REJECTED
+
+// WRONG - mysql2date() assumes site-local storage
+echo esc_html( mysql2date( get_option( 'date_format' ), $submission->submitted_at ) ); // REJECTED
+```
+
+**Displaying a Unix timestamp:** `wp_date( $format, $timestamp )` — it converts.
+
+Rules:
+- **`date_i18n()` and `mysql2date()` are banned** for stored values. `wp_date()` and `get_date_from_gmt()` are the only display functions.
+- **Append `' UTC'` when parsing** (`strtotime( $value . ' UTC' )`) so the parse doesn't depend on PHP's default time zone.
+- **Don't display `created_at`/`updated_at`/`uploaded_at` as precise times** — their zone depends on the database server. If a feature needs a displayable "when", give it a UTC column written by PHP.
+- **Addon site-local columns** (Educator's group and override dates) have their own rules — see Educator's guide. Never run `wp_date()` over a site-local string: it shifts the time a second time.
+- **New datetime column? Add it to the table above** in the same commit.
 
 ### Form Field Widths
 
