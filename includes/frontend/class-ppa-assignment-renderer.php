@@ -456,17 +456,19 @@ class PressPrimer_Assignment_Assignment_Renderer {
 		// Format dates.
 		$formatted_submitted_date = '';
 		if ( ! empty( $submission->submitted_at ) ) {
-			$formatted_submitted_date = date_i18n(
+			// Stored as UTC — wp_date() converts to the site time zone
+			// (date_i18n() would display the raw UTC time).
+			$formatted_submitted_date = wp_date(
 				get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
-				strtotime( $submission->submitted_at )
+				strtotime( $submission->submitted_at . ' UTC' )
 			);
 		}
 
 		$formatted_graded_date = '';
 		if ( ! empty( $submission->graded_at ) ) {
-			$formatted_graded_date = date_i18n(
+			$formatted_graded_date = wp_date(
 				get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
-				strtotime( $submission->graded_at )
+				strtotime( $submission->graded_at . ' UTC' )
 			);
 		}
 

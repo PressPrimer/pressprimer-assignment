@@ -3,7 +3,7 @@ Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
 Tested up to: 7.1
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -263,6 +263,9 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
+
+= 2.2.2 =
+* Fixed: Student submission dates and the "Graded by … on …" line now show the site's time zone instead of UTC
 
 = 2.2.1 =
 * Fixed: Every tab on the Settings page now shows its own icon instead of several tabs sharing the same generic one
