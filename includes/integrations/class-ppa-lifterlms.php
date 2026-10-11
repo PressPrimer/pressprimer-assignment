@@ -514,6 +514,12 @@ class PressPrimer_Assignment_LifterLMS {
 	 * @param LLMS_Student $student Current student object.
 	 */
 	public function display_assignment_in_lesson( $lesson, $student ) {
+		// LifterLMS builds classic lesson templates (buttons included) inside
+		// the_content, so this fires during excerpt and <head> passes too.
+		if ( PressPrimer_Assignment_Content_Utils::is_non_body_content_pass() ) {
+			return;
+		}
+
 		if ( ! $lesson || ! is_a( $lesson, 'LLMS_Lesson' ) ) {
 			return;
 		}
@@ -556,6 +562,11 @@ class PressPrimer_Assignment_LifterLMS {
 	 * @since 2.0.0
 	 */
 	public function display_assignment_before_navigation_block() {
+		// Blocks render wherever the_content runs, including <head>/footer passes.
+		if ( PressPrimer_Assignment_Content_Utils::is_non_body_content_pass() ) {
+			return;
+		}
+
 		if ( $this->lesson_assignment_rendered ) {
 			return;
 		}
