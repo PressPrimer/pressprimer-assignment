@@ -537,6 +537,12 @@ class PressPrimer_Assignment_LearnDash {
 			return $content;
 		}
 
+		// Excerpt-building and <head>/footer passes aren't the page body —
+		// rendering there would consume the once-per-page guard below.
+		if ( PressPrimer_Assignment_Content_Utils::is_non_body_content_pass() ) {
+			return $content;
+		}
+
 		// Prevent double-rendering (the_content can fire multiple times).
 		if ( $this->assignment_rendered ) {
 			return $content;

@@ -628,6 +628,11 @@ class PressPrimer_Assignment_LifterLMS {
 			return $content;
 		}
 
+		// Excerpt-building passes inside the loop aren't the page body.
+		if ( PressPrimer_Assignment_Content_Utils::is_non_body_content_pass() ) {
+			return $content;
+		}
+
 		if ( $this->lesson_assignment_rendered ) {
 			return $content;
 		}

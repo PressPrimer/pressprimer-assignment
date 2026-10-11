@@ -74,4 +74,24 @@ class PressPrimer_Assignment_Content_Utils {
 
 		return $html;
 	}
+
+	/**
+	 * Whether the_content is running for something other than the page body.
+	 *
+	 * WordPress builds automatic excerpts by running the_content, and SEO and
+	 * social plugins (Jetpack, Yoast, …) do that in <head> or the footer to
+	 * produce meta descriptions. LMS integrations that render an assignment
+	 * once per page must skip these passes — otherwise the assignment lands
+	 * in a hidden meta tag and the visible lesson body gets nothing.
+	 *
+	 * @since 2.2.3
+	 *
+	 * @return bool True when the current the_content call is not the body.
+	 */
+	public static function is_non_body_content_pass() {
+		return doing_filter( 'get_the_excerpt' )
+			|| doing_action( 'wp_head' )
+			|| doing_action( 'wp_footer' )
+			|| is_feed();
+	}
 }
