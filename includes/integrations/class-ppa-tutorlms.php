@@ -106,8 +106,15 @@ class PressPrimer_Assignment_TutorLMS {
 		// the lesson post_content is empty and the user is not an admin.
 		add_filter( 'tutor_has_lesson_content', [ $this, 'force_lesson_content_for_assignment' ], 10, 2 );
 
-		// Hide Tutor's mark complete button when assignment is attached.
+		// Hide Tutor's mark complete button when assignment is attached. Tutor
+		// 4.0 moved lessons to the "learning area" layout, which renders the
+		// button through a new filter; the legacy one still covers 2.x/3.x.
 		add_filter( 'tutor_lesson/single/complete_form', [ $this, 'maybe_hide_complete_button' ] );
+		add_filter( 'tutor_learning_area_lesson_mark_as_complete', [ $this, 'maybe_hide_complete_button' ] );
+
+		// Hiding the button is cosmetic — also refuse the completion request
+		// itself (filter present since Tutor 2.x).
+		add_filter( 'tutor_validate_lesson_complete', [ $this, 'validate_lesson_complete' ], 10, 3 );
 
 		// Completion tracking.
 		add_action( 'pressprimer_assignment_submission_passed', [ $this, 'handle_assignment_passed' ], 10, 2 );
@@ -793,40 +800,64 @@ class PressPrimer_Assignment_TutorLMS {
 	 * @return string Modified form HTML.
 	 */
 	public function maybe_hide_complete_button( $form ) {
-		$post_id       = get_the_ID();
-		$assignment_id = get_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, true );
+		return $this->is_completion_blocked( get_the_ID(), get_current_user_id() ) ? '' : $form;
+	}
 
-		// Stale mapping (assignment row was deleted) — treat as no mapping
-		// so the complete button stays visible.
-		if ( $assignment_id && ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
-			return $form;
+	/**
+	 * Refuse a lesson completion request until the assignment is passed
+	 *
+	 * Server-side counterpart of maybe_hide_complete_button(): hiding the
+	 * button doesn't stop a crafted request, so the completion handler's own
+	 * validation filter enforces the same gate. Our assignment-passed path
+	 * marks lessons complete through LessonModel directly, so it is unaffected.
+	 *
+	 * @since 2.2.3
+	 *
+	 * @param bool $validated Whether Tutor will allow the completion.
+	 * @param int  $user_id   User completing the lesson.
+	 * @param int  $lesson_id Lesson post ID.
+	 * @return bool False when the attached assignment must be passed first.
+	 */
+	public function validate_lesson_complete( $validated, $user_id, $lesson_id ) {
+		if ( ! $validated ) {
+			return $validated;
 		}
 
-		if ( $assignment_id ) {
-			// Only hide the complete button if "Require passing grade" is enabled.
-			$require_pass = get_post_meta( $post_id, self::META_KEY_REQUIRE_PASS, true );
+		return ! $this->is_completion_blocked( (int) $lesson_id, (int) $user_id );
+	}
 
-			if ( '1' === $require_pass ) {
-				// If the lesson is already marked complete, don't hide the button.
-				if ( function_exists( 'tutor_utils' ) ) {
-					$completed = tutor_utils()->is_completed_lesson( $post_id, get_current_user_id() );
-					if ( false !== $completed ) {
-						return $form;
-					}
-				}
+	/**
+	 * Whether the attached assignment still blocks lesson completion
+	 *
+	 * Blocks only when an existing assignment is attached with "require
+	 * passing grade" on, the lesson isn't already complete, and the user
+	 * hasn't passed the assignment yet.
+	 *
+	 * @since 2.2.3
+	 *
+	 * @param int $lesson_id Lesson post ID.
+	 * @param int $user_id   User ID.
+	 * @return bool True when completion must wait for a passing submission.
+	 */
+	private function is_completion_blocked( $lesson_id, $user_id ) {
+		$lesson_id     = absint( $lesson_id );
+		$assignment_id = $lesson_id ? get_post_meta( $lesson_id, self::META_KEY_ASSIGNMENT_ID, true ) : '';
 
-				// If the user has already passed this assignment, don't hide the button.
-				$user_id = get_current_user_id();
-				if ( $user_id && $this->has_user_passed_assignment( $user_id, (int) $assignment_id ) ) {
-					return $form;
-				}
-
-				// Return empty to hide the complete button - user must pass assignment.
-				return '';
-			}
+		// No mapping, or a stale one (assignment row was deleted).
+		if ( ! $assignment_id || ! PressPrimer_Assignment_Assignment::get( $assignment_id ) ) {
+			return false;
 		}
 
-		return $form;
+		if ( '1' !== get_post_meta( $lesson_id, self::META_KEY_REQUIRE_PASS, true ) ) {
+			return false;
+		}
+
+		// An already-completed lesson stays completable.
+		if ( function_exists( 'tutor_utils' ) && false !== tutor_utils()->is_completed_lesson( $lesson_id, $user_id ) ) {
+			return false;
+		}
+
+		return ! ( $user_id && $this->has_user_passed_assignment( (int) $user_id, (int) $assignment_id ) );
 	}
 
 	/**
