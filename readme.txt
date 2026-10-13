@@ -3,7 +3,7 @@ Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
 Tested up to: 7.1
-Stable tag: 2.2.2
+Stable tag: 2.2.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -263,6 +263,11 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
+
+= 2.2.3 =
+* Fixed: Assignments attached to LearnDash, Tutor LMS and LifterLMS lessons now always appear on the lesson page, and no longer show up in page descriptions, on sites where an SEO or social plugin generates those descriptions
+* Fixed: On Tutor LMS 4, the "Mark as Complete" button now stays hidden until the student passes the attached assignment
+* Fixed: When a Tutor LMS lesson requires a passing grade, it can no longer be marked complete without one, in every Tutor LMS version
 
 = 2.2.2 =
 * Fixed: Student submission dates and the "Graded by … on …" line now show the site's time zone instead of UTC
