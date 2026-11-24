@@ -172,9 +172,11 @@ class PressPrimer_Assignment_REST_Submissions {
 	 * Check if the current user can access a submission
 	 *
 	 * For manage_own users, the submission's assignment must be
-	 * authored by the current user.
+	 * authored by the current user, or shared with them for one of
+	 * their own students.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.4 Allows submissions on shared assignments.
 	 *
 	 * @param PressPrimer_Assignment_Submission $submission Submission instance.
 	 * @return bool True if user can access.
@@ -190,7 +192,11 @@ class PressPrimer_Assignment_REST_Submissions {
 			return false;
 		}
 
-		return (int) $assignment->author_id === get_current_user_id();
+		if ( (int) $assignment->author_id === get_current_user_id() ) {
+			return true;
+		}
+
+		return PressPrimer_Assignment_Capabilities::can_access_shared_submission( $submission );
 	}
 
 	/**
@@ -398,8 +404,11 @@ class PressPrimer_Assignment_REST_Submissions {
 		$where_params  = [ 'draft' ];
 
 		if ( null !== $author_id ) {
-			$where_clauses[] = 'a.author_id = %d';
+			list( $shared_sql, $shared_params ) = PressPrimer_Assignment_Capabilities::get_shared_scope_sql( $author_id, 'a.id', 's.user_id' );
+
+			$where_clauses[] = '' === $shared_sql ? 'a.author_id = %d' : "(a.author_id = %d OR {$shared_sql})";
 			$where_params[]  = $author_id;
+			$where_params    = array_merge( $where_params, $shared_params );
 		}
 
 		if ( null !== $visible_user_ids ) {
@@ -1017,8 +1026,11 @@ class PressPrimer_Assignment_REST_Submissions {
 		}
 
 		if ( null !== $author_id ) {
-			$where   .= ' AND a.author_id = %d';
+			list( $shared_sql, $shared_params ) = PressPrimer_Assignment_Capabilities::get_shared_scope_sql( $author_id, 'a.id', 's.user_id' );
+
+			$where   .= '' === $shared_sql ? ' AND a.author_id = %d' : " AND (a.author_id = %d OR {$shared_sql})";
 			$params[] = $author_id;
+			$params   = array_merge( $params, $shared_params );
 		}
 
 		if ( null !== $visible_user_ids && ! empty( $visible_user_ids ) ) {

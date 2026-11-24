@@ -237,4 +237,109 @@ class PressPrimer_Assignment_Capabilities {
 			get_current_user_id()
 		);
 	}
+
+	/**
+	 * Get assignments shared with a teacher beyond the ones they created
+	 *
+	 * Teachers (manage_own) work with submissions on assignments they
+	 * created. Addons can share more assignments with them — Educator
+	 * shares the assignments distributed to groups the teacher leads —
+	 * so the teacher can review and grade their own students' work on
+	 * them. Sharing grants grading access only; editing an assignment
+	 * stays with its creator.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param int $user_id Teacher's user ID. Defaults to the current user.
+	 * @return int[] Shared assignment IDs.
+	 */
+	public static function get_shared_assignment_ids( $user_id = 0 ) {
+		$user_id = $user_id ? absint( $user_id ) : get_current_user_id();
+
+		if ( ! $user_id ) {
+			return [];
+		}
+
+		/**
+		 * Filters the assignments shared with a teacher for grading.
+		 *
+		 * The teacher sees and grades submissions on these assignments,
+		 * limited to the students returned by the
+		 * pressprimer_assignment_visible_user_ids filter.
+		 *
+		 * @since 2.2.4
+		 *
+		 * @param int[] $assignment_ids Shared assignment IDs. Default empty.
+		 * @param int   $user_id        Teacher's user ID.
+		 */
+		$assignment_ids = apply_filters( 'pressprimer_assignment_shared_assignment_ids', [], $user_id );
+
+		return array_values( array_unique( array_filter( array_map( 'absint', (array) $assignment_ids ) ) ) );
+	}
+
+	/**
+	 * Build the SQL condition for submissions on shared assignments
+	 *
+	 * Matches rows on assignments shared with the teacher whose student is
+	 * one of the teacher's own students. Callers OR it with their own-
+	 * assignment condition. Column names are fixed identifiers supplied by
+	 * the caller, never user input.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param int    $user_id           Teacher's user ID.
+	 * @param string $assignment_column Assignment ID column, e.g. 's.assignment_id'.
+	 * @param string $user_column       Student user ID column, e.g. 's.user_id'.
+	 * @return array {
+	 *     @type string $0 SQL condition with placeholders, or '' when nothing is shared.
+	 *     @type array  $1 Values for the placeholders.
+	 * }
+	 */
+	public static function get_shared_scope_sql( $user_id, $assignment_column, $user_column ) {
+		$assignment_ids = self::get_shared_assignment_ids( $user_id );
+
+		if ( empty( $assignment_ids ) ) {
+			return [ '', [] ];
+		}
+
+		/** This filter is documented in includes/admin/class-ppa-admin-submissions.php */
+		$student_ids = apply_filters( 'pressprimer_assignment_visible_user_ids', null, absint( $user_id ) );
+
+		if ( is_array( $student_ids ) && empty( $student_ids ) ) {
+			return [ '', [] ];
+		}
+
+		$sql    = $assignment_column . ' IN (' . implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) ) . ')';
+		$values = $assignment_ids;
+
+		if ( is_array( $student_ids ) ) {
+			$student_ids = array_map( 'absint', $student_ids );
+			$sql        .= ' AND ' . $user_column . ' IN (' . implode( ',', array_fill( 0, count( $student_ids ), '%d' ) ) . ')';
+			$values      = array_merge( $values, $student_ids );
+		}
+
+		return [ '(' . $sql . ')', $values ];
+	}
+
+	/**
+	 * Check whether a teacher may work with a submission on a shared assignment
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param PressPrimer_Assignment_Submission $submission Submission instance.
+	 * @param int                               $user_id    Teacher's user ID. Defaults to the current user.
+	 * @return bool True when the assignment is shared with the teacher and the student is theirs.
+	 */
+	public static function can_access_shared_submission( $submission, $user_id = 0 ) {
+		$user_id = $user_id ? absint( $user_id ) : get_current_user_id();
+
+		if ( ! $submission || ! in_array( (int) $submission->assignment_id, self::get_shared_assignment_ids( $user_id ), true ) ) {
+			return false;
+		}
+
+		/** This filter is documented in includes/admin/class-ppa-admin-submissions.php */
+		$student_ids = apply_filters( 'pressprimer_assignment_visible_user_ids', null, $user_id );
+
+		return null === $student_ids || in_array( (int) $submission->user_id, array_map( 'absint', $student_ids ), true );
+	}
 }

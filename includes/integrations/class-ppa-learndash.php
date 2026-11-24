@@ -80,13 +80,17 @@ class PressPrimer_Assignment_LearnDash {
 
 		// Frontend hooks.
 		add_filter( 'the_content', [ $this, 'maybe_display_assignment' ], 20 );
-		add_filter( 'learndash_mark_complete_button', [ $this, 'maybe_hide_mark_complete' ], 10, 2 );
+		add_filter( 'learndash_template_after_include_html', [ $this, 'append_assignment_to_modern_tabs' ], 10, 3 );
+		add_filter( 'learndash_mark_complete', [ $this, 'maybe_hide_mark_complete' ], 10, 2 );
 
 		// Completion tracking — mark LD content complete when assignment is passed.
 		add_action( 'pressprimer_assignment_submission_passed', [ $this, 'handle_assignment_passed' ], 10, 2 );
 
 		// Prevent lesson/topic completion when PPA assignment is attached and not passed.
+		// The can-complete filter only runs in the classic layout without Focus Mode;
+		// the process filter is the server-side gate every layout's form submits through.
 		add_filter( 'learndash-lesson-can-complete', [ $this, 'maybe_prevent_lesson_completion' ], 10, 4 );
+		add_filter( 'learndash_process_mark_complete', [ $this, 'maybe_block_mark_complete' ], 10, 3 );
 
 		// REST API endpoints.
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
@@ -543,16 +547,59 @@ class PressPrimer_Assignment_LearnDash {
 			return $content;
 		}
 
+		// LearnDash's Modern UI discards the content it's handed and runs
+		// the_content again from its own view models — on a topic page, for the
+		// parent lesson too — so the assignment is added after the step's
+		// content tabs instead. See append_assignment_to_modern_tabs().
+		if ( $this->is_modern_learndash_view() ) {
+			return $content;
+		}
+
 		// Prevent double-rendering (the_content can fire multiple times).
 		if ( $this->assignment_rendered ) {
 			return $content;
 		}
 
-		$post_id       = get_the_ID();
+		return $content . $this->get_assignment_html( get_the_ID() );
+	}
+
+	/**
+	 * Append the assignment after the content tabs on Modern UI pages
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param string $html Markup LearnDash outputs after the template.
+	 * @param array  $args Template arguments.
+	 * @param string $name Template name.
+	 * @return string Modified markup.
+	 */
+	public function append_assignment_to_modern_tabs( $html, $args, $name ) {
+		unset( $args );
+
+		if ( 'modern/components/tabs' !== $name
+			|| $this->assignment_rendered
+			|| ! is_singular( [ 'sfwd-lessons', 'sfwd-topic' ] )
+			|| ! $this->is_modern_learndash_view()
+		) {
+			return $html;
+		}
+
+		return $html . $this->get_assignment_html( get_queried_object_id() );
+	}
+
+	/**
+	 * Build the assignment markup for a lesson or topic
+	 *
+	 * @since 2.2.4 Extracted from maybe_display_assignment().
+	 *
+	 * @param int $post_id Lesson or topic ID.
+	 * @return string Assignment markup, the locked placeholder, or '' when none is attached.
+	 */
+	private function get_assignment_html( $post_id ) {
 		$assignment_id = get_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, true );
 
 		if ( ! $assignment_id ) {
-			return $content;
+			return '';
 		}
 
 		// Treat a stale mapping (assignment row was deleted) as no
@@ -562,7 +609,7 @@ class PressPrimer_Assignment_LearnDash {
 		// already returns null.
 		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
 		if ( ! $assignment ) {
-			return $content;
+			return '';
 		}
 
 		// Mark as rendered before processing.
@@ -576,7 +623,7 @@ class PressPrimer_Assignment_LearnDash {
 					$restriction_message = __( 'Complete all topics in this lesson to unlock the assignment.', 'pressprimer-assignment' );
 				}
 
-				return $content . $this->render_restriction_placeholder( $assignment->title, $restriction_message );
+				return $this->render_restriction_placeholder( $assignment->title, $restriction_message );
 			}
 		}
 
@@ -586,27 +633,58 @@ class PressPrimer_Assignment_LearnDash {
 			absint( $assignment_id )
 		);
 
-		return $content . do_shortcode( $assignment_shortcode );
+		return do_shortcode( $assignment_shortcode );
+	}
+
+	/**
+	 * Check whether the current lesson or topic uses LearnDash's Modern UI
+	 *
+	 * The Modern UI ("Course Page" under Settings > General > Appearance >
+	 * Modern UI) only applies with the LearnDash 3.0 template active.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @return bool True when the Modern UI templates render this page.
+	 */
+	private function is_modern_learndash_view() {
+		if ( ! class_exists( '\LearnDash\Core\Themes\LD30\Modern\Features' )
+			|| ! class_exists( 'LearnDash_Theme_Register' )
+			|| ! class_exists( 'LDLMS_Post_Types' )
+		) {
+			return false;
+		}
+
+		if ( 'ld30' !== LearnDash_Theme_Register::get_active_theme_key() ) {
+			return false;
+		}
+
+		$view = is_singular( 'sfwd-topic' ) ? LDLMS_Post_Types::TOPIC : LDLMS_Post_Types::LESSON;
+
+		return \LearnDash\Core\Themes\LD30\Modern\Features::enabled_for_view( $view );
 	}
 
 	/**
 	 * Maybe hide Mark Complete button
 	 *
 	 * Hides the LearnDash Mark Complete button when an assignment is attached
-	 * but the user has not yet passed it.
+	 * but the user has not yet passed it. Every LearnDash layout (classic,
+	 * Focus Mode, and the modern design) builds the button through
+	 * learndash_mark_complete(); the modern design shows its own disabled
+	 * placeholder when the HTML comes back empty.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.4 Hooked to learndash_mark_complete, which receives the post.
 	 *
-	 * @param string $button Button HTML.
-	 * @param array  $args   Button arguments.
+	 * @param string      $button Mark Complete form HTML.
+	 * @param WP_Post|int $post   Lesson or topic being displayed.
 	 * @return string Modified button HTML.
 	 */
-	public function maybe_hide_mark_complete( $button, $args ) {
-		if ( empty( $args['post'] ) ) {
+	public function maybe_hide_mark_complete( $button, $post ) {
+		if ( empty( $post ) ) {
 			return $button;
 		}
 
-		$post_id   = is_object( $args['post'] ) ? $args['post']->ID : $args['post'];
+		$post_id   = is_object( $post ) ? $post->ID : absint( $post );
 		$post_type = get_post_type( $post_id );
 
 		// Only hide for lessons and topics.
@@ -746,6 +824,33 @@ class PressPrimer_Assignment_LearnDash {
 
 		// Block completion — user hasn't passed the assignment yet.
 		return false;
+	}
+
+	/**
+	 * Block Mark Complete submissions when an attached assignment is not passed
+	 *
+	 * The Mark Complete form posts straight to learndash_process_mark_complete(),
+	 * which never consults the can-complete filter above, so a visible button
+	 * would complete the lesson. Our own pass-triggered completion still goes
+	 * through: the submission is saved as passed before that action fires.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param bool    $process_completion Whether LearnDash should mark the step complete.
+	 * @param WP_Post $post               The lesson or topic being completed.
+	 * @param WP_User $current_user       The user being marked complete.
+	 * @return bool Modified value.
+	 */
+	public function maybe_block_mark_complete( $process_completion, $post, $current_user ) {
+		if ( ! $process_completion || ! $post || ! $current_user ) {
+			return $process_completion;
+		}
+
+		if ( ! in_array( $post->post_type, $this->supported_post_types, true ) ) {
+			return $process_completion;
+		}
+
+		return $this->maybe_prevent_lesson_completion( true, $post->ID, 0, $current_user->ID );
 	}
 
 	/**

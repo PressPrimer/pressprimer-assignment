@@ -3,7 +3,7 @@ Contributors: pressprimer
 Tags: assignment, grading, education, lms, learndash
 Requires at least: 6.4
 Tested up to: 7.1
-Stable tag: 2.2.3
+Stable tag: 2.2.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -263,6 +263,11 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 5. Assignment text editor with autosave and formatting controls
 
 == Changelog ==
+
+= 2.2.4 =
+* Fixed: Assignments now appear on LearnDash lessons and topics that use the Modern UI
+* Fixed: With LearnDash's Modern UI or Focus Mode, students can no longer mark a lesson complete before passing the attached assignment
+* Fixed: With the Educator add-on, teachers and LearnDash Group Leaders can now grade their group's submissions on assignments someone else created
 
 = 2.2.3 =
 * Fixed: Assignments attached to LearnDash, Tutor LMS and LifterLMS lessons now always appear on the lesson page, and no longer show up in page descriptions, on sites where an SEO or social plugin generates those descriptions

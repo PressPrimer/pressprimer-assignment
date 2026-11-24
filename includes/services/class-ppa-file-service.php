@@ -713,9 +713,10 @@ class PressPrimer_Assignment_File_Service {
 			return true;
 		}
 
+		// No finfo_close(): the handle is freed when it goes out of scope,
+		// and the function is deprecated as of PHP 8.5.
 		$finfo         = finfo_open( FILEINFO_MIME_TYPE );
 		$detected_mime = finfo_file( $finfo, $tmp_path );
-		finfo_close( $finfo );
 
 		if ( false === $detected_mime ) {
 			return new WP_Error(
@@ -829,7 +830,6 @@ class PressPrimer_Assignment_File_Service {
 		if ( function_exists( 'finfo_open' ) ) {
 			$finfo     = finfo_open( FILEINFO_MIME_TYPE );
 			$mime_type = finfo_file( $finfo, $file_path );
-			finfo_close( $finfo );
 
 			if ( false !== $mime_type ) {
 				return $mime_type;

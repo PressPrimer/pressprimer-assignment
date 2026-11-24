@@ -1,6 +1,6 @@
 {
   "name": "pressprimer-assignment",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Comprehensive assignment management for WordPress educators",
   "scripts": {
     "build": "wp-scripts build",

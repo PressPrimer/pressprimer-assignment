@@ -139,6 +139,58 @@ class PressPrimer_Assignment_Statistics_Service {
 	}
 
 	/**
+	 * Build the submission filter for a teacher's statistics
+	 *
+	 * Covers every submission on the assignments the teacher created,
+	 * plus their own students' submissions on assignments shared with
+	 * them.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param int $author_id Teacher's user ID.
+	 * @return array|null {
+	 *     Null when the teacher has no assignments at all.
+	 *
+	 *     @type string $0 Filter SQL starting with " AND ", with placeholders.
+	 *     @type array  $1 Values for the placeholders.
+	 * }
+	 */
+	private function get_teacher_filter( $author_id ) {
+		global $wpdb;
+
+		$assignments_table = $wpdb->prefix . 'ppa_assignments';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$assignment_ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT id FROM {$assignments_table} WHERE author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
+				$author_id
+			)
+		);
+
+		list( $shared_sql, $shared_params ) = PressPrimer_Assignment_Capabilities::get_shared_scope_sql( $author_id, 's.assignment_id', 's.user_id' );
+
+		if ( empty( $assignment_ids ) && '' === $shared_sql ) {
+			return null;
+		}
+
+		$conditions = [];
+		$params     = [];
+
+		if ( $assignment_ids ) {
+			$conditions[] = 's.assignment_id IN (' . implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) ) . ')';
+			$params       = array_map( 'absint', $assignment_ids );
+		}
+
+		if ( '' !== $shared_sql ) {
+			$conditions[] = $shared_sql;
+			$params       = array_merge( $params, $shared_params );
+		}
+
+		return [ ' AND (' . implode( ' OR ', $conditions ) . ')', $params ];
+	}
+
+	/**
 	 * Get overview statistics for reports page
 	 *
 	 * Returns all-time aggregate metrics for the reports overview cards.
@@ -167,15 +219,9 @@ class PressPrimer_Assignment_Statistics_Service {
 		$assignment_params = [];
 
 		if ( $author_id ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$assignment_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT id FROM {$assignments_table} WHERE author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					$author_id
-				)
-			);
+			$teacher_filter = $this->get_teacher_filter( $author_id );
 
-			if ( empty( $assignment_ids ) ) {
+			if ( null === $teacher_filter ) {
 				$stats = [
 					'total_submissions'      => 0,
 					'avg_score'              => 0,
@@ -187,9 +233,7 @@ class PressPrimer_Assignment_Statistics_Service {
 				return $stats;
 			}
 
-			$id_placeholders   = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
-			$assignment_filter = " AND s.assignment_id IN ({$id_placeholders})";
-			$assignment_params = array_map( 'absint', $assignment_ids );
+			list( $assignment_filter, $assignment_params ) = $teacher_filter;
 		}
 
 		// Total submissions (non-draft).
@@ -313,9 +357,23 @@ class PressPrimer_Assignment_Statistics_Service {
 
 		$where = [ "a.status = 'published'" ];
 
-		// Author filtering (teacher sees own assignments only).
+		// Author filtering (teacher sees own assignments, plus shared ones
+		// counted over their own students' submissions only).
+		$join_scope = '';
 		if ( $args['author_id'] ) {
-			$where[] = $wpdb->prepare( 'a.author_id = %d', $args['author_id'] );
+			list( $shared_sql, $shared_params ) = PressPrimer_Assignment_Capabilities::get_shared_scope_sql( $args['author_id'], 'a.id', 's.user_id' );
+
+			if ( '' === $shared_sql ) {
+				$where[] = $wpdb->prepare( 'a.author_id = %d', $args['author_id'] );
+			} else {
+				$shared_ids   = PressPrimer_Assignment_Capabilities::get_shared_assignment_ids( $args['author_id'] );
+				$placeholders = implode( ',', array_fill( 0, count( $shared_ids ), '%d' ) );
+
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $placeholders is a generated string of %d tokens.
+				$where[] = $wpdb->prepare( "(a.author_id = %d OR a.id IN ({$placeholders}))", array_merge( [ $args['author_id'] ], $shared_ids ) );
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $shared_sql is built with placeholders.
+				$join_scope = $wpdb->prepare( " AND (a.author_id = %d OR {$shared_sql})", array_merge( [ $args['author_id'] ], $shared_params ) );
+			}
 		}
 
 		// Search by title.
@@ -387,7 +445,7 @@ class PressPrimer_Assignment_Statistics_Service {
 						END
 					)) AS avg_grading_time
 				FROM {$assignments_table} a
-				LEFT JOIN {$submissions_table} s ON a.id = s.assignment_id
+				LEFT JOIN {$submissions_table} s ON a.id = s.assignment_id{$join_scope}
 				WHERE {$where_sql}
 				GROUP BY a.id
 				{$order_sql}
@@ -456,11 +514,15 @@ class PressPrimer_Assignment_Statistics_Service {
 
 		// --- Total published assignments ---
 		if ( $author_id ) {
+			$shared_ids = PressPrimer_Assignment_Capabilities::get_shared_assignment_ids( $author_id );
+			$shared_or  = $shared_ids ? ' OR id IN (' . implode( ',', array_fill( 0, count( $shared_ids ), '%d' ) ) . ')' : '';
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$total_assignments = (int) $wpdb->get_var(
+				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic param count from shared assignment IDs.
 				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$assignments_table} WHERE status = 'published' AND author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					$author_id
+					"SELECT COUNT(*) FROM {$assignments_table} WHERE status = 'published' AND (author_id = %d{$shared_or})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, $shared_or is a generated string of %d tokens.
+					array_merge( [ $author_id ], $shared_ids )
 				)
 			);
 		} else {
@@ -475,15 +537,9 @@ class PressPrimer_Assignment_Statistics_Service {
 		$assignment_params = [];
 
 		if ( $author_id ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$assignment_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT id FROM {$assignments_table} WHERE author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					$author_id
-				)
-			);
+			$teacher_filter = $this->get_teacher_filter( $author_id );
 
-			if ( empty( $assignment_ids ) ) {
+			if ( null === $teacher_filter ) {
 				// No assignments found — return zeros.
 				$stats = [
 					'total_assignments'   => $total_assignments,
@@ -499,9 +555,7 @@ class PressPrimer_Assignment_Statistics_Service {
 				return $stats;
 			}
 
-			$id_placeholders   = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
-			$assignment_filter = " AND s.assignment_id IN ({$id_placeholders})";
-			$assignment_params = array_map( 'absint', $assignment_ids );
+			list( $assignment_filter, $assignment_params ) = $teacher_filter;
 		}
 
 		// --- Recent submissions (7 days) ---
@@ -710,15 +764,9 @@ class PressPrimer_Assignment_Statistics_Service {
 		$assignment_params = [];
 
 		if ( $author_id ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$assignment_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT id FROM {$assignments_table} WHERE author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					$author_id
-				)
-			);
+			$teacher_filter = $this->get_teacher_filter( $author_id );
 
-			if ( empty( $assignment_ids ) ) {
+			if ( null === $teacher_filter ) {
 				$result = [
 					'data'       => $this->fill_date_range( $start_date, $end_date ),
 					'start_date' => $start_date,
@@ -729,9 +777,7 @@ class PressPrimer_Assignment_Statistics_Service {
 				return $result;
 			}
 
-			$id_placeholders   = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
-			$assignment_filter = " AND s.assignment_id IN ({$id_placeholders})";
-			$assignment_params = array_map( 'absint', $assignment_ids );
+			list( $assignment_filter, $assignment_params ) = $teacher_filter;
 		}
 
 		$query_params   = [];
@@ -819,21 +865,13 @@ class PressPrimer_Assignment_Statistics_Service {
 		$assignment_params = [];
 
 		if ( $author_id ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$assignment_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT id FROM {$assignments_table} WHERE author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix.
-					$author_id
-				)
-			);
+			$teacher_filter = $this->get_teacher_filter( $author_id );
 
-			if ( empty( $assignment_ids ) ) {
+			if ( null === $teacher_filter ) {
 				return [ 'items' => [] ];
 			}
 
-			$id_placeholders   = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
-			$assignment_filter = " AND s.assignment_id IN ({$id_placeholders})";
-			$assignment_params = array_map( 'absint', $assignment_ids );
+			list( $assignment_filter, $assignment_params ) = $teacher_filter;
 		}
 
 		$query_params   = $assignment_params;
