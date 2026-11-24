@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-24T15:51:59+00:00\n"
+"POT-Creation-Date: 2026-11-24T16:19:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pressprimer-assignment\n"
@@ -2718,23 +2718,23 @@ msgstr ""
 msgid "File contains a potentially dangerous extension."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:723
+#: includes/services/class-ppa-file-service.php:724
 msgid "Unable to verify file content type."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:731
+#: includes/services/class-ppa-file-service.php:732
 msgid "File content does not match an allowed type."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:741
+#: includes/services/class-ppa-file-service.php:742
 msgid "File content does not match the file extension."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:765
+#: includes/services/class-ppa-file-service.php:766
 msgid "File content does not match a PowerPoint presentation."
 msgstr ""
 
-#: includes/services/class-ppa-file-service.php:786
+#: includes/services/class-ppa-file-service.php:787
 msgid "PowerPoint uploads are not supported on this server (ZipArchive is unavailable)."
 msgstr ""
 
