@@ -86,7 +86,8 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$assignments_table = $wpdb->prefix . 'ppa_assignments';
 
 		// Get accessible assignment IDs (respects teacher ownership).
-		$assignment_ids = self::get_accessible_assignment_ids();
+		$scope          = self::get_scope();
+		$assignment_ids = $scope['ids'];
 
 		if ( empty( $assignment_ids ) ) {
 			return [
@@ -101,7 +102,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$id_placeholders = implode( ',', array_fill( 0, count( $assignment_ids ), '%d' ) );
 
 		// Base WHERE params.
-		$where_params = $assignment_ids;
+		$where_params = $scope['params'];
 
 		// Status filter.
 		$statuses       = (array) $args['status'];
@@ -115,7 +116,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
 		$where_params        = array_merge( $where_params, $statuses );
 
-		$where_sql = "WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN ({$status_placeholders})";
+		$where_sql = "WHERE {$scope['sql']} AND s.status IN ({$status_placeholders})";
 
 		// Assignment filter.
 		$has_assignment_filter = ! empty( $args['assignment_id'] );
@@ -243,7 +244,8 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 
 		$submissions_table = $wpdb->prefix . 'ppa_submissions';
 
-		$assignment_ids = self::get_accessible_assignment_ids();
+		$scope          = self::get_scope();
+		$assignment_ids = $scope['ids'];
 
 		if ( empty( $assignment_ids ) ) {
 			return 0;
@@ -257,7 +259,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		// the outer WHERE filters to pending statuses only.
 		$params = array_merge(
 			$assignment_ids,
-			$assignment_ids,
+			$scope['params'],
 			[ 'submitted', 'grading', 'graded' ]
 		);
 
@@ -265,7 +267,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		return (int) $wpdb->get_var(
 			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs for subquery + assignment IDs + 3 status strings for outer WHERE).
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status != 'draft' GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN (%s, %s, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
+				"SELECT COUNT(*) FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status != 'draft' GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE {$scope['sql']} AND s.status IN (%s, %s, %s)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clauses use placeholders.
 				$params
 			)
 		);
@@ -288,7 +290,8 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$submissions_table = $wpdb->prefix . 'ppa_submissions';
 		$current_id        = absint( $current_id );
 
-		$assignment_ids = self::get_accessible_assignment_ids();
+		$scope          = self::get_scope();
+		$assignment_ids = $scope['ids'];
 
 		if ( empty( $assignment_ids ) ) {
 			return null;
@@ -301,7 +304,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		// that graded/returned submissions block older ones from appearing.
 		$params = array_merge(
 			$assignment_ids,
-			$assignment_ids,
+			$scope['params'],
 			[ 'submitted', 'grading', $current_id ]
 		);
 
@@ -311,7 +314,7 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 		$next_id = $wpdb->get_var(
 			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Array param count is dynamic (assignment IDs for subquery + assignment IDs + statuses + current_id).
 			$wpdb->prepare(
-				"SELECT s.id FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status != 'draft' GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE s.assignment_id IN ({$id_placeholders}) AND s.status IN (%s, %s) AND s.id != %d ORDER BY s.submitted_at ASC, s.created_at ASC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clause uses placeholders.
+				"SELECT s.id FROM {$submissions_table} s JOIN (SELECT MAX(id) AS latest_id FROM {$submissions_table} WHERE assignment_id IN ({$id_placeholders}) AND status != 'draft' GROUP BY user_id, assignment_id) latest ON s.id = latest.latest_id WHERE {$scope['sql']} AND s.status IN (%s, %s) AND s.id != %d ORDER BY s.submitted_at ASC, s.created_at ASC LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from $wpdb->prefix, IN clauses use placeholders.
 				$params
 			)
 		);
@@ -320,14 +323,89 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 	}
 
 	/**
+	 * Get the queue scope for the current user
+	 *
+	 * Teachers see every submission on their own assignments, and only
+	 * their own students' submissions on assignments shared with them.
+	 * The latest-submission subqueries keep using the plain ID list; the
+	 * outer WHERE uses the scoped condition.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @return array {
+	 *     @type int[]  $ids    Accessible assignment IDs.
+	 *     @type string $sql    Outer WHERE condition on the `s` alias, with placeholders.
+	 *     @type array  $params Values for the condition's placeholders.
+	 * }
+	 */
+	private static function get_scope() {
+		$ids   = self::get_accessible_assignment_ids();
+		$in    = 's.assignment_id IN (' . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ')';
+		$scope = [
+			'ids'    => $ids,
+			'sql'    => $in,
+			'params' => $ids,
+		];
+
+		if ( empty( $ids ) || current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
+			return $scope;
+		}
+
+		list( $shared_sql, $shared_params ) = PressPrimer_Assignment_Capabilities::get_shared_scope_sql( get_current_user_id(), 's.assignment_id', 's.user_id' );
+
+		if ( '' === $shared_sql ) {
+			return $scope;
+		}
+
+		$own_ids = array_values( array_intersect( $ids, self::get_own_assignment_ids() ) );
+
+		if ( $own_ids ) {
+			$own_sql      = 's.assignment_id IN (' . implode( ',', array_fill( 0, count( $own_ids ), '%d' ) ) . ')';
+			$scope['sql'] = "{$in} AND ({$own_sql} OR {$shared_sql})";
+		} else {
+			$scope['sql'] = "{$in} AND {$shared_sql}";
+		}
+
+		$scope['params'] = array_merge( $ids, $own_ids, $shared_params );
+
+		return $scope;
+	}
+
+	/**
+	 * Get the published assignments the current user created
+	 *
+	 * @since 2.2.4
+	 *
+	 * @return int[] Assignment IDs.
+	 */
+	private static function get_own_assignment_ids() {
+		global $wpdb;
+
+		$table = $wpdb->prefix . 'ppa_assignments';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE status = 'published' AND author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix.
+				get_current_user_id()
+			)
+		);
+
+		return array_map( 'intval', $ids );
+	}
+
+	/**
 	 * Get accessible assignment IDs for current user
 	 *
 	 * Returns IDs of all published assignments the current user
 	 * can access. Users with manage_all see all assignments.
-	 * Users with only manage_own see their own assignments.
-	 * The filter hook allows addons to further customize access.
+	 * Users with only manage_own see their own assignments, plus
+	 * assignments shared with them (see get_scope() for the student
+	 * limit on those). The filter hook allows addons to further
+	 * customize access.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.4 Includes assignments shared with teachers.
 	 *
 	 * @return array Array of integer assignment IDs.
 	 */
@@ -339,13 +417,22 @@ class PressPrimer_Assignment_Grading_Queue_Service {
 
 		// Built-in ownership scoping: manage_own users see only their own.
 		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT id FROM {$table} WHERE status = 'published' AND author_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix.
-					$user_id
-				)
-			);
+			$ids        = self::get_own_assignment_ids();
+			$shared_ids = PressPrimer_Assignment_Capabilities::get_shared_assignment_ids( $user_id );
+
+			if ( $shared_ids ) {
+				$placeholders = implode( ',', array_fill( 0, count( $shared_ids ), '%d' ) );
+
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+				$published_shared = $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT id FROM {$table} WHERE status = 'published' AND id IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from $wpdb->prefix, $placeholders is a generated string of %d tokens.
+						$shared_ids
+					)
+				);
+
+				$ids = array_values( array_unique( array_merge( $ids, array_map( 'intval', $published_shared ) ) ) );
+			}
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$ids = $wpdb->get_col(

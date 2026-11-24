@@ -535,10 +535,14 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			$where_values[]  = $like_term;
 		}
 
-		// Scope to current user's assignments' submissions for manage_own users.
+		// Scope to current user's assignments' submissions for manage_own users,
+		// plus their own students' submissions on assignments shared with them.
 		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
-			$where_clauses[] = 'a.author_id = %d';
+			list( $shared_sql, $shared_values ) = PressPrimer_Assignment_Capabilities::get_shared_scope_sql( get_current_user_id(), 'a.id', 's.user_id' );
+
+			$where_clauses[] = '' === $shared_sql ? 'a.author_id = %d' : "(a.author_id = %d OR {$shared_sql})";
 			$where_values[]  = get_current_user_id();
+			$where_values    = array_merge( $where_values, $shared_values );
 		}
 
 		/**
@@ -992,11 +996,30 @@ class PressPrimer_Assignment_Submissions_List_Table extends WP_List_Table {
 			'where'    => [],
 		];
 
+		$shared_ids = [];
 		if ( ! current_user_can( PressPrimer_Assignment_Capabilities::PPA_CAP_MANAGE_ALL ) ) {
 			$find_args['where']['author_id'] = get_current_user_id();
+			$shared_ids                      = PressPrimer_Assignment_Capabilities::get_shared_assignment_ids();
 		}
 
 		$assignments = PressPrimer_Assignment_Assignment::find( $find_args );
+
+		// Add assignments shared with this teacher, keeping the title order.
+		if ( $shared_ids ) {
+			$own_ids = array_map( 'intval', wp_list_pluck( $assignments, 'id' ) );
+			foreach ( array_diff( $shared_ids, $own_ids ) as $shared_id ) {
+				$shared = PressPrimer_Assignment_Assignment::get( $shared_id );
+				if ( $shared ) {
+					$assignments[] = $shared;
+				}
+			}
+			usort(
+				$assignments,
+				static function ( $a, $b ) {
+					return strcasecmp( $a->title, $b->title );
+				}
+			);
+		}
 
 		?>
 		<label class="screen-reader-text" for="filter-by-assignment"><?php esc_html_e( 'Filter by assignment', 'pressprimer-assignment' ); ?></label>
