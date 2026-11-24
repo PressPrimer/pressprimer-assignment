@@ -80,6 +80,7 @@ class PressPrimer_Assignment_LearnDash {
 
 		// Frontend hooks.
 		add_filter( 'the_content', [ $this, 'maybe_display_assignment' ], 20 );
+		add_filter( 'learndash_template_after_include_html', [ $this, 'append_assignment_to_modern_tabs' ], 10, 3 );
 		add_filter( 'learndash_mark_complete', [ $this, 'maybe_hide_mark_complete' ], 10, 2 );
 
 		// Completion tracking — mark LD content complete when assignment is passed.
@@ -546,16 +547,59 @@ class PressPrimer_Assignment_LearnDash {
 			return $content;
 		}
 
+		// LearnDash's Modern UI discards the content it's handed and runs
+		// the_content again from its own view models — on a topic page, for the
+		// parent lesson too — so the assignment is added after the step's
+		// content tabs instead. See append_assignment_to_modern_tabs().
+		if ( $this->is_modern_learndash_view() ) {
+			return $content;
+		}
+
 		// Prevent double-rendering (the_content can fire multiple times).
 		if ( $this->assignment_rendered ) {
 			return $content;
 		}
 
-		$post_id       = get_the_ID();
+		return $content . $this->get_assignment_html( get_the_ID() );
+	}
+
+	/**
+	 * Append the assignment after the content tabs on Modern UI pages
+	 *
+	 * @since 2.2.4
+	 *
+	 * @param string $html Markup LearnDash outputs after the template.
+	 * @param array  $args Template arguments.
+	 * @param string $name Template name.
+	 * @return string Modified markup.
+	 */
+	public function append_assignment_to_modern_tabs( $html, $args, $name ) {
+		unset( $args );
+
+		if ( 'modern/components/tabs' !== $name
+			|| $this->assignment_rendered
+			|| ! is_singular( [ 'sfwd-lessons', 'sfwd-topic' ] )
+			|| ! $this->is_modern_learndash_view()
+		) {
+			return $html;
+		}
+
+		return $html . $this->get_assignment_html( get_queried_object_id() );
+	}
+
+	/**
+	 * Build the assignment markup for a lesson or topic
+	 *
+	 * @since 2.2.4 Extracted from maybe_display_assignment().
+	 *
+	 * @param int $post_id Lesson or topic ID.
+	 * @return string Assignment markup, the locked placeholder, or '' when none is attached.
+	 */
+	private function get_assignment_html( $post_id ) {
 		$assignment_id = get_post_meta( $post_id, self::META_KEY_ASSIGNMENT_ID, true );
 
 		if ( ! $assignment_id ) {
-			return $content;
+			return '';
 		}
 
 		// Treat a stale mapping (assignment row was deleted) as no
@@ -565,7 +609,7 @@ class PressPrimer_Assignment_LearnDash {
 		// already returns null.
 		$assignment = PressPrimer_Assignment_Assignment::get( $assignment_id );
 		if ( ! $assignment ) {
-			return $content;
+			return '';
 		}
 
 		// Mark as rendered before processing.
@@ -579,7 +623,7 @@ class PressPrimer_Assignment_LearnDash {
 					$restriction_message = __( 'Complete all topics in this lesson to unlock the assignment.', 'pressprimer-assignment' );
 				}
 
-				return $content . $this->render_restriction_placeholder( $assignment->title, $restriction_message );
+				return $this->render_restriction_placeholder( $assignment->title, $restriction_message );
 			}
 		}
 
@@ -589,7 +633,34 @@ class PressPrimer_Assignment_LearnDash {
 			absint( $assignment_id )
 		);
 
-		return $content . do_shortcode( $assignment_shortcode );
+		return do_shortcode( $assignment_shortcode );
+	}
+
+	/**
+	 * Check whether the current lesson or topic uses LearnDash's Modern UI
+	 *
+	 * The Modern UI ("Course Page" under Settings > General > Appearance >
+	 * Modern UI) only applies with the LearnDash 3.0 template active.
+	 *
+	 * @since 2.2.4
+	 *
+	 * @return bool True when the Modern UI templates render this page.
+	 */
+	private function is_modern_learndash_view() {
+		if ( ! class_exists( '\LearnDash\Core\Themes\LD30\Modern\Features' )
+			|| ! class_exists( 'LearnDash_Theme_Register' )
+			|| ! class_exists( 'LDLMS_Post_Types' )
+		) {
+			return false;
+		}
+
+		if ( 'ld30' !== LearnDash_Theme_Register::get_active_theme_key() ) {
+			return false;
+		}
+
+		$view = is_singular( 'sfwd-topic' ) ? LDLMS_Post_Types::TOPIC : LDLMS_Post_Types::LESSON;
+
+		return \LearnDash\Core\Themes\LD30\Modern\Features::enabled_for_view( $view );
 	}
 
 	/**
