@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: PressPrimer Assignment 2.2.3\n"
+"Project-Id-Version: PressPrimer Assignment 2.2.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/pressprimer-assignment\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-13T14:59:56+00:00\n"
+"POT-Creation-Date: 2026-11-24T15:17:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pressprimer-assignment\n"
@@ -20,8 +20,8 @@ msgstr ""
 #: includes/admin/class-ppa-admin.php:585
 #: includes/admin/class-ppa-onboarding.php:460
 #: includes/blocks/class-ppa-blocks.php:63
-#: includes/integrations/class-ppa-learndash.php:120
-#: includes/integrations/class-ppa-learndash.php:514
+#: includes/integrations/class-ppa-learndash.php:123
+#: includes/integrations/class-ppa-learndash.php:517
 #: includes/integrations/class-ppa-learnpress.php:163
 #: includes/integrations/class-ppa-lifterlms.php:131
 #: includes/integrations/class-ppa-tutorlms.php:143
@@ -232,7 +232,7 @@ msgstr ""
 #: includes/admin/class-ppa-admin-categories.php:785
 #: includes/admin/class-ppa-admin-categories.php:995
 #: includes/admin/class-ppa-admin-submissions.php:491
-#: includes/admin/class-ppa-admin-submissions.php:824
+#: includes/admin/class-ppa-admin-submissions.php:828
 #: includes/admin/class-ppa-admin.php:424
 #: includes/frontend/class-ppa-frontend.php:577
 #: src/submission-detail/components/SubmissionDetail.jsx:139
@@ -254,7 +254,7 @@ msgstr ""
 
 #: includes/admin/class-ppa-admin-assignments.php:1267
 #: includes/admin/class-ppa-admin-assignments.php:1339
-#: includes/admin/class-ppa-admin-submissions.php:857
+#: includes/admin/class-ppa-admin-submissions.php:861
 #: includes/frontend/class-ppa-assignment-renderer.php:948
 #: includes/frontend/class-ppa-submissions-renderer.php:238
 #: src/assignment-editor/components/SettingsPanel.jsx:237
@@ -278,26 +278,26 @@ msgstr ""
 #. translators: %s: human-readable time difference
 #: includes/admin/class-ppa-admin-assignments.php:1298
 #: includes/admin/class-ppa-admin-grading.php:644
-#: includes/admin/class-ppa-admin-submissions.php:916
+#: includes/admin/class-ppa-admin-submissions.php:920
 #, php-format
 msgid "%s ago"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-assignments.php:1322
 #: includes/admin/class-ppa-admin-grading.php:668
-#: includes/admin/class-ppa-admin-submissions.php:943
+#: includes/admin/class-ppa-admin-submissions.php:947
 msgid "Filter"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-assignments.php:1338
 #: includes/admin/class-ppa-admin-grading.php:684
-#: includes/admin/class-ppa-admin-submissions.php:960
+#: includes/admin/class-ppa-admin-submissions.php:964
 msgid "All Statuses"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-assignments.php:1345
 #: includes/admin/class-ppa-admin-grading.php:691
-#: includes/admin/class-ppa-admin-submissions.php:968
+#: includes/admin/class-ppa-admin-submissions.php:972
 msgid "Filter by status"
 msgstr ""
 
@@ -433,7 +433,7 @@ msgstr ""
 #: includes/admin/class-ppa-admin-settings.php:527
 #: includes/frontend/class-ppa-frontend.php:653
 #: includes/frontend/class-ppa-submission-handler.php:913
-#: includes/integrations/class-ppa-learndash.php:876
+#: includes/integrations/class-ppa-learndash.php:910
 #: includes/integrations/class-ppa-learnpress.php:487
 #: includes/integrations/class-ppa-lifterlms.php:455
 #: includes/integrations/class-ppa-tutorlms.php:643
@@ -544,9 +544,9 @@ msgstr ""
 #: includes/admin/class-ppa-admin-grading.php:227
 #: includes/admin/class-ppa-admin-submissions.php:251
 #: includes/admin/class-ppa-admin-submissions.php:354
-#: includes/api/class-ppa-rest-submissions.php:591
-#: includes/api/class-ppa-rest-submissions.php:753
-#: includes/api/class-ppa-rest-submissions.php:931
+#: includes/api/class-ppa-rest-submissions.php:600
+#: includes/api/class-ppa-rest-submissions.php:762
+#: includes/api/class-ppa-rest-submissions.php:940
 #: includes/frontend/class-ppa-submission-handler.php:309
 #: includes/frontend/class-ppa-submission-handler.php:931
 #: includes/services/class-ppa-file-service.php:483
@@ -584,8 +584,8 @@ msgstr ""
 #: includes/admin/class-ppa-admin-grading.php:615
 #: includes/admin/class-ppa-admin-grading.php:685
 #: includes/admin/class-ppa-admin-submissions.php:463
-#: includes/admin/class-ppa-admin-submissions.php:858
-#: includes/admin/class-ppa-admin-submissions.php:961
+#: includes/admin/class-ppa-admin-submissions.php:862
+#: includes/admin/class-ppa-admin-submissions.php:965
 #: includes/frontend/class-ppa-submissions-renderer.php:239
 #: templates/dashboard/my-submissions.php:60
 #: templates/dashboard/my-submissions.php:90
@@ -600,8 +600,8 @@ msgid "No submissions awaiting grading."
 msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:553
-#: includes/admin/class-ppa-admin-submissions.php:764
-#: includes/admin/class-ppa-admin-submissions.php:777
+#: includes/admin/class-ppa-admin-submissions.php:768
+#: includes/admin/class-ppa-admin-submissions.php:781
 msgid "Unknown User"
 msgstr ""
 
@@ -611,8 +611,8 @@ msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:616
 #: includes/admin/class-ppa-admin-grading.php:686
-#: includes/admin/class-ppa-admin-submissions.php:859
-#: includes/admin/class-ppa-admin-submissions.php:962
+#: includes/admin/class-ppa-admin-submissions.php:863
+#: includes/admin/class-ppa-admin-submissions.php:966
 #: includes/admin/class-ppa-admin.php:157
 #: includes/admin/class-ppa-admin.php:158
 #: src/assignment-editor/components/SettingsPanel.jsx:335
@@ -623,8 +623,8 @@ msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:617
 #: includes/admin/class-ppa-admin-grading.php:687
-#: includes/admin/class-ppa-admin-submissions.php:860
-#: includes/admin/class-ppa-admin-submissions.php:963
+#: includes/admin/class-ppa-admin-submissions.php:864
+#: includes/admin/class-ppa-admin-submissions.php:967
 #: includes/frontend/class-ppa-assignment-renderer.php:951
 #: includes/frontend/class-ppa-submissions-renderer.php:241
 #: src/dashboard/components/RecentActivity.jsx:83
@@ -634,12 +634,12 @@ msgid "Graded"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:714
-#: includes/admin/class-ppa-admin-submissions.php:1002
+#: includes/admin/class-ppa-admin-submissions.php:1025
 msgid "Filter by assignment"
 msgstr ""
 
 #: includes/admin/class-ppa-admin-grading.php:716
-#: includes/admin/class-ppa-admin-submissions.php:1004
+#: includes/admin/class-ppa-admin-submissions.php:1027
 msgid "All Assignments"
 msgstr ""
 
@@ -673,7 +673,7 @@ msgstr ""
 #: includes/admin/class-ppa-onboarding.php:695
 #: includes/admin/class-ppa-onboarding.php:715
 #: includes/database/class-ppa-migrator.php:672
-#: includes/integrations/class-ppa-learndash.php:881
+#: includes/integrations/class-ppa-learndash.php:915
 #: includes/integrations/class-ppa-learnpress.php:492
 #: includes/integrations/class-ppa-lifterlms.php:460
 #: includes/integrations/class-ppa-tutorlms.php:648
@@ -724,75 +724,75 @@ msgstr ""
 msgid "Score"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:805
+#: includes/admin/class-ppa-admin-submissions.php:809
 #: templates/dashboard/my-submissions.php:145
 msgid "View"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:823
+#: includes/admin/class-ppa-admin-submissions.php:827
 msgid "Are you sure you want to delete this submission?"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:861
-#: includes/admin/class-ppa-admin-submissions.php:964
+#: includes/admin/class-ppa-admin-submissions.php:865
+#: includes/admin/class-ppa-admin-submissions.php:968
 #: src/dashboard/components/RecentActivity.jsx:87
 #: src/submission-detail/components/SubmissionDetail.jsx:60
 #: src/submission-detail/components/SubmissionDetail.jsx:351
 msgid "Returned"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1026
+#: includes/admin/class-ppa-admin-submissions.php:1049
 msgid "Filter by minimum score"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1027
+#: includes/admin/class-ppa-admin-submissions.php:1050
 msgid "Min"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1029
+#: includes/admin/class-ppa-admin-submissions.php:1052
 msgid "Filter by maximum score"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1030
+#: includes/admin/class-ppa-admin-submissions.php:1053
 msgid "Max"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1044
+#: includes/admin/class-ppa-admin-submissions.php:1067
 msgid "Any feedback"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1045
+#: includes/admin/class-ppa-admin-submissions.php:1068
 msgid "Has feedback"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1046
+#: includes/admin/class-ppa-admin-submissions.php:1069
 msgid "No feedback"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1050
+#: includes/admin/class-ppa-admin-submissions.php:1073
 msgid "Filter by feedback presence"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1073
+#: includes/admin/class-ppa-admin-submissions.php:1096
 #: templates/assignment/submission-status.php:47
 #: src/grading-interface/components/GradingForm.jsx:768
 msgid "Submitted:"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1074
+#: includes/admin/class-ppa-admin-submissions.php:1097
 msgid "Filter by submitted date (from)"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1078
+#: includes/admin/class-ppa-admin-submissions.php:1101
 msgctxt "date range separator between the from and to date filters"
 msgid "to"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1085
+#: includes/admin/class-ppa-admin-submissions.php:1108
 msgid "Filter by submitted date (to)"
 msgstr ""
 
-#: includes/admin/class-ppa-admin-submissions.php:1117
+#: includes/admin/class-ppa-admin-submissions.php:1140
 msgid "Reset Filters"
 msgstr ""
 
@@ -1313,13 +1313,13 @@ msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:174
 #: includes/api/class-ppa-rest-grading-queue.php:130
-#: includes/api/class-ppa-rest-submissions.php:206
+#: includes/api/class-ppa-rest-submissions.php:212
 msgid "Current page of the collection."
 msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:180
 #: includes/api/class-ppa-rest-grading-queue.php:136
-#: includes/api/class-ppa-rest-submissions.php:212
+#: includes/api/class-ppa-rest-submissions.php:218
 msgid "Maximum number of items to return."
 msgstr ""
 
@@ -1333,13 +1333,13 @@ msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:198
 #: includes/api/class-ppa-rest-grading-queue.php:159
-#: includes/api/class-ppa-rest-submissions.php:260
+#: includes/api/class-ppa-rest-submissions.php:266
 msgid "Field to order by."
 msgstr ""
 
 #: includes/api/class-ppa-rest-assignments.php:204
 #: includes/api/class-ppa-rest-grading-queue.php:165
-#: includes/api/class-ppa-rest-submissions.php:266
+#: includes/api/class-ppa-rest-submissions.php:272
 msgid "Sort direction."
 msgstr ""
 
@@ -1419,17 +1419,17 @@ msgid "Please enter a valid email address."
 msgstr ""
 
 #: includes/api/class-ppa-rest-grading-queue.php:143
-#: includes/api/class-ppa-rest-submissions.php:219
+#: includes/api/class-ppa-rest-submissions.php:225
 msgid "Filter by assignment ID."
 msgstr ""
 
 #: includes/api/class-ppa-rest-grading-queue.php:148
-#: includes/api/class-ppa-rest-submissions.php:224
+#: includes/api/class-ppa-rest-submissions.php:230
 msgid "Filter by submission status."
 msgstr ""
 
 #: includes/api/class-ppa-rest-grading-queue.php:154
-#: includes/api/class-ppa-rest-submissions.php:230
+#: includes/api/class-ppa-rest-submissions.php:236
 msgid "Search by student name or email."
 msgstr ""
 
@@ -1454,88 +1454,88 @@ msgstr ""
 msgid "Number of submissions to return."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:235
+#: includes/api/class-ppa-rest-submissions.php:241
 msgid "Inclusive lower bound on score. Excludes un-graded submissions when set."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:240
+#: includes/api/class-ppa-rest-submissions.php:246
 msgid "Inclusive upper bound on score. Excludes un-graded submissions when set."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:245
+#: includes/api/class-ppa-rest-submissions.php:251
 msgid "Filter by feedback presence. Accepts true/false (also 1/0, yes/no). Omit for any."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:250
+#: includes/api/class-ppa-rest-submissions.php:256
 msgid "Inclusive lower bound on submitted_at (ISO 8601 date)."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:255
+#: includes/api/class-ppa-rest-submissions.php:261
 msgid "Inclusive upper bound on submitted_at (ISO 8601 date). Normalized to end-of-day."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:307
+#: includes/api/class-ppa-rest-submissions.php:313
 msgid "score_min must be numeric."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:320
+#: includes/api/class-ppa-rest-submissions.php:326
 msgid "score_max must be numeric."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:346
+#: includes/api/class-ppa-rest-submissions.php:352
 msgid "submitted_from is not a valid date."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:360
+#: includes/api/class-ppa-rest-submissions.php:366
 msgid "submitted_to is not a valid date."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:549
-#: includes/api/class-ppa-rest-submissions.php:677
-#: includes/services/class-ppa-grading-queue-service.php:439
-#: includes/services/class-ppa-statistics-service.php:891
+#: includes/api/class-ppa-rest-submissions.php:558
+#: includes/api/class-ppa-rest-submissions.php:686
+#: includes/services/class-ppa-grading-queue-service.php:526
+#: includes/services/class-ppa-statistics-service.php:929
 #: src/dashboard/components/RecentActivity.jsx:114
 #: src/shared/components/viewers/DocumentPanel.jsx:338
 msgid "Unknown"
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:599
+#: includes/api/class-ppa-rest-submissions.php:608
 msgid "You do not have permission to view this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:761
+#: includes/api/class-ppa-rest-submissions.php:770
 msgid "You do not have permission to grade this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:894
+#: includes/api/class-ppa-rest-submissions.php:903
 msgid "No valid changes provided."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:915
+#: includes/api/class-ppa-rest-submissions.php:924
 msgid "No submission IDs provided."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:939
+#: includes/api/class-ppa-rest-submissions.php:948
 msgid "You do not have permission to return this submission."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:1124
-#: includes/api/class-ppa-rest-submissions.php:1219
+#: includes/api/class-ppa-rest-submissions.php:1136
+#: includes/api/class-ppa-rest-submissions.php:1231
 #: includes/frontend/class-ppa-submission-handler.php:296
 #: includes/services/class-ppa-file-service.php:474
 msgid "File not found."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:1134
+#: includes/api/class-ppa-rest-submissions.php:1146
 msgid "You do not have permission to view this file."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:1145
+#: includes/api/class-ppa-rest-submissions.php:1157
 #: includes/services/class-ppa-file-service.php:524
 msgid "File not found on server."
 msgstr ""
 
-#: includes/api/class-ppa-rest-submissions.php:1229
+#: includes/api/class-ppa-rest-submissions.php:1241
 msgid "You do not have permission to re-extract text from this file."
 msgstr ""
 
@@ -2126,14 +2126,14 @@ msgstr ""
 msgid "This assignment does not accept text submissions."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:151
+#: includes/integrations/class-ppa-learndash.php:154
 #: includes/integrations/class-ppa-learnpress.php:195
 #: includes/integrations/class-ppa-lifterlms.php:163
 #: includes/integrations/class-ppa-tutorlms.php:175
 msgid "Select Assignment:"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:159
+#: includes/integrations/class-ppa-learndash.php:162
 #: includes/integrations/class-ppa-learnpress.php:203
 #: includes/integrations/class-ppa-lifterlms.php:171
 #: includes/integrations/class-ppa-tutorlms.php:183
@@ -2141,8 +2141,8 @@ msgstr ""
 msgid "Click to browse or type to search..."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:172
-#: includes/integrations/class-ppa-learndash.php:219
+#: includes/integrations/class-ppa-learndash.php:175
+#: includes/integrations/class-ppa-learndash.php:222
 #: includes/integrations/class-ppa-learnpress.php:216
 #: includes/integrations/class-ppa-learnpress.php:270
 #: includes/integrations/class-ppa-lifterlms.php:184
@@ -2154,13 +2154,13 @@ msgstr ""
 msgid "Remove assignment"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:179
-#: includes/integrations/class-ppa-learndash.php:518
+#: includes/integrations/class-ppa-learndash.php:182
+#: includes/integrations/class-ppa-learndash.php:521
 #: assets/js/learndash-editor.js:282
 msgid "The assignment will appear at the end of this content. Users must pass to mark it complete."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:218
+#: includes/integrations/class-ppa-learndash.php:221
 #: includes/integrations/class-ppa-learnpress.php:269
 #: includes/integrations/class-ppa-lifterlms.php:237
 #: includes/integrations/class-ppa-tutorlms.php:250
@@ -2170,15 +2170,15 @@ msgstr ""
 msgid "No assignments found"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:464
+#: includes/integrations/class-ppa-learndash.php:467
 msgid "You do not have permission to edit this post."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:478
+#: includes/integrations/class-ppa-learndash.php:481
 msgid "PressPrimer Assignment ID"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:515
+#: includes/integrations/class-ppa-learndash.php:518
 #: includes/integrations/class-ppa-tutorlms.php:521
 #: assets/js/learndash-editor.js:263
 #: assets/js/tutorlms-editor.js:262
@@ -2186,16 +2186,16 @@ msgstr ""
 msgid "Select Assignment"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:516
+#: includes/integrations/class-ppa-learndash.php:519
 msgid "Search for an assignment..."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:517
+#: includes/integrations/class-ppa-learndash.php:520
 #: includes/integrations/class-ppa-tutorlms.php:523
 msgid "No assignment selected"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:576
+#: includes/integrations/class-ppa-learndash.php:579
 #: src/settings-panel/components/IntegrationsTab.jsx:376
 msgid "Complete all topics in this lesson to unlock the assignment."
 msgstr ""
