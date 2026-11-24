@@ -265,6 +265,7 @@ Yes, with the School add-on. PressPrimer Assignment can emit Experience API (xAP
 == Changelog ==
 
 = 2.2.4 =
+* Fixed: Assignments now appear on LearnDash lessons and topics that use the Modern UI
 * Fixed: With LearnDash's Modern UI or Focus Mode, students can no longer mark a lesson complete before passing the attached assignment
 * Fixed: With the Educator add-on, teachers and LearnDash Group Leaders can now grade their group's submissions on assignments someone else created
 

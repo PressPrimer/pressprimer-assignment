@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-24T15:17:49+00:00\n"
+"POT-Creation-Date: 2026-11-24T15:51:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pressprimer-assignment\n"
@@ -20,8 +20,8 @@ msgstr ""
 #: includes/admin/class-ppa-admin.php:585
 #: includes/admin/class-ppa-onboarding.php:460
 #: includes/blocks/class-ppa-blocks.php:63
-#: includes/integrations/class-ppa-learndash.php:123
-#: includes/integrations/class-ppa-learndash.php:517
+#: includes/integrations/class-ppa-learndash.php:124
+#: includes/integrations/class-ppa-learndash.php:518
 #: includes/integrations/class-ppa-learnpress.php:163
 #: includes/integrations/class-ppa-lifterlms.php:131
 #: includes/integrations/class-ppa-tutorlms.php:143
@@ -433,7 +433,7 @@ msgstr ""
 #: includes/admin/class-ppa-admin-settings.php:527
 #: includes/frontend/class-ppa-frontend.php:653
 #: includes/frontend/class-ppa-submission-handler.php:913
-#: includes/integrations/class-ppa-learndash.php:910
+#: includes/integrations/class-ppa-learndash.php:981
 #: includes/integrations/class-ppa-learnpress.php:487
 #: includes/integrations/class-ppa-lifterlms.php:455
 #: includes/integrations/class-ppa-tutorlms.php:643
@@ -673,7 +673,7 @@ msgstr ""
 #: includes/admin/class-ppa-onboarding.php:695
 #: includes/admin/class-ppa-onboarding.php:715
 #: includes/database/class-ppa-migrator.php:672
-#: includes/integrations/class-ppa-learndash.php:915
+#: includes/integrations/class-ppa-learndash.php:986
 #: includes/integrations/class-ppa-learnpress.php:492
 #: includes/integrations/class-ppa-lifterlms.php:460
 #: includes/integrations/class-ppa-tutorlms.php:648
@@ -2126,14 +2126,14 @@ msgstr ""
 msgid "This assignment does not accept text submissions."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:154
+#: includes/integrations/class-ppa-learndash.php:155
 #: includes/integrations/class-ppa-learnpress.php:195
 #: includes/integrations/class-ppa-lifterlms.php:163
 #: includes/integrations/class-ppa-tutorlms.php:175
 msgid "Select Assignment:"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:162
+#: includes/integrations/class-ppa-learndash.php:163
 #: includes/integrations/class-ppa-learnpress.php:203
 #: includes/integrations/class-ppa-lifterlms.php:171
 #: includes/integrations/class-ppa-tutorlms.php:183
@@ -2141,8 +2141,8 @@ msgstr ""
 msgid "Click to browse or type to search..."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:175
-#: includes/integrations/class-ppa-learndash.php:222
+#: includes/integrations/class-ppa-learndash.php:176
+#: includes/integrations/class-ppa-learndash.php:223
 #: includes/integrations/class-ppa-learnpress.php:216
 #: includes/integrations/class-ppa-learnpress.php:270
 #: includes/integrations/class-ppa-lifterlms.php:184
@@ -2154,13 +2154,13 @@ msgstr ""
 msgid "Remove assignment"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:182
-#: includes/integrations/class-ppa-learndash.php:521
+#: includes/integrations/class-ppa-learndash.php:183
+#: includes/integrations/class-ppa-learndash.php:522
 #: assets/js/learndash-editor.js:282
 msgid "The assignment will appear at the end of this content. Users must pass to mark it complete."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:221
+#: includes/integrations/class-ppa-learndash.php:222
 #: includes/integrations/class-ppa-learnpress.php:269
 #: includes/integrations/class-ppa-lifterlms.php:237
 #: includes/integrations/class-ppa-tutorlms.php:250
@@ -2170,15 +2170,15 @@ msgstr ""
 msgid "No assignments found"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:467
+#: includes/integrations/class-ppa-learndash.php:468
 msgid "You do not have permission to edit this post."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:481
+#: includes/integrations/class-ppa-learndash.php:482
 msgid "PressPrimer Assignment ID"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:518
+#: includes/integrations/class-ppa-learndash.php:519
 #: includes/integrations/class-ppa-tutorlms.php:521
 #: assets/js/learndash-editor.js:263
 #: assets/js/tutorlms-editor.js:262
@@ -2186,16 +2186,16 @@ msgstr ""
 msgid "Select Assignment"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:519
+#: includes/integrations/class-ppa-learndash.php:520
 msgid "Search for an assignment..."
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:520
+#: includes/integrations/class-ppa-learndash.php:521
 #: includes/integrations/class-ppa-tutorlms.php:523
 msgid "No assignment selected"
 msgstr ""
 
-#: includes/integrations/class-ppa-learndash.php:579
+#: includes/integrations/class-ppa-learndash.php:623
 #: src/settings-panel/components/IntegrationsTab.jsx:376
 msgid "Complete all topics in this lesson to unlock the assignment."
 msgstr ""
